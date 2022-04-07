@@ -1,4 +1,7 @@
 {
+  "name": "fflogs-vod-tool",
+  "version": "0.0.1",
+  "description": "Tool to tie FFLogs reports to a VOD for review",
   "devDependencies": {
     "nodemon": "^2.0.15"
   }
