@@ -134,10 +134,10 @@ app.get("/fflogs", (req, res, next) => {
   fflogsToken.getToken().then(token => {
     const query = `{
   rateLimitData {
-		limitPerHour
-		pointsSpentThisHour
-		pointsResetIn
-	}
+    limitPerHour
+    pointsSpentThisHour
+    pointsResetIn
+  }
   reportData {
     report(code: "${req.query.reportId}") {
       startTime
