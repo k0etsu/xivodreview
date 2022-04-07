@@ -2,7 +2,15 @@
   "name": "fflogs-vod-tool",
   "version": "0.0.1",
   "description": "Tool to tie FFLogs reports to a VOD for review",
+  "type": "module",
   "devDependencies": {
     "nodemon": "^2.0.15"
+  },
+  "dependencies": {
+    "axios": "^0.26.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "got": "^12.0.3"
   }
 }

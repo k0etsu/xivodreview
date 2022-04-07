@@ -8,10 +8,18 @@ tool to tie fflogs reports to a vod (inspiration from nnoggie)
 4. Selecting a fight from report summary view jumps vod to timestamp associated with fight
 <br><br>
 ## TODO
-- explore fflogs api
-- explore twitch api (maybe youtube as well)
-- specify backend framework (most likely node.js)
-  - nail down venv requirements
+- ~~explore fflogs api~~
+- ~~explore twitch api~~ (maybe youtube as well)
+- ~~specify backend framework (most likely node.js)~~
+  - ~~nail down venv requirements~~
+- authenticate with fflogs api
+- query data from fflogs api
+- create barebones route to serve fflogs data to client
+- authenticate with twitch api
+- query data from twitch api
+- create barebones route to serve twitch data to client
+- accept fflogs url and parse
+- accept twitch url and parse
 <br><br>
 ## Wishlist
 - multiple povs per report (aka per player)
