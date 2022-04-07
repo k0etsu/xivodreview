@@ -1,7 +1,6 @@
 import dotenv from "dotenv"
 import https from "https"
 import got from "got"
-import gotQl from "gotql"
 import express from "express"
 import axios from "axios"
 import cors from "cors"
@@ -90,9 +89,6 @@ class tokenCache {
 
 console.log(FFLOGS_CLIENT_ID + ":" + FFLOGS_CLIENT_SECRET);
 
-// const {access_token, expires_in} = await got(FFLOGS_AUTH, FFLOGS_OPTS).json();
-// console.log(`\naccess_token = ${access_token}\n\nexpires_in = ${expires_in}\n`);
-
 const hostname = '127.0.0.1';
 const port = 3000;
 
@@ -132,6 +128,7 @@ var fflogsToken = new tokenCache();
 
 var app = express();
 
+// basic get route off fflogs with reportId as query url parameter
 app.get("/fflogs", (req, res, next) => {
   console.log(req.query)
   fflogsToken.getToken().then(token => {
@@ -172,11 +169,6 @@ app.get("/fflogs", (req, res, next) => {
       headers: {
         "Authorization": `Bearer ${token}`
       }
-      // retry: {
-      //   limit: 2,
-      //   statusCodes: [401],
-      //   errorCodes: ["ERR_GOT_REQUEST_ERROR"]
-      // }
     };
     return got(FFLOGS_API, options) 
   }).then(data => {
