@@ -130,8 +130,10 @@ var app = express();
 
 // basic get route off fflogs with reportId as query url parameter
 app.get("/fflogs", (req, res, next) => {
-  console.log(req.query)
+  console.log(req.query) // TODO: remove this eventually
+  // TODO: promise chaining cause can't figure out async/await
   fflogsToken.getToken().then(token => {
+    // current initial query to fflogs to get report summary information, mainly fights, timestamps and players
     const query = `{
   rateLimitData {
     limitPerHour
@@ -170,6 +172,7 @@ app.get("/fflogs", (req, res, next) => {
     }
   }
 }`;
+    // setup options to pass to got()
     const options = {
       method: "GET",
       searchParams: {query: query},
@@ -178,10 +181,10 @@ app.get("/fflogs", (req, res, next) => {
       }
     };
     return got(FFLOGS_API, options) 
+  // TODO: promise chaining cause can't figure out async/await
   }).then(data => {
     res.json(JSON.parse(data["body"]))
   });
-  // res.json(req.query)
 });
 
 app.listen(3000, () => {
