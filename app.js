@@ -133,10 +133,16 @@ app.get("/fflogs", (req, res, next) => {
   console.log(req.query)
   fflogsToken.getToken().then(token => {
     const query = `{
+  rateLimitData {
+		limitPerHour
+		pointsSpentThisHour
+		pointsResetIn
+	}
   reportData {
     report(code: "${req.query.reportId}") {
       startTime
       endTime
+      segments
       fights {
         id
         startTime
@@ -158,6 +164,7 @@ app.get("/fflogs", (req, res, next) => {
           id
           name
           server
+          subType
         }
       }
     }
