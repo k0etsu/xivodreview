@@ -287,10 +287,21 @@ app.get("/twitch", (req, res, next) => {
     return got(TWITCH_API, options)
   // TODO: promise chaining cause can't figure out async/await
   }).then(data => {
-    res.json(JSON.parse(data["body"]))
+    var timeArr = []
+    for (const resData of JSON.parse(data["body"])["data"]) {
+      timeArr.push({
+        videoId: resData.id,
+        startTime: new Date(resData["created_at"]).getTime()
+      });
+    };
+    console.log(timeArr)
+    res.json({
+      res: JSON.parse(data["body"]),
+      timeArr: timeArr
+    });
   }).catch(err => {
     var videoId = req.query.videoId
-    console.log(`vods [${videoId}] not found`)
+    console.log(err)
     res.json({
       error: "Not Found",
       status: 404,
