@@ -267,6 +267,9 @@ app.get("/fflogs", (req, res, next) => {
   // TODO: promise chaining cause can't figure out async/await
   }).then(data => {
     res.json(JSON.parse(data["body"]))
+  }).catch(err => {
+    console.log(err)
+    res.send(err)
   });
 });
 
