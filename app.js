@@ -60,6 +60,8 @@ var twitchToken = new tokenCache('twitch', TWITCH_AUTH, TWITCH_OPTS);
 
 var app = express();
 
+app.use(cors())
+
 // basic get route off fflogs with reportId as query url parameter
 app.get("/fflogs", (req, res, next) => {
   console.log("fflogs")
@@ -163,6 +165,6 @@ app.get("/twitch", (req, res, next) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log("server running on port 3000");
+app.listen(3001, () => {
+  console.log("server running on port 3001");
 });
