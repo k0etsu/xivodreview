@@ -12,8 +12,12 @@ tool to tie fflogs reports to a vod (inspiration from nnoggie)
 - ~~explore twitch api~~ (maybe youtube as well)
 - ~~specify backend framework (most likely node.js)~~
   - ~~nail down venv requirements~~
+- draw hello world with vue.js or react?
 - authenticate with fflogs api
+  - create new window for user auth?
 - query data from fflogs api
+  - figure out what data is needed to recreate report view in side bar
+    - https://www.fflogs.com/reports/vt1ZRXNBMbk6nKhy
 - create barebones route to serve fflogs data to client
 - authenticate with twitch api
 - query data from twitch api
