@@ -1,4 +1,4 @@
-# fflogs-vod-tool
+# xivodreview
 tool to tie fflogs reports to a vod (inspiration from nnoggie)
 <br><br>
 ## Overall process flow
@@ -12,9 +12,10 @@ tool to tie fflogs reports to a vod (inspiration from nnoggie)
 - ~~explore twitch api~~ (maybe youtube as well)
 - ~~specify backend framework (most likely node.js)~~
   - ~~nail down venv requirements~~
-- draw hello world with vue.js or react?
+- ~~draw hello world with vue.js or react?~~
 - authenticate with fflogs api
   - create new window for user auth?
+  - ON HOLD FOR NOW
 - query data from fflogs api
   - figure out what data is needed to recreate report view in side bar
     - https://www.fflogs.com/reports/vt1ZRXNBMbk6nKhy
