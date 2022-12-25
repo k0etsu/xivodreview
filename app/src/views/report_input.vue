@@ -1,12 +1,11 @@
 <template>
   <div class="fflogs">
-    <p>{{ reportId }}</p>
     <input class="fflogs-input" v-model.lazy.trim="report_url" placeholder="FFLogs report URL" />
-    <button @click="ceciliabutton">Hello I am a button</button>
+    <!-- <button @click="ceciliabutton">Hello I am a button</button> -->
   </div>
 </template>
 
-<style>
+<!-- <style>
 @media (min-width: 1024px) {
   .fflogs {
     min-height: 100vh;
@@ -19,7 +18,7 @@
     min-width: 25vh;
   }
 }
-</style>
+</style> -->
 
 <script lang="ts">
 export default {
@@ -27,13 +26,13 @@ export default {
     return {
       report_url: '',
       reportId: '',
-      fflogs_data: '',
-      dummy: 'ryan'
+      fflogs_data: ''
     }
   },
   watch: {
     report_url: function (newValue, oldValue) {
-      this.getReportId(newValue)
+      var reportId = this.getReportId(newValue)
+      var reportData = this.getReportData(this.reportId)
     }
   },
   methods: {
@@ -45,19 +44,19 @@ export default {
         console.log(report[reportIndex + 1])
         console.log('/report?reportId=' + report[reportIndex + 1])
         this.reportId = report[reportIndex + 1]
-        this.$router.push('/report?reportId=' + report[reportIndex + 1]);
+        // this.$router.push('/report?reportId=' + report[reportIndex + 1]);
         //this.window.href = '/report?reportId=' + report[reportIndex + 1];
       } catch (error) {
         this.reportId = 'Please enter a valid FFLogs report URL';
       }
     },
-    ceciliabutton() {
+    getReportData(reportId: string) {
       console.log("Ryan says nice");
-      fetch("https://api.yamanote.co/fflogs?reportId=vt1ZRXNBMbk6nKhy")
+      fetch("https://api.yamanote.co/fflogs?reportId=" + reportId)
         .then(async response => {
-          const data = await response.json();
-          console.log(data);
-          this.fflogs_data = data;
+          const reportData = await response.json();
+          console.log(reportData);
+          return reportData;
         })
         .catch(error => {
           console.error("there was an error: ", error);

@@ -20,7 +20,7 @@ const router = createRouter({
     {
       path: "/fflogs",
       name: "fflogs",
-      component: () => import("../views/fflogs.vue")
+      component: () => import("../views/report_input.vue")
     },
     {
       path: "/report",
