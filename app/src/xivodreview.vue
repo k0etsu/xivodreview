@@ -18,12 +18,24 @@ import report_input from "./views/report_input.vue";
         </div>
         <div class="row no-gutters">
           <div class="deadspace col-12 order-last">
-            <button @click="removeIframes">reset twitch player</button>
-            <input class="twitchUrl" v-model.lazy.trim="twitch_url" placeholder="Twitch VOD URL" />
+            <div class="row no-gutters">
+              <input class="twitchUrl inputForm" v-model.lazy.trim="twitch_url" placeholder="Twitch VOD URL" />
+              <button class="resetButton" @click="removeIframes">reset twitch player</button>
+            </div>
+            <div class="row no-gutters">
+              <input class="fflogsUrl inputForm" v-model.lazy.trim="fflogs_url" placeholder="FFLogs Report URL" />
+              <button class="resetButton" @click="testData">reset fflogs report</button>
+            </div>
+            <div class="row no-gutters">
+              <input id="timeBeforePull" class="inputForm" type="number" v-model="timeBeforePull" />
+              <label for="timeBeforePull" class="timeLabel">Time before pull (in seconds)</label>
+            </div>
           </div>
         </div>
       </div>
-      <div class="fflogs-report col-3">c</div>
+      <div class="fflogs-report col-3">
+        <div id="reportLinks" class="linksContainer"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -34,14 +46,27 @@ import report_input from "./views/report_input.vue";
       return {
         twitch_url: '',
         twitchId: '',
-        player: null
+        twitchData: null,
+        twitchVodStart: 0,
+        player: null,
+        fflogs_url: '',
+        reportId: '',
+        reportData: null,
+        reportStart: 0,
+        timeBeforePull: 5
       }
     },
     watch: {
       twitch_url: function(newValue, oldValue) {
         if (newValue != '') {
-          var twitchId = this.getTwitchId(newValue);
-          var twitchPlayer = this.getTwitchPlayer(this.twitchId);
+          this.getTwitchId(newValue);
+          // this.getTwitchData(this.twitchId);
+          // this.getTwitchPlayer(this.twitchId);
+        }
+      },
+      fflogs_url: function(newValue, oldValue) {
+        if (newValue != '') {
+          this.getReportId(newValue)
         }
       }
     },
@@ -55,7 +80,23 @@ import report_input from "./views/report_input.vue";
           this.twitchId = video[videoIndex + 1];
         } catch (error) {
           this.twitchId = 'Please enter a valid Twitch VOD URL';
+        } finally {
+          this.getTwitchData(this.twitchId)
         }
+      },
+      getTwitchData(videoId: string) {
+        fetch("https://api.yamanote.co/twitch?videoId=" + videoId)
+          .then(async response => {
+            this.twitchData = await response.json();
+            console.log(this.twitchData)
+          })
+          .catch(error => {
+            console.error("there was an error fetching twitch data: ", error);
+          })
+          .finally(() => {
+            this.twitchVodStart = parseInt(this.twitchData.timeArr[0].startTime);
+            this.getTwitchPlayer(this.twitchId)
+          })
       },
       async getTwitchPlayer(videoId: string) {
         var options = {
@@ -84,22 +125,103 @@ import report_input from "./views/report_input.vue";
           iframes[i].parentNode.removeChild(iframes[i])
         }
         this.player = null
-      }
+      },
+      testData() {
+        console.log(this.twitchData.res.data);
+        console.log(this.twitchData.timeArr[0].startTime);
+        console.log(this.reportData.data.rateLimitData);
+        console.log(this.reportData.data.reportData);
+        console.log(this.twitchVodStart);
+        console.log(this.reportStart);
+      },
+      getReportId(fflogsUrl: string) {
+        try {
+          const url = new URL(fflogsUrl);
+          var report = url.pathname.split('/');
+          var reportIndex = report.indexOf('reports');
+          console.log(report[reportIndex + 1]);
+          this.reportId = report[reportIndex + 1];
+        } catch (error) {
+          this.reportId = 'Please enter a valid FFLogs report URL';
+        } finally {
+          this.getReportData(this.reportId)
+        }
+      },
+      getReportData(reportId: string) {
+        fetch("https://api.yamanote.co/fflogs?reportId=" + reportId)
+          .then(async response => {
+            this.reportData = await response.json();
+            console.log(this.reportData)
+          })
+          .catch(error => {
+            console.error("there was an error fetching fflogs data: ", error);
+          })
+          .finally(() => {
+            this.reportStart = parseInt(this.reportData.data.reportData.report.startTime);
+            this.buildReportLinks()
+          })
+      },
+      buildReportLinks() {
+        const container = document.getElementById("reportLinks");
+        container.innerHTML = "";
+        setTimeout(() => {
+          const fightIndexByName = {};
+          // const timeBeforePull = document.getElementById
+          const fightsPerInstance = {};
+          this.reportData.data.reportData.report.fights.forEach(fight => {
+            fightsPerInstance[fight.name] = fightsPerInstance[fight.name] || [];
+            fightsPerInstance[fight.name].push(fight);
+          });
+          for (const instanceName in fightsPerInstance) {
+            const title = document.createElement("h2");
+            title.appendChild(document.createTextNode(instanceName));
+            container.appendChild(title);
+            fightsPerInstance[instanceName].forEach((fight, pull) => {
+              const fightContainer = document.createElement("div");
+              const pullTimeInVod = Math.floor((this.reportStart - this.twitchVodStart + fight.startTime) / 1000) - this.timeBeforePull;
+              const linkVod = document.createElement("a");
+              linkVod.href = this.getVodLink(this.twitchId, pullTimeInVod);
+              linkVod.target = "_blank";
+              linkVod.className = "vodLink";
+              linkVod.appendChild(document.createTextNode(this.getFightName(fight, pull)));
+              fightContainer.appendChild(linkVod);
+              const linkFflogs = document.createElement("a");
+              linkFflogs.href = this.getFflogsLink(this.reportId, fight.id);
+              linkFflogs.target = "_blank";
+              linkFflogs.appendChild(document.createTextNode("Report"));
+              fightContainer.appendChild(linkFflogs);
+              container?.appendChild(fightContainer);
+            })
+          }
+        })
+      },
+       getVodLink(videoId, pullTimeInVod) {
+        return `https://player.twitch.tv/?parent=localhost&video=${videoId}&t=${pullTimeInVod}`;
+      },
+      getFflogsLink(reportId, fightId) {
+        return `https://www.fflogs.com/reports/${reportId}/#fight=${fightId}`;
+      },
+      getFightName(fight, pull) {
+        return `Pull ${pull + 1} - ${fight.fightPercentage}% - ${new Date(this.reportStart + fight.startTime).toLocaleString()}`;
+      },
     }
   }
 </script>
 
 <style scoped>
 .vod-player {
-    background: purple;
+    border-style: solid;
+    border-color: plum;
     height: 100%;
   }
   .deadspace {
-    background: white;
+    border-style: solid;
+    border-color: goldenrod;
     height: 100%;
   }
   .fflogs-report {
-    background: teal;
+    border-style: solid;
+    border-color: turquoise;
     height: 100%;
   }
   .vod-player {
@@ -107,10 +229,14 @@ import report_input from "./views/report_input.vue";
     position: relative;
     height: 0;
   }
-  /* .vod-player iframe {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-  } */
+  .inputForm {
+    min-width: 25em;
+  }
+  .resetButton {
+    min-width: 10em;
+    text-align: center;
+  }
+  .timeLabel {
+    margin-bottom: 0em;
+  }
 </style>
