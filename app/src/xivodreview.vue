@@ -95,7 +95,7 @@ export default {
       }
     },
     getTwitchData(videoId: string) {
-      fetch("https://api.yamanote.co/twitch?videoId=" + videoId)
+      fetch("http://localhost:3001/twitch?videoId=" + videoId)
         .then(async response => {
           this.twitchData = await response.json();
           console.log(this.twitchData)
@@ -162,7 +162,7 @@ export default {
       }
     },
     getReportData(reportId: string) {
-      fetch("https://api.yamanote.co/fflogs?reportId=" + reportId)
+      fetch("http://localhost:3001/fflogs?reportId=" + reportId)
         .then(async response => {
           this.reportData = await response.json();
           console.log(this.reportData)
