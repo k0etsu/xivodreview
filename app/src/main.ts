@@ -1,7 +1,7 @@
 // import Vue from 'vue';
 import { createApp } from "vue";
 // import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
-import xivodreview from "./xivodreview.vue";
+import XIVodreview from "./XIVodreview.vue";
 import router from "./router";
 
 // Import Bootstrap and BootstrapVue CSS files (order is important)
@@ -13,7 +13,7 @@ import router from "./router";
 // Optionally install the BootstrapVue icon components plugin
 // Vue.use(IconsPlugin)
 
-const app = createApp(xivodreview);
+const app = createApp(XIVodreview);
 
 app.use(router);
 

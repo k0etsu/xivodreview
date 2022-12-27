@@ -1,5 +1,5 @@
 <template>
-  <button @click="goToTimestamp(timestamp)"><slot></slot></button>
+  <button class="btn btn-primary" @click="goToTimestamp(timestamp)"><slot></slot></button>
 </template>
 
 <script lang="ts">
