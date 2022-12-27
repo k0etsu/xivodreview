@@ -62,12 +62,12 @@
 export default {
   data() {
     return {
-      twitch_url: 'https://www.twitch.tv/videos/1678494455',
+      twitch_url: '',
       twitchId: '',
       twitchData: null,
       twitchVodStart: 0,
       player: null,
-      fflogs_url: 'https://www.fflogs.com/reports/P3YkqFfxMagLtZry',
+      fflogs_url: '',
       reportId: '',
       reportData: null,
       reportStart: 0,
