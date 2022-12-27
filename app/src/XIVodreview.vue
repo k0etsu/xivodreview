@@ -4,9 +4,9 @@
 </script>
 
 <template>
-  <div class="container-fluid">
-    <Navigation msg="test" />
-    <div class="row no-gutters h-100">
+  <div class="container-fluid overflow-hidden">
+    <Navigation class="navHeader" msg="GitHub" />
+    <div class="no-scroll row no-gutters">
       <div class="col-9">
         <div class="row no-gutters">
           <div class="vod-player col-12">
@@ -32,7 +32,7 @@
           </div>
         </div>
       </div>
-      <div class="fflogs-report col-3" v-if="fightData && player">
+      <div class="fflogs-report overflow-auto col-3" v-if="fightData && player">
         <FFlogsReport
           :fightData="fightData"
           :reportId="reportId"
@@ -192,31 +192,29 @@ export default {
 </script>
 
 <style scoped>
+.navHeader {
+  height: 2.5vh;
+}
+.no-scroll {
+  height: 96.5vh;
+}
 .vod-player {
   border-style: solid;
   border-color: plum;
   height: 100%;
-  overflow: hidden;
 }
 
 .deadspace {
   border-style: solid;
   border-color: goldenrod;
   height: 100%;
-  overflow: hidden;
 }
 
 .fflogs-report {
   border-style: solid;
   border-color: turquoise;
-  height: 100%;
-  overflow: auto;
-}
-
-.test-fflogs-report {
-  border-style: solid;
-  border-color: royalblue;
-  height: 100%;
+  max-height: 100%;
+  /* overflow: scroll */
 }
 
 .vod-player {

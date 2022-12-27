@@ -8,9 +8,8 @@
 <template>
   <header>
     <nav class="navBar">
-      <p class="navLogo">xivodreview</p>
-      <RouterLink class="navLink" to="/">Home</RouterLink>
-      <RouterLink class="navLink" to="/">{{ msg }}</RouterLink>
+      <h5 class="navLogo">xivodreview</h5>
+      <a class="navLink" href="https://github.com/k0etsu/xivodreview" target="_blank">{{ msg }}</a>
     </nav>
   </header>
 </template>
@@ -25,7 +24,8 @@
     display: inline;
   }
   .navLogo {
-    margin: 0.5em
+    margin: 0.5em;
+    margin-right: 1em;
   }
   .navLink {
     text-align: left;
