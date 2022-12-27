@@ -199,22 +199,17 @@ export default {
   height: 96.5vh;
 }
 .vod-player {
-  border-style: solid;
-  border-color: plum;
   height: 100%;
 }
 
 .deadspace {
-  border-style: solid;
-  border-color: goldenrod;
   height: 100%;
+  padding-top: 0.25em;
 }
 
 .fflogs-report {
-  border-style: solid;
-  border-color: turquoise;
   max-height: 100%;
-  /* overflow: scroll */
+  padding-left: 1em;
 }
 
 .vod-player {
