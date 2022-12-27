@@ -4,10 +4,10 @@
     <td v-if="fightEntry.fightPercentage == null">null</td>
     <td v-else>{{ `${Number(fightEntry.fightPercentage).toFixed(2)}%` }}</td>
     <td>
-      <button class="btn btn-primary" @click="goToTimestamp(pullTimeInVod)">{{ timestamp }}</button>
+      <button class="btn btn-outline-primary" @click="goToTimestamp(pullTimeInVod)">{{ timestamp }}</button>
     </td>
     <td id="fflogs-link">
-      <a :href="'https://www.fflogs.com/reports/' + reportId + '/#fight=' + fightEntry.id" class="btn btn-primary" role="button" target="_blank">Report</a>
+      <a :href="'https://www.fflogs.com/reports/' + reportId + '/#fight=' + fightEntry.id" class="btn btn-outline-info" role="button" target="_blank">Report</a>
     </td>
   </tr>
 </template>
