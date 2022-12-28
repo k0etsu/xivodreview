@@ -4,16 +4,16 @@
 </script>
 
 <template>
+  <Navigation class="navHeader" msg="GitHub" />
   <div class="container-fluid overflow-hidden">
-    <Navigation class="navHeader" msg="GitHub" />
-    <div class="no-scroll row no-gutters">
+    <div class="no-scroll row g-0">
       <div class="col-9">
-        <div class="row no-gutters">
+        <div class="row g-0">
           <div class="vod-player col-12">
             <div id="twitch-player"></div>
           </div>
         </div>
-        <div class="row no-gutters">
+        <div class="row g-0">
           <div class="deadspace col-12">
             <div class="form-group">
               <input class="twitchUrl form-control" v-model.lazy.trim="twitch_url" placeholder="Twitch VOD URL" />
@@ -62,12 +62,12 @@
 export default {
   data() {
     return {
-      twitch_url: 'https://www.twitch.tv/videos/1678494455',
+      twitch_url: 'https://www.twitch.tv/videos/1674096298',
       twitchId: '',
       twitchData: null,
       twitchVodStart: 0,
       player: null,
-      fflogs_url: 'https://www.fflogs.com/reports/P3YkqFfxMagLtZry',
+      fflogs_url: 'https://www.fflogs.com/reports/6x8YXNjwctfLMdCB',
       reportId: '',
       reportData: null,
       reportStart: 0,
@@ -192,9 +192,9 @@ export default {
 </script>
 
 <style scoped>
-.navHeader {
+/* .navHeader {
   height: 2.5vh;
-}
+} */
 .no-scroll {
   height: 96.5vh;
 }
