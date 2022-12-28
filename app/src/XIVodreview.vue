@@ -6,7 +6,7 @@
 <template>
   <Navigation class="navHeader" msg="GitHub" />
   <div class="container-fluid overflow-hidden">
-    <div class="no-scroll row g-0">
+    <div class="no-scroll row">
       <div class="col-9">
         <div class="row g-0">
           <div class="vod-player col-12">
@@ -15,20 +15,24 @@
         </div>
         <div class="row g-0">
           <div class="deadspace col-12">
-            <div class="form-group">
+            <div class="form-group form-floating">
               <input class="twitchUrl form-control" v-model.lazy.trim="twitch_url" placeholder="Twitch VOD URL" />
+              <label for="twitchUrl">Twitch VOD URL</label>
             </div>
-            <div class="form-group">
+            <div class="form-group form-floating">
               <input class="fflogsUrl form-control" v-model.lazy.trim="fflogs_url" placeholder="FFLogs Report URL" />
+              <label for="fflogsUrl">FFLogs Report URL</label>
             </div>
-            <div class="form-group row">
-              <div class="col-sm-4">
+            <div class="row align-items-center g-0">
+              <div class="form-group form-floating col-md-3">
                 <input id="timeBeforePull" class="form-control" type="number" v-model="timeBeforePull" />
+                <label for="timeBeforePull">Time before pull (in seconds)</label>
               </div>
-              <label for="timeBeforePull" class="col-sm-8 col-form-label">Time before pull (in seconds)</label>
+              <div class="col-md-8 offset-md-1">
+                <button class="btn btn-outline-primary col-md-1" @click="submitURLs">Submit</button>
+                <button class="btn btn-outline-secondary col-md-1 offset-md-1" @click="resetURLs">Reset</button>
+              </div>
             </div>
-            <button class="btn btn-outline-primary" @click="submitURLs">Submit</button>
-            <button class="btn btn-outline-secondary" @click="resetURLs">Reset</button>
           </div>
         </div>
       </div>
@@ -71,6 +75,7 @@ export default {
       reportId: '',
       reportData: null,
       reportStart: 0,
+      reportEnd: 0,
       fightData: {},
       timeBeforePull: 0,
       vodButtons: [],
@@ -185,6 +190,18 @@ export default {
         })
         .finally(() => {
           this.reportStart = parseInt(this.reportData.data.reportData.report.startTime);
+          this.reportEnd = parseInt(this.reportData.data.reportData.report.endTime);
+          this.getReportDeathData(this.reportId, 0, this.reportEnd - this.reportStart)
+        })
+    },
+    getReportDeathData(reportId, startTime, endTime) {
+      fetch(`https://api.yamanote.co/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`)
+        .then(async response => {
+          this.reportData = await response.json();
+          console.log(this.reportData)
+        })
+        .catch(error => {
+          console.error("there was an error fetching fflogs data w/ deaths: ", error);
         })
     },
   }
@@ -196,7 +213,7 @@ export default {
   height: 2.5vh;
 } */
 .no-scroll {
-  height: 96.5vh;
+  height: 95.5vh;
 }
 .vod-player {
   height: 100%;
