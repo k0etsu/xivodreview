@@ -69,6 +69,19 @@ app.get("/fflogs", (req, res, next) => {
   // TODO: promise chaining cause can't figure out async/await
   fflogsToken.getToken().then(token => {
     // current initial query to fflogs to get report summary information, mainly fights, timestamps and players
+    var deathQuery = '';
+    if (req.query.startTime != undefined && req.query.endTime != undefined) {
+      deathQuery = `
+      events(
+        dataType: Deaths
+        startTime: ${req.query.startTime}
+        endTime: ${req.query.endTime}
+      ) {
+        data
+        nextPageTimestamp
+      }
+`;
+    }
     const query = `{
   rateLimitData {
     limitPerHour
@@ -95,7 +108,12 @@ app.get("/fflogs", (req, res, next) => {
         logVersion
         gameVersion
         lang
-        actors(type: "Player") {
+        abilities {
+          gameID
+          name
+          type
+        }
+        players: actors(type: "Player") {
           gameID
           icon
           id
@@ -103,7 +121,14 @@ app.get("/fflogs", (req, res, next) => {
           server
           subType
         }
+        npcs: actors(type: "NPC") {
+          gameID
+          id
+          name
+          subType
+        }
       }
+      ${deathQuery}
     }
   }
 }`;
@@ -115,7 +140,7 @@ app.get("/fflogs", (req, res, next) => {
         "Authorization": `Bearer ${token}`
       }
     };
-    return got(FFLOGS_API, options) 
+    return got(FFLOGS_API, options)
   // TODO: promise chaining cause can't figure out async/await
   }).then(data => {
     res.json(JSON.parse(data["body"]))
