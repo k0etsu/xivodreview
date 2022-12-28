@@ -13,25 +13,6 @@
     :timeBeforePull="timeBeforePull"
     :player="player"
   />
-  <!-- <div v-for="(fightEntries, fightTitle) in fightData">
-    <h4>{{fightTitle}}</h4>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">id</th>
-          <th>%</th>
-          <th>Button</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="fightEntry in fightEntries">
-          <th scope="row">{{ fightEntry.id }}</th>
-          <td>{{fightEntry.fightPercentage}}</td>
-          <td><button class='btn btn-primary'>click me</button></td>
-        </tr>
-      </tbody>
-    </table>
-  </div> -->
 </template>
 
 <script lang="ts">
