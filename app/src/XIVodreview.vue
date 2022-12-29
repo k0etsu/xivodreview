@@ -23,14 +23,14 @@
               <input class="fflogsUrl form-control" v-model.lazy.trim="fflogs_url" placeholder="FFLogs Report URL" />
               <label for="fflogsUrl">FFLogs Report URL</label>
             </div>
-            <div class="row align-items-center g-0">
-              <div class="form-group form-floating col-md-3">
+            <div class="row align-items-center g-2">
+              <div class="form-group form-floating col-lg-3">
                 <input id="timeBeforePull" class="form-control" type="number" v-model="timeBeforePull" />
                 <label for="timeBeforePull">Time before pull (in seconds)</label>
               </div>
-              <div class="col-md-8 offset-md-1">
-                <button class="btn btn-outline-primary col-md-1" @click="submitURLs">Submit</button>
-                <button class="btn btn-outline-secondary col-md-1 offset-md-1" @click="resetURLs">Reset</button>
+              <div class="col-lg-9">
+                <button class="btn btn-outline-primary me-1" @click="submitURLs">Submit</button>
+                <button class="btn btn-outline-secondary" @click="resetURLs">Reset</button>
               </div>
             </div>
           </div>
