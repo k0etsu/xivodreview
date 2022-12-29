@@ -28,9 +28,21 @@
                 <input id="timeBeforePull" class="form-control" type="number" v-model="timeBeforePull" />
                 <label for="timeBeforePull">Time before pull (in seconds)</label>
               </div>
-              <div class="col-lg-9">
+              <div class="form-group form-floating col-lg-3">
+                <select id="cachedFights" v-model="cachedFightSelected" class="form-select" aria-label="Cached encounters">
+                  <option v-for="(links, encounter) in cachedFights" :encounter="encounter" :links="links">{{ encounter }}</option>
+                </select>
+                <label for="cachedFights">Old Encounters</label>
+              </div>
+              <div class="form-group form-floating col-lg-3">
+                <input class="cachedFightName form-control" v-model.trim="cachedFightName" placeholder="Encounter Name" />
+                <label for="cachedFightName">Encounter Name</label>
+              </div>
+              <div class="col-lg-3">
                 <button class="btn btn-outline-primary me-1" @click="submitURLs">Submit</button>
-                <button class="btn btn-outline-secondary" @click="resetURLs">Reset</button>
+                <button class="btn btn-outline-secondary me-1" @click="resetURLs">Reset</button>
+                <button class="btn btn-outline-info" @click="addCachedFight">Save Encounter</button>
+                <!-- TODO: add a remove encounter button -->
               </div>
             </div>
           </div>
@@ -66,12 +78,12 @@
 export default {
   data() {
     return {
-      twitch_url: 'https://www.twitch.tv/videos/1674096298',
+      twitch_url: '',
       twitchId: '',
       twitchData: null,
       twitchVodStart: 0,
       player: null,
-      fflogs_url: 'https://www.fflogs.com/reports/6x8YXNjwctfLMdCB',
+      fflogs_url: '',
       reportId: '',
       reportData: null,
       reportStart: 0,
@@ -79,7 +91,21 @@ export default {
       fightData: {},
       timeBeforePull: 0,
       vodButtons: [],
+      cachedFights: {
+        'Select...': {
+          'twitch': '',
+          'fflogs': '',
+        },
+      },
+      cachedFightName: '',
+      cachedFightSelected: {
+        'twitch': '',
+        'fflogs': '',
+      },
     }
+  },
+  created() {
+    this.getCachedFights()
   },
   watch: {
     reportData(newValue, oldValue) {
@@ -89,6 +115,13 @@ export default {
         fightsPerInstance[fight.name].push(fight);
       });
       this.fightData = fightsPerInstance;
+    },
+    cachedFightSelected(encounter, links) {
+      console.log(encounter)
+      console.log(links)
+      this.cachedFightName = encounter;
+      this.twitch_url = links.twitch;
+      this.fflogs_url = links.fflogs;
     }
   },
   methods: {
@@ -106,7 +139,7 @@ export default {
       }
     },
     getTwitchData(videoId: string) {
-      fetch("https://api.yamanote.co/twitch?videoId=" + videoId)
+      fetch("http://localhost:3001/twitch?videoId=" + videoId)
         .then(async response => {
           this.twitchData = await response.json();
           console.log(this.twitchData)
@@ -180,7 +213,7 @@ export default {
       }
     },
     getReportData(reportId: string) {
-      fetch("https://api.yamanote.co/fflogs?reportId=" + reportId)
+      fetch("http://localhost:3001/fflogs?reportId=" + reportId)
         .then(async response => {
           this.reportData = await response.json();
           console.log(this.reportData)
@@ -204,6 +237,31 @@ export default {
           console.error("there was an error fetching fflogs data w/ deaths: ", error);
         })
     },
+    getCachedFights() {
+      const cachedFights = localStorage.getItem("cachedFights");
+      if (cachedFights) {
+        const cachedFightsObj = JSON.parse(cachedFights);
+        Object.keys(cachedFightsObj).forEach((fightName) => {
+          this.cachedFights[fightName] = cachedFightsObj[fightName];
+        });
+      }
+    },
+    addCachedFight() {
+      console.log("top addCachedFight")
+      console.log(this.cachedFightName)
+      if (this.cachedFightName != '') {
+        console.log(this.cachedFightName)
+        this.cachedFights[this.cachedFightName] = {
+          'twitch': this.twitch_url,
+          'fflogs': this.fflogs_url,
+        }
+        console.log(this.cachedFights)
+        localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights))
+      }
+    },
+    clearCachedFights() {
+      localStorage.removeItem('cachedFights');
+    }
   }
 }
 </script>
