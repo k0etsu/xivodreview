@@ -15,35 +15,52 @@
         </div>
         <div class="row g-0">
           <div class="deadspace col-12">
-            <div class="form-group form-floating">
-              <input class="twitchUrl form-control" v-model.lazy.trim="twitch_url" placeholder="Twitch VOD URL" />
-              <label for="twitchUrl">Twitch VOD URL</label>
-            </div>
-            <div class="form-group form-floating">
-              <input class="fflogsUrl form-control" v-model.lazy.trim="fflogs_url" placeholder="FFLogs Report URL" />
-              <label for="fflogsUrl">FFLogs Report URL</label>
-            </div>
-            <div class="row align-items-center g-2">
-              <div class="form-group form-floating col-lg-3">
-                <input id="timeBeforePull" class="form-control" type="number" v-model="timeBeforePull" />
-                <label for="timeBeforePull">Time before pull (in seconds)</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <div class="row align-items-center g-2">
+                  <div class="form-group form-floating">
+                    <input class="twitchUrl form-control" v-model.lazy.trim="twitch_url" placeholder="Twitch VOD URL" />
+                    <label for="twitchUrl">Twitch VOD URL</label>
+                  </div>
+                </div>
+                <div class="row align-items-center g-2">
+                  <div class="form-group form-floating">
+                    <input class="fflogsUrl form-control" v-model.lazy.trim="fflogs_url" placeholder="FFLogs Report URL" />
+                    <label for="fflogsUrl">FFLogs Report URL</label>
+                  </div>
+                </div>
+                <div class="row align-items-center g-2">
+                  <div class="form-group form-floating col-lg-3">
+                    <input id="timeBeforePull" class="form-control" type="number" v-model="timeBeforePull" />
+                    <label for="timeBeforePull">Time before pull (in seconds)</label>
+                  </div>
+                  <div class="col-lg-3">
+                    <button class="btn btn-outline-primary me-2" @click="submitURLs">Submit</button>
+                    <button class="btn btn-outline-secondary me-2" @click="resetURLs">Reset</button>
+                  </div>
+                </div>
               </div>
-              <div class="form-group form-floating col-lg-3">
-                <select id="cachedFights" v-model="cachedFightSelected" class="form-select" aria-label="Cached encounters">
-                  <option v-for="(links, encounter) in cachedFights" :encounter="encounter" :links="links">{{ encounter }}</option>
-                </select>
-                <label for="cachedFights">Old Encounters</label>
-              </div>
-              <div class="form-group form-floating col-lg-3">
-                <input class="cachedFightName form-control" v-model.trim="cachedFightName" placeholder="Encounter Name" />
-                <label for="cachedFightName">Encounter Name</label>
-              </div>
-              <div class="col-lg-3">
-                <button class="btn btn-outline-primary me-1" @click="submitURLs">Submit</button>
-                <button class="btn btn-outline-secondary me-1" @click="resetURLs">Reset</button>
-                <div class="w-100"></div>
-                <button class="btn btn-outline-info me-1" @click="addCachedFight">Save Encounter</button>
-                <button class="btn btn-outline-danger" @click="removeCachedFight">Delete Encounter</button>
+              <div class="col-6">
+                <div class="row align-items-center g-2">
+                  <div class="form-group form-floating">
+                    <input class="cachedFightName form-control" v-model.trim="cachedFightName" placeholder="Encounter Name" />
+                    <label for="cachedFightName">Encounter Name</label>
+                  </div>
+                </div>
+                <div class="row align-items-center g-2">
+                  <div class="form-group form-floating">
+                    <select id="cachedFights" v-model="cachedFightSelected" class="form-select" aria-label="Cached encounters">
+                      <option v-for="(links, encounter) in cachedFights" :encounter="encounter" :links="links">{{ encounter }}</option>
+                    </select>
+                    <label for="cachedFights">Old Encounters</label>
+                  </div>
+                </div>
+                <div class="row align-items-center g-2">
+                  <div class="col-lg-6">
+                    <button class="btn btn-outline-info me-1" @click="addCachedFight">Save Encounter</button>
+                    <button class="btn btn-outline-danger" @click="removeCachedFight">Delete Encounter</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -60,18 +77,6 @@
         />
       </div>
     </div>
-    <!-- <div class="row no-gutters">
-      <div class="test-fflogs-report col" v-if="fightData && player">
-        <FFlogsReport
-          :fightData="fightData"
-          :reportId="reportId"
-          :reportStart="reportStart"
-          :twitchVodStart="twitchVodStart"
-          :timeBeforePull="timeBeforePull"
-          :player="player"
-        />
-      </div>
-    </div> -->
   </div>
 </template>
 
