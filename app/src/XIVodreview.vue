@@ -230,7 +230,7 @@ export default {
         })
     },
     getReportDeathData(reportId, startTime, endTime) {
-      fetch(`https://api.yamanote.co/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`)
+      fetch(`http://localhost:3001/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`)
         .then(async response => {
           this.reportData = await response.json();
           console.log(this.reportData)
