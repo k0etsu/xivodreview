@@ -41,8 +41,9 @@
               <div class="col-lg-3">
                 <button class="btn btn-outline-primary me-1" @click="submitURLs">Submit</button>
                 <button class="btn btn-outline-secondary me-1" @click="resetURLs">Reset</button>
-                <button class="btn btn-outline-info" @click="addCachedFight">Save Encounter</button>
-                <!-- TODO: add a remove encounter button -->
+                <div class="w-100"></div>
+                <button class="btn btn-outline-info me-1" @click="addCachedFight">Save Encounter</button>
+                <button class="btn btn-outline-danger" @click="removeCachedFight">Delete Encounter</button>
               </div>
             </div>
           </div>
@@ -91,17 +92,9 @@ export default {
       fightData: {},
       timeBeforePull: 0,
       vodButtons: [],
-      cachedFights: {
-        'Select...': {
-          'twitch': '',
-          'fflogs': '',
-        },
-      },
+      cachedFights: {},
       cachedFightName: '',
-      cachedFightSelected: {
-        'twitch': '',
-        'fflogs': '',
-      },
+      cachedFightSelected: '',
     }
   },
   created() {
@@ -116,13 +109,17 @@ export default {
       });
       this.fightData = fightsPerInstance;
     },
-    cachedFightSelected(encounter, links) {
+    cachedFightSelected(encounter) {
       console.log(encounter)
-      console.log(links)
       this.cachedFightName = encounter;
-      this.twitch_url = links.twitch;
-      this.fflogs_url = links.fflogs;
-    }
+      if (encounter == '') {
+        this.twitch_url = '';
+        this.fflogs_url = '';
+      } else {
+        this.twitch_url = this.cachedFights[encounter].twitch;
+        this.fflogs_url = this.cachedFights[encounter].fflogs;
+      };
+    },
   },
   methods: {
     async getTwitchId(twitchUrl: string) {
@@ -259,8 +256,17 @@ export default {
         localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights))
       }
     },
-    clearCachedFights() {
-      localStorage.removeItem('cachedFights');
+    removeCachedFight() {
+      // localStorage.removeItem('cachedFights');
+      console.log(this.cachedFightName)
+      console.log(this.cachedFights)
+      this.cachedFightSelected = '';
+      delete this.cachedFights[this.cachedFightName];
+      this.cachedFightName = '';
+      console.log(this.cachedFights)
+      localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
+      // this.twitch_url = '';
+      // this.fflogs_url = '';
     }
   }
 }
