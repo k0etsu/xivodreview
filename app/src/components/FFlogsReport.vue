@@ -7,6 +7,7 @@
     v-for="(fightEntries, fightTitle) in fightData"
     :fightTitle="fightTitle"
     :fightEntries="fightEntries"
+    :deathData="deathData"
     :reportId="reportId"
     :reportStart="reportStart"
     :twitchVodStart="twitchVodStart"
@@ -19,6 +20,7 @@
 export default {
   props: [
     'fightData',
+    'deathData',
     'reportId',
     'reportStart',
     'twitchVodStart',
@@ -28,19 +30,5 @@ export default {
   components: {
     ReportTable
   },
-  created() {
-    console.log("logsreport created")
-    console.log(this.fightData);
-    console.log(this.reportStart);
-    console.log(this.twitchVodStart);
-    console.log(this.player);
-  },
-  updated() {
-    console.log("logsreport updated")
-    console.log(this.fightData);
-    console.log(this.reportStart);
-    console.log(this.twitchVodStart);
-    console.log(this.player);
-  }
 }
 </script>

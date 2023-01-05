@@ -69,6 +69,7 @@
       <div class="fflogs-report overflow-auto col-3" v-if="fightData && player">
         <FFlogsReport
           :fightData="fightData"
+          :deathData="deathData"
           :reportId="reportId"
           :reportStart="reportStart"
           :twitchVodStart="twitchVodStart"
@@ -95,6 +96,10 @@ export default {
       reportStart: 0,
       reportEnd: 0,
       fightData: {},
+      playerData: [],
+      abilityData: [],
+      npcData: [],
+      deathData: {},
       timeBeforePull: 0,
       vodButtons: [],
       cachedFights: {},
@@ -115,7 +120,6 @@ export default {
       this.fightData = fightsPerInstance;
     },
     cachedFightSelected(encounter) {
-      console.log(encounter)
       this.cachedFightName = encounter;
       if (encounter == '') {
         this.twitch_url = '';
@@ -133,7 +137,6 @@ export default {
         const url = new URL(twitchUrl);
         var video = url.pathname.split('/');
         var videoIndex = video.indexOf('videos');
-        console.log(video[videoIndex + 1]);
         this.twitchId = video[videoIndex + 1];
       } catch (error) {
         this.twitchId = 'Please enter a valid Twitch VOD URL';
@@ -145,7 +148,6 @@ export default {
       fetch("http://localhost:3001/twitch?videoId=" + videoId)
         .then(async response => {
           this.twitchData = await response.json();
-          console.log(this.twitchData)
         })
         .catch(error => {
           console.error("there was an error fetching twitch data: ", error);
@@ -207,7 +209,6 @@ export default {
         const url = new URL(fflogsUrl);
         var report = url.pathname.split('/');
         var reportIndex = report.indexOf('reports');
-        console.log(report[reportIndex + 1]);
         this.reportId = report[reportIndex + 1];
       } catch (error) {
         this.reportId = 'Please enter a valid FFLogs report URL';
@@ -219,7 +220,6 @@ export default {
       fetch("http://localhost:3001/fflogs?reportId=" + reportId)
         .then(async response => {
           this.reportData = await response.json();
-          console.log(this.reportData)
         })
         .catch(error => {
           console.error("there was an error fetching fflogs data: ", error);
@@ -234,11 +234,41 @@ export default {
       fetch(`http://localhost:3001/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`)
         .then(async response => {
           this.reportData = await response.json();
-          console.log(this.reportData)
+          this.getExtraReportData();
         })
         .catch(error => {
           console.error("there was an error fetching fflogs data w/ deaths: ", error);
         })
+    },
+    getExtraReportData() {
+      this.playerData = this.reportData.data.reportData.report.masterData.players;
+      this.abilityData = this.reportData.data.reportData.report.masterData.abilities;
+      this.npcData = this.reportData.data.reportData.report.masterData.npcs;
+      this.deathData = this.reportData.data.reportData.report.events.data;
+      const playerMap = new Map();
+      const abilityMap = new Map();
+      const npcMap = new Map();
+      for (const player of this.playerData) {
+        playerMap.set(player.id, player.name)
+      };
+      for (const ability of this.abilityData) {
+        abilityMap.set(ability.gameID, ability.name)
+      };
+      for (const npc of this.npcData) {
+        npcMap.set(npc.id, npc.name)
+      };
+      for (const death in this.deathData) {
+        this.deathData[death]["player"] = playerMap.get(this.deathData[death].targetID)
+        this.deathData[death]["ability"] = abilityMap.get(this.deathData[death].killingAbilityGameID)
+        this.deathData[death]["source"] = npcMap.get(this.deathData[death].sourceID)
+        this.deathData[death]["killer"] = npcMap.get(this.deathData[death].killerID)
+      };
+      const finalDeathData = {};
+      for (const death in this.deathData) {
+        finalDeathData[this.deathData[death].fight] = finalDeathData[this.deathData[death].fight] || [];
+        finalDeathData[this.deathData[death].fight].push(this.deathData[death]);
+      };
+      this.deathData = finalDeathData;
     },
     getCachedFights() {
       const cachedFights = localStorage.getItem("cachedFights");
@@ -250,29 +280,19 @@ export default {
       }
     },
     addCachedFight() {
-      console.log("top addCachedFight")
-      console.log(this.cachedFightName)
       if (this.cachedFightName != '') {
-        console.log(this.cachedFightName)
         this.cachedFights[this.cachedFightName] = {
           'twitch': this.twitch_url,
           'fflogs': this.fflogs_url,
         }
-        console.log(this.cachedFights)
         localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights))
       }
     },
     removeCachedFight() {
-      // localStorage.removeItem('cachedFights');
-      console.log(this.cachedFightName)
-      console.log(this.cachedFights)
       this.cachedFightSelected = '';
       delete this.cachedFights[this.cachedFightName];
       this.cachedFightName = '';
-      console.log(this.cachedFights)
       localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
-      // this.twitch_url = '';
-      // this.fflogs_url = '';
     }
   }
 }

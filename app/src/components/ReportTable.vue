@@ -10,13 +10,15 @@
         <th scope="col">Pull</th>
         <th scope="col">Fight Percentage</th>
         <th scope="col">Goto Pull</th>
-        <th scope="col">FFLogs Link</th>
+        <th scope="col">Deaths</th>
+        <th scope="col">FFLogs</th>
       </tr>
     </thead>
     <tbody>
       <ReportRow
         v-for="fightEntry in fightEntries"
         :fightEntry="fightEntry"
+        :deathData="deathData"
         :reportId="reportId"
         :reportStart="reportStart"
         :twitchVodStart="twitchVodStart"
@@ -32,6 +34,7 @@ export default {
   props: [
     'fightTitle',
     'fightEntries',
+    'deathData',
     'reportId',
     'reportStart',
     'twitchVodStart',
@@ -41,21 +44,5 @@ export default {
   components: {
     ReportRow
   },
-  created() {
-    console.log("reporttable created");
-    console.log(this.fightTitle);
-    console.log(this.fightEntries);
-    console.log(this.reportStart);
-    console.log(this.twitchVodStart);
-    console.log(this.player);
-  },
-  updated() {
-    console.log("reporttable updated");
-    console.log(this.fightTitle);
-    console.log(this.fightEntries);
-    console.log(this.reportStart);
-    console.log(this.twitchVodStart);
-    console.log(this.player);
-  }
 }
 </script>
