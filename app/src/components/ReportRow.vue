@@ -1,3 +1,7 @@
+<script setup lang="ts">
+  import DeathTable from "./DeathTable.vue"
+</script>
+
 <template>
   <tr>
     <th scope="row">{{ fightEntry.id }}</th>
@@ -6,9 +10,24 @@
     <td>
       <button class="btn btn-outline-primary" @click="goToTimestamp(pullTimeInVod)">{{ timestamp }}</button>
     </td>
+    <td>
+      <button class="btn btn-outline-danger" type="button" data-bs-toggle="collapse" :data-bs-target="'#deaths-'+fightEntry.id" aria-expanded="false">
+        Expand
+      </button>
+    </td>
     <td id="fflogs-link">
       <a :href="'https://www.fflogs.com/reports/' + reportId + '/#fight=' + fightEntry.id" class="btn btn-outline-info" role="button" target="_blank">Report</a>
     </td>
+  </tr>
+  <tr class="collapse" :id="'deaths-'+fightEntry.id">
+    <DeathTable
+      :fightId="fightEntry.id"
+      :deathData="deathData"
+      :reportStart="reportStart"
+      :twitchVodStart="twitchVodStart"
+      :timeBeforePull="timeBeforePull"
+      :player="player"
+    />
   </tr>
 </template>
 
@@ -22,12 +41,16 @@ export default {
   },
   props: [
     'fightEntry',
+    'deathData',
     'reportId',
     'reportStart',
     'twitchVodStart',
     'timeBeforePull',
     'player'
   ],
+  components: {
+    DeathTable
+  },
   methods: {
     goToTimestamp(pullTimeInVod: Number) {
       this.player.seek(pullTimeInVod)

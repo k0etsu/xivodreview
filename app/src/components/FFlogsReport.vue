@@ -7,6 +7,7 @@
     v-for="(fightEntries, fightTitle) in fightData"
     :fightTitle="fightTitle"
     :fightEntries="fightEntries"
+    :deathData="deathData"
     :reportId="reportId"
     :reportStart="reportStart"
     :twitchVodStart="twitchVodStart"
@@ -19,6 +20,7 @@
 export default {
   props: [
     'fightData',
+    'deathData',
     'reportId',
     'reportStart',
     'twitchVodStart',
