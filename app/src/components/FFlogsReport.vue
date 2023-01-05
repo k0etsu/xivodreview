@@ -28,19 +28,5 @@ export default {
   components: {
     ReportTable
   },
-  created() {
-    console.log("logsreport created")
-    console.log(this.fightData);
-    console.log(this.reportStart);
-    console.log(this.twitchVodStart);
-    console.log(this.player);
-  },
-  updated() {
-    console.log("logsreport updated")
-    console.log(this.fightData);
-    console.log(this.reportStart);
-    console.log(this.twitchVodStart);
-    console.log(this.player);
-  }
 }
 </script>

@@ -41,21 +41,5 @@ export default {
   components: {
     ReportRow
   },
-  created() {
-    console.log("reporttable created");
-    console.log(this.fightTitle);
-    console.log(this.fightEntries);
-    console.log(this.reportStart);
-    console.log(this.twitchVodStart);
-    console.log(this.player);
-  },
-  updated() {
-    console.log("reporttable updated");
-    console.log(this.fightTitle);
-    console.log(this.fightEntries);
-    console.log(this.reportStart);
-    console.log(this.twitchVodStart);
-    console.log(this.player);
-  }
 }
 </script>

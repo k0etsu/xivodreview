@@ -34,25 +34,10 @@ export default {
     },
   },
   created() {
-    console.log("reportrow created");
-    console.log(this.fightEntry);
-    console.log(this.reportStart);
-    console.log(this.twitchVodStart);
-    console.log(this.player);
-    // const fflogsLink = document.createElement("a");
-    // fflogsLink.href = `https://www.fflogs.com/reports/${this.reportId}/#fight=${this.fightEntry.id}`;
-    // fflogsLink.target = "_blank";
-    // fflogsLink.class = "btn btn-primary";
-    // fflogsLink.role = "button";
     this.pullTimeInVod = Math.floor((this.reportStart - this.twitchVodStart + this.fightEntry.startTime) / 1000) - this.timeBeforePull
     this.timestamp = new Date(this.pullTimeInVod * 1000).toISOString().slice(11, 19);
   },
   updated() {
-    console.log("reportrow updated");
-    console.log(this.fightEntry);
-    console.log(this.reportStart);
-    console.log(this.twitchVodStart);
-    console.log(this.player);
     this.pullTimeInVod = Math.floor((this.reportStart - this.twitchVodStart + this.fightEntry.startTime) / 1000) - this.timeBeforePull
     this.timestamp = new Date(this.pullTimeInVod * 1000).toISOString().slice(11, 19);
   },
