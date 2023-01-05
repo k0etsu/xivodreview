@@ -19,7 +19,7 @@
               <div class="col-6">
                 <div class="row align-items-center g-2">
                   <div class="form-group form-floating">
-                    <input class="twitchUrl form-control" v-model.lazy.trim="twitch_url" placeholder="Twitch VOD URL" />
+                    <input class="twitchUrl form-control" v-model.lazy.trim="vod_url" placeholder="Twitch VOD URL" />
                     <label for="twitchUrl">Twitch VOD URL</label>
                   </div>
                 </div>
@@ -85,7 +85,7 @@
 export default {
   data() {
     return {
-      twitch_url: '',
+      vod_url: '',
       twitchId: '',
       twitchData: null,
       twitchVodStart: 0,
@@ -122,10 +122,10 @@ export default {
     cachedFightSelected(encounter) {
       this.cachedFightName = encounter;
       if (encounter == '') {
-        this.twitch_url = '';
+        this.vod_url = '';
         this.fflogs_url = '';
       } else {
-        this.twitch_url = this.cachedFights[encounter].twitch;
+        this.vod_url = this.cachedFights[encounter].twitch;
         this.fflogs_url = this.cachedFights[encounter].fflogs;
       };
       this.submitURLs();
@@ -178,7 +178,7 @@ export default {
       // player.setVolume(0.5);
     },
     submitURLs() {
-      this.getTwitchId(this.twitch_url);
+      this.getTwitchId(this.vod_url);
       this.getReportId(this.fflogs_url);
     },
     resetURLs() {
@@ -282,7 +282,7 @@ export default {
     addCachedFight() {
       if (this.cachedFightName != '') {
         this.cachedFights[this.cachedFightName] = {
-          'twitch': this.twitch_url,
+          'twitch': this.vod_url,
           'fflogs': this.fflogs_url,
         }
         localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights))
