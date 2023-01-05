@@ -124,6 +124,7 @@ export default {
         this.twitch_url = this.cachedFights[encounter].twitch;
         this.fflogs_url = this.cachedFights[encounter].fflogs;
       };
+      this.submitURLs();
     },
   },
   methods: {
