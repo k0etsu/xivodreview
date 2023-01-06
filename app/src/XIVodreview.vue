@@ -1,10 +1,10 @@
 <script setup lang="ts">
-  import Navigation from "./components/Navigation.vue";
-  import FFlogsReport from "./components/FFlogsReport.vue"
+import NavigationBar from "./components/NavigationBar.vue";
+import FFlogsReport from "./components/FFlogsReport.vue";
 </script>
 
 <template>
-  <Navigation class="navHeader" msg="GitHub" />
+  <NavigationBar class="navHeader" msg="GitHub" />
   <div class="container-fluid overflow-hidden">
     <div class="no-scroll row">
       <div class="col-9">
@@ -19,46 +19,97 @@
               <div class="col-6">
                 <div class="row align-items-center g-2">
                   <div class="form-group form-floating">
-                    <input class="twitchUrl form-control" v-model.lazy.trim="vod_url" placeholder="Twitch VOD URL" />
+                    <input
+                      class="twitchUrl form-control"
+                      v-model.lazy.trim="twitch_url"
+                      placeholder="Twitch VOD URL"
+                    />
                     <label for="twitchUrl">Twitch VOD URL</label>
                   </div>
                 </div>
                 <div class="row align-items-center g-2">
                   <div class="form-group form-floating">
-                    <input class="fflogsUrl form-control" v-model.lazy.trim="fflogs_url" placeholder="FFLogs Report URL" />
+                    <input
+                      class="fflogsUrl form-control"
+                      v-model.lazy.trim="fflogs_url"
+                      placeholder="FFLogs Report URL"
+                    />
                     <label for="fflogsUrl">FFLogs Report URL</label>
                   </div>
                 </div>
                 <div class="row align-items-center g-2">
                   <div class="form-group form-floating col-lg-3">
-                    <input id="timeBeforePull" class="form-control" type="number" v-model="timeBeforePull" />
-                    <label for="timeBeforePull">Time before pull (in seconds)</label>
+                    <input
+                      id="timeBeforePull"
+                      class="form-control"
+                      type="number"
+                      v-model="timeBeforePull"
+                    />
+                    <label for="timeBeforePull"
+                      >Time before pull (in seconds)</label
+                    >
                   </div>
                   <div class="col-lg-3">
-                    <button class="btn btn-outline-primary me-2" @click="submitURLs">Submit</button>
-                    <button class="btn btn-outline-secondary me-2" @click="resetURLs">Reset</button>
+                    <button
+                      class="btn btn-outline-primary me-2"
+                      @click="submitURLs"
+                    >
+                      Submit
+                    </button>
+                    <button
+                      class="btn btn-outline-secondary me-2"
+                      @click="resetURLs"
+                    >
+                      Reset
+                    </button>
                   </div>
                 </div>
               </div>
               <div class="col-6">
                 <div class="row align-items-center g-2">
                   <div class="form-group form-floating">
-                    <input class="cachedFightName form-control" v-model.trim="cachedFightName" placeholder="Encounter Name" />
+                    <input
+                      class="cachedFightName form-control"
+                      v-model.trim="cachedFightName"
+                      placeholder="Encounter Name"
+                    />
                     <label for="cachedFightName">Encounter Name</label>
                   </div>
                 </div>
                 <div class="row align-items-center g-2">
                   <div class="form-group form-floating">
-                    <select id="cachedFights" v-model="cachedFightSelected" class="form-select" aria-label="Cached encounters">
-                      <option v-for="(links, encounter) in cachedFights" :encounter="encounter" :links="links">{{ encounter }}</option>
+                    <select
+                      id="cachedFights"
+                      v-model="cachedFightSelected"
+                      class="form-select"
+                      aria-label="Cached encounters"
+                    >
+                      <option
+                        v-for="(links, encounter) in cachedFights"
+                        :key="encounter"
+                        :encounter="encounter"
+                        :links="links"
+                      >
+                        {{ encounter }}
+                      </option>
                     </select>
                     <label for="cachedFights">Old Encounters</label>
                   </div>
                 </div>
                 <div class="row align-items-center g-2">
                   <div class="col-lg-6">
-                    <button class="btn btn-outline-info me-1" @click="addCachedFight">Save Encounter</button>
-                    <button class="btn btn-outline-danger" @click="removeCachedFight">Delete Encounter</button>
+                    <button
+                      class="btn btn-outline-info me-1"
+                      @click="addCachedFight"
+                    >
+                      Save Encounter
+                    </button>
+                    <button
+                      class="btn btn-outline-danger"
+                      @click="removeCachedFight"
+                    >
+                      Delete Encounter
+                    </button>
                   </div>
                 </div>
               </div>
@@ -68,6 +119,7 @@
       </div>
       <div class="fflogs-report overflow-auto col-3" v-if="fightData && player">
         <FFlogsReport
+          :key="reportId"
           :fightData="fightData"
           :deathData="deathData"
           :reportId="reportId"
@@ -90,8 +142,8 @@ export default {
       twitchData: null,
       twitchVodStart: 0,
       player: null,
-      fflogs_url: '',
-      reportId: '',
+      fflogs_url: "",
+      reportId: "",
       reportData: null,
       reportStart: 0,
       reportEnd: 0,
@@ -103,17 +155,17 @@ export default {
       timeBeforePull: 0,
       vodButtons: [],
       cachedFights: {},
-      cachedFightName: '',
-      cachedFightSelected: '',
-    }
+      cachedFightName: "",
+      cachedFightSelected: "",
+    };
   },
   created() {
-    this.getCachedFights()
+    this.getCachedFights();
   },
   watch: {
-    reportData(newValue, oldValue) {
+    reportData(newValue) {
       const fightsPerInstance = {};
-      newValue.data.reportData.report.fights.forEach(fight => {
+      newValue.data.reportData.report.fights.forEach((fight) => {
         fightsPerInstance[fight.name] = fightsPerInstance[fight.name] || [];
         fightsPerInstance[fight.name].push(fight);
       });
@@ -121,13 +173,13 @@ export default {
     },
     cachedFightSelected(encounter) {
       this.cachedFightName = encounter;
-      if (encounter == '') {
-        this.vod_url = '';
-        this.fflogs_url = '';
+      if (encounter == "") {
+        this.twitch_url = "";
+        this.fflogs_url = "";
       } else {
         this.vod_url = this.cachedFights[encounter].twitch;
         this.fflogs_url = this.cachedFights[encounter].fflogs;
-      };
+      }
       this.submitURLs();
     },
   },
@@ -135,27 +187,27 @@ export default {
     async getTwitchId(twitchUrl: string) {
       try {
         const url = new URL(twitchUrl);
-        var video = url.pathname.split('/');
-        var videoIndex = video.indexOf('videos');
+        var video = url.pathname.split("/");
+        var videoIndex = video.indexOf("videos");
         this.twitchId = video[videoIndex + 1];
       } catch (error) {
-        this.twitchId = 'Please enter a valid Twitch VOD URL';
+        this.twitchId = "Please enter a valid Twitch VOD URL";
       } finally {
-        this.getTwitchData(this.twitchId)
+        this.getTwitchData(this.twitchId);
       }
     },
     getTwitchData(videoId: string) {
-      fetch("http://localhost:3001/twitch?videoId=" + videoId)
-        .then(async response => {
+      fetch("https://api.yamanote.co/twitch?videoId=" + videoId)
+        .then(async (response) => {
           this.twitchData = await response.json();
         })
-        .catch(error => {
+        .catch((error) => {
           console.error("there was an error fetching twitch data: ", error);
         })
         .finally(() => {
           this.twitchVodStart = parseInt(this.twitchData.timeArr[0].startTime);
-          this.getTwitchPlayer(this.twitchId)
-        })
+          this.getTwitchPlayer(this.twitchId);
+        });
     },
     async getTwitchPlayer(videoId: string) {
       var options = {
@@ -164,18 +216,21 @@ export default {
         video: videoId,
         // only needed if your site is also embedded on embed.example.com and othersite.example.com
         // parent: ["embed.example.com"]
-        autoplay: false
+        autoplay: false,
       };
       if (this.player != null) {
-        this.removeIframes()
+        this.removeIframes();
       }
       this.player = new Twitch.Player("twitch-player", options);
-      var element = document.getElementById('twitch-player');
-      element.style.position = 'absolute';
+      var element = document.getElementById("twitch-player");
+      element.style.position = "absolute";
       element.style.width = "100%";
       element.style.height = "100%";
       element.style.top = "0";
       // player.setVolume(0.5);
+      this.player.addEventListener(Twitch.Player.READY, () => {
+        this.player.setQuality("chunked");
+      });
     },
     submitURLs() {
       this.getTwitchId(this.vod_url);
@@ -183,14 +238,16 @@ export default {
     },
     resetURLs() {
       this.removeIframes();
-      // TODO: Clear logs 
+      this.cachedFightSelected = "";
+      this.cachedFightName = "";
+      // TODO: Clear logs
     },
     removeIframes() {
-      var iframes = document.querySelectorAll('iframe');
+      var iframes = document.querySelectorAll("iframe");
       for (var i = 0; i < iframes.length; i++) {
-        iframes[i].parentNode.removeChild(iframes[i])
+        iframes[i].parentNode.removeChild(iframes[i]);
       }
-      this.player = null
+      this.player = null;
     },
     testData() {
       console.log(this.twitchData.res.data);
@@ -201,73 +258,97 @@ export default {
       console.log(this.reportStart);
     },
     goToTimestamp(timestamp: string) {
-      const vodTime = parseInt(timestamp)
-      this.player.seek(vodTime)
+      const vodTime = parseInt(timestamp);
+      this.player.seek(vodTime);
     },
     getReportId(fflogsUrl: string) {
       try {
         const url = new URL(fflogsUrl);
-        var report = url.pathname.split('/');
-        var reportIndex = report.indexOf('reports');
+        var report = url.pathname.split("/");
+        var reportIndex = report.indexOf("reports");
         this.reportId = report[reportIndex + 1];
       } catch (error) {
-        this.reportId = 'Please enter a valid FFLogs report URL';
+        this.reportId = "Please enter a valid FFLogs report URL";
       } finally {
-        this.getReportData(this.reportId)
+        this.getReportData(this.reportId);
       }
     },
     getReportData(reportId: string) {
-      fetch("http://localhost:3001/fflogs?reportId=" + reportId)
-        .then(async response => {
+      fetch("https://api.yamanote.co/fflogs?reportId=" + reportId)
+        .then(async (response) => {
           this.reportData = await response.json();
         })
-        .catch(error => {
+        .catch((error) => {
           console.error("there was an error fetching fflogs data: ", error);
         })
         .finally(() => {
-          this.reportStart = parseInt(this.reportData.data.reportData.report.startTime);
-          this.reportEnd = parseInt(this.reportData.data.reportData.report.endTime);
-          this.getReportDeathData(this.reportId, 0, this.reportEnd - this.reportStart)
-        })
+          this.reportStart = parseInt(
+            this.reportData.data.reportData.report.startTime
+          );
+          this.reportEnd = parseInt(
+            this.reportData.data.reportData.report.endTime
+          );
+          this.getReportDeathData(
+            this.reportId,
+            0,
+            this.reportEnd - this.reportStart
+          );
+        });
     },
     getReportDeathData(reportId, startTime, endTime) {
-      fetch(`http://localhost:3001/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`)
-        .then(async response => {
+      fetch(
+        `https://api.yamanote.co/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`
+      )
+        .then(async (response) => {
           this.reportData = await response.json();
           this.getExtraReportData();
         })
-        .catch(error => {
-          console.error("there was an error fetching fflogs data w/ deaths: ", error);
-        })
+        .catch((error) => {
+          console.error(
+            "there was an error fetching fflogs data w/ deaths: ",
+            error
+          );
+        });
     },
     getExtraReportData() {
-      this.playerData = this.reportData.data.reportData.report.masterData.players;
-      this.abilityData = this.reportData.data.reportData.report.masterData.abilities;
+      this.playerData =
+        this.reportData.data.reportData.report.masterData.players;
+      this.abilityData =
+        this.reportData.data.reportData.report.masterData.abilities;
       this.npcData = this.reportData.data.reportData.report.masterData.npcs;
       this.deathData = this.reportData.data.reportData.report.events.data;
       const playerMap = new Map();
       const abilityMap = new Map();
       const npcMap = new Map();
       for (const player of this.playerData) {
-        playerMap.set(player.id, player.name)
-      };
+        playerMap.set(player.id, player.name);
+      }
       for (const ability of this.abilityData) {
-        abilityMap.set(ability.gameID, ability.name)
-      };
+        abilityMap.set(ability.gameID, ability.name);
+      }
       for (const npc of this.npcData) {
-        npcMap.set(npc.id, npc.name)
-      };
+        npcMap.set(npc.id, npc.name);
+      }
       for (const death in this.deathData) {
-        this.deathData[death]["player"] = playerMap.get(this.deathData[death].targetID)
-        this.deathData[death]["ability"] = abilityMap.get(this.deathData[death].killingAbilityGameID)
-        this.deathData[death]["source"] = npcMap.get(this.deathData[death].sourceID)
-        this.deathData[death]["killer"] = npcMap.get(this.deathData[death].killerID)
-      };
+        this.deathData[death]["player"] = playerMap.get(
+          this.deathData[death].targetID
+        );
+        this.deathData[death]["ability"] = abilityMap.get(
+          this.deathData[death].killingAbilityGameID
+        );
+        this.deathData[death]["source"] = npcMap.get(
+          this.deathData[death].sourceID
+        );
+        this.deathData[death]["killer"] = npcMap.get(
+          this.deathData[death].killerID
+        );
+      }
       const finalDeathData = {};
       for (const death in this.deathData) {
-        finalDeathData[this.deathData[death].fight] = finalDeathData[this.deathData[death].fight] || [];
+        finalDeathData[this.deathData[death].fight] =
+          finalDeathData[this.deathData[death].fight] || [];
         finalDeathData[this.deathData[death].fight].push(this.deathData[death]);
-      };
+      }
       this.deathData = finalDeathData;
     },
     getCachedFights() {
@@ -280,7 +361,7 @@ export default {
       }
     },
     addCachedFight() {
-      if (this.cachedFightName != '') {
+      if (this.cachedFightName != "") {
         this.cachedFights[this.cachedFightName] = {
           'twitch': this.vod_url,
           'fflogs': this.fflogs_url,
@@ -289,13 +370,13 @@ export default {
       }
     },
     removeCachedFight() {
-      this.cachedFightSelected = '';
+      this.cachedFightSelected = "";
       delete this.cachedFights[this.cachedFightName];
-      this.cachedFightName = '';
+      this.cachedFightName = "";
       localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>
