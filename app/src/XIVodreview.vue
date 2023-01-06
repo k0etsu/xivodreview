@@ -183,6 +183,8 @@ export default {
     },
     resetURLs() {
       this.removeIframes();
+      this.cachedFightSelected = '';
+      this.cachedFightName = '';
       // TODO: Clear logs 
     },
     removeIframes() {
