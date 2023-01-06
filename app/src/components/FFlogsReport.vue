@@ -1,10 +1,11 @@
 <script setup lang="ts">
-  import ReportTable from "./ReportTable.vue"
+import ReportTable from "./ReportTable.vue";
 </script>
 
 <template>
   <ReportTable
     v-for="(fightEntries, fightTitle) in fightData"
+    :key="fightTitle"
     :fightTitle="fightTitle"
     :fightEntries="fightEntries"
     :deathData="deathData"
@@ -19,16 +20,16 @@
 <script lang="ts">
 export default {
   props: [
-    'fightData',
-    'deathData',
-    'reportId',
-    'reportStart',
-    'twitchVodStart',
-    'timeBeforePull',
-    'player'
+    "fightData",
+    "deathData",
+    "reportId",
+    "reportStart",
+    "twitchVodStart",
+    "timeBeforePull",
+    "player",
   ],
   components: {
-    ReportTable
+    ReportTable,
   },
-}
+};
 </script>

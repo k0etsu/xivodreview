@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import ReportRow from "./ReportRow.vue"
+import ReportRow from "./ReportRow.vue";
 </script>
 
 <template>
@@ -17,6 +17,7 @@
     <tbody>
       <ReportRow
         v-for="fightEntry in fightEntries"
+        :key="fightEntry.id"
         :fightEntry="fightEntry"
         :deathData="deathData"
         :reportId="reportId"
@@ -32,17 +33,17 @@
 <script lang="ts">
 export default {
   props: [
-    'fightTitle',
-    'fightEntries',
-    'deathData',
-    'reportId',
-    'reportStart',
-    'twitchVodStart',
-    'timeBeforePull',
-    'player'
+    "fightTitle",
+    "fightEntries",
+    "deathData",
+    "reportId",
+    "reportStart",
+    "twitchVodStart",
+    "timeBeforePull",
+    "player",
   ],
   components: {
-    ReportRow
+    ReportRow,
   },
-}
+};
 </script>
