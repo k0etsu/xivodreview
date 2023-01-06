@@ -21,7 +21,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                   <div class="form-group form-floating">
                     <input
                       class="twitchUrl form-control"
-                      v-model.lazy.trim="twitch_url"
+                      v-model.lazy.trim="vod_url"
                       placeholder="Twitch VOD URL"
                     />
                     <label for="twitchUrl">Twitch VOD URL</label>
@@ -174,7 +174,7 @@ export default {
     cachedFightSelected(encounter) {
       this.cachedFightName = encounter;
       if (encounter == "") {
-        this.twitch_url = "";
+        this.vod_url = "";
         this.fflogs_url = "";
       } else {
         this.vod_url = this.cachedFights[encounter].twitch;
@@ -233,6 +233,7 @@ export default {
       });
     },
     submitURLs() {
+      this.resetURLs();
       this.getTwitchId(this.vod_url);
       this.getReportId(this.fflogs_url);
     },
