@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import DeathRow from "./DeathRow.vue"
+import DeathRow from "./DeathRow.vue";
 </script>
 
 <template>
@@ -15,12 +15,13 @@
       </thead>
       <tbody class="table-group-divider">
         <DeathRow
-        v-for="death in deathData[fightId]"
-        :deathData="death"
-        :reportStart="reportStart"
-        :twitchVodStart="twitchVodStart"
-        :timeBeforePull="timeBeforePull"
-        :player="player"
+          v-for="death in deathData[fightId]"
+          :key="death.timestamp"
+          :deathData="death"
+          :reportStart="reportStart"
+          :twitchVodStart="twitchVodStart"
+          :timeBeforePull="timeBeforePull"
+          :player="player"
         />
       </tbody>
     </table>
@@ -30,15 +31,15 @@
 <script lang="ts">
 export default {
   props: [
-    'fightId',
-    'deathData',
-    'reportStart',
-    'twitchVodStart',
-    'timeBeforePull',
-    'player'
+    "fightId",
+    "deathData",
+    "reportStart",
+    "twitchVodStart",
+    "timeBeforePull",
+    "player",
   ],
   components: {
-    DeathRow
-  }
-}
+    DeathRow,
+  },
+};
 </script>

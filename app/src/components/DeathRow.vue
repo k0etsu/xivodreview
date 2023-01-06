@@ -5,7 +5,12 @@
     <td v-if="deathData.ability == null">null</td>
     <td v-else>{{ deathData.ability }}</td>
     <td>
-      <button class="btn btn-outline-primary" @click="goToTimestamp(pullTimeInVod)">{{ timestamp }}</button>
+      <button
+        class="btn btn-outline-primary"
+        @click="goToTimestamp(pullTimeInVod)"
+      >
+        {{ timestamp }}
+      </button>
     </td>
   </tr>
 </template>
@@ -15,28 +20,40 @@ export default {
   data() {
     return {
       pullTimeInVod: 0,
-      timestamp: '',
-    }
+      timestamp: "",
+    };
   },
   props: [
-    'deathData',
-    'reportStart',
-    'twitchVodStart',
-    'timeBeforePull',
-    'player'
+    "deathData",
+    "reportStart",
+    "twitchVodStart",
+    "timeBeforePull",
+    "player",
   ],
   methods: {
     goToTimestamp(pullTimeInVod: Number) {
-      this.player.seek(pullTimeInVod)
+      this.player.seek(pullTimeInVod);
     },
   },
   created() {
-    this.pullTimeInVod = Math.floor((this.reportStart - this.twitchVodStart + this.deathData.timestamp) / 1000) - this.timeBeforePull
-    this.timestamp = new Date(this.pullTimeInVod * 1000).toISOString().slice(11, 19);
+    this.pullTimeInVod =
+      Math.floor(
+        (this.reportStart - this.twitchVodStart + this.deathData.timestamp) /
+          1000
+      ) - this.timeBeforePull;
+    this.timestamp = new Date(this.pullTimeInVod * 1000)
+      .toISOString()
+      .slice(11, 19);
   },
   updated() {
-    this.pullTimeInVod = Math.floor((this.reportStart - this.twitchVodStart + this.deathData.timestamp) / 1000) - this.timeBeforePull
-    this.timestamp = new Date(this.pullTimeInVod * 1000).toISOString().slice(11, 19);
+    this.pullTimeInVod =
+      Math.floor(
+        (this.reportStart - this.twitchVodStart + this.deathData.timestamp) /
+          1000
+      ) - this.timeBeforePull;
+    this.timestamp = new Date(this.pullTimeInVod * 1000)
+      .toISOString()
+      .slice(11, 19);
   },
-}
+};
 </script>
