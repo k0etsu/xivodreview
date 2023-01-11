@@ -11,6 +11,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
         <div class="row g-0">
           <div class="vod-player col-12">
             <div id="twitch-player"></div>
+            <div id="youtube-player"></div>
           </div>
         </div>
         <div class="row g-0">
@@ -49,7 +50,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                       >Time before pull (in seconds)</label
                     >
                   </div>
-                  <div class="col-lg-3">
+                  <div class="col-lg-4">
                     <button
                       class="btn btn-outline-primary me-2"
                       @click="submitURLs"
@@ -61,6 +62,9 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                       @click="resetURLs"
                     >
                       Reset
+                    </button>
+                    <button type="button" class="btn btn-outline-warning me-2" @click="getYoutubePlayer">
+                      test
                     </button>
                   </div>
                 </div>
@@ -140,6 +144,8 @@ export default {
       vod_url: '',
       twitchId: '',
       twitchData: null,
+      youtubeId: '',
+      youtubeData: null,
       twitchVodStart: 0,
       player: null,
       fflogs_url: "",
@@ -381,6 +387,30 @@ export default {
       console.log('emitting from navigation bar');
       console.log(googleAuthData);
       this.googleAuthData = googleAuthData;
+    },
+    getYoutubePlayer() {
+      const options = {
+        'iv_load_policy': 3,
+        'modestbranding': 1,
+        'playsinline': 1,
+      }
+      this.player = new YT.Player('youtube-player', {
+        height: '390',
+        width: '640',
+        videoId: 'zwonlXSPQ5g',
+        playerVars: options,
+      });
+      var element = document.getElementById("youtube-player");
+      element.style.position = "absolute";
+      element.style.width = "100%";
+      element.style.height = "100%";
+      element.style.top = "0";
+      this.player.addEventListener('onReady', () => {
+        this.player.setPlaybackQuality('highres');
+      });
+      this.player.addEventListener('onStateChange', () => {
+        this.player.setPlaybackQuality('highres');
+      })
     },
   },
 };
