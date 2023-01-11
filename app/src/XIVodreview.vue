@@ -4,7 +4,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
 </script>
 
 <template>
-  <NavigationBar class="navHeader" msg="GitHub" @google-auth="callback"/>
+  <NavigationBar class="navHeader" msg="GitHub" @google-auth="googleAuthCallback"/>
   <div class="container-fluid overflow-hidden">
     <div class="no-scroll row">
       <div class="col-9">
@@ -157,6 +157,7 @@ export default {
       cachedFights: {},
       cachedFightName: "",
       cachedFightSelected: "",
+      googleAuthData: {},
     };
   },
   created() {
@@ -376,9 +377,10 @@ export default {
       this.cachedFightName = "";
       localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
     },
-    callback(googleAuthData) {
+    googleAuthCallback(googleAuthData: Object) {
       console.log('emitting from navigation bar');
       console.log(googleAuthData);
+      this.googleAuthData = googleAuthData;
     },
   },
 };
