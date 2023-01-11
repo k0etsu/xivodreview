@@ -4,7 +4,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
 </script>
 
 <template>
-  <NavigationBar class="navHeader" msg="GitHub" />
+  <NavigationBar class="navHeader" msg="GitHub" @google-auth="callback"/>
   <div class="container-fluid overflow-hidden">
     <div class="no-scroll row">
       <div class="col-9">
@@ -197,7 +197,7 @@ export default {
       }
     },
     getTwitchData(videoId: string) {
-      fetch("https://api.yamanote.co/twitch?videoId=" + videoId)
+      fetch("http://localhost:3001/twitch?videoId=" + videoId)
         .then(async (response) => {
           this.twitchData = await response.json();
         })
@@ -233,7 +233,7 @@ export default {
       });
     },
     submitURLs() {
-      this.resetURLs();
+      // this.resetURLs();
       this.getTwitchId(this.vod_url);
       this.getReportId(this.fflogs_url);
     },
@@ -275,7 +275,7 @@ export default {
       }
     },
     getReportData(reportId: string) {
-      fetch("https://api.yamanote.co/fflogs?reportId=" + reportId)
+      fetch("http://localhost:3001/fflogs?reportId=" + reportId)
         .then(async (response) => {
           this.reportData = await response.json();
         })
@@ -298,7 +298,7 @@ export default {
     },
     getReportDeathData(reportId, startTime, endTime) {
       fetch(
-        `https://api.yamanote.co/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`
+        `http://localhost:3001/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`
       )
         .then(async (response) => {
           this.reportData = await response.json();
@@ -375,6 +375,10 @@ export default {
       delete this.cachedFights[this.cachedFightName];
       this.cachedFightName = "";
       localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
+    },
+    callback(googleAuthData) {
+      console.log('emitting from navigation bar');
+      console.log(googleAuthData);
     },
   },
 };

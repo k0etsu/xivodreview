@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { decodeCredential } from 'vue3-google-login'
 defineProps<{
   msg: string;
 }>();
@@ -140,11 +141,43 @@ defineProps<{
               </li>
             </ul>
           </li>
+          <li class="nav-item">
+            <GoogleLogin :callback="callback" prompt auto-login />
+          </li>
         </ul>
       </div>
     </nav>
   </header>
 </template>
+
+<script lang="ts">
+export default {
+  data() {
+    return {
+      googleAuthResponse: {},
+    };
+  },
+  emits: {
+    googleAuth: null
+  },
+  watch: {
+    googleAuthResponse(newValue) {
+      console.log(newValue)
+      this.$emit('googleAuth', newValue)
+    }
+  },
+  methods: {
+    callback(response: Object) {
+      // This callback will be triggered when the user selects or login to
+      // his Google account from the popup
+      const userData = decodeCredential(response.credential);
+      console.log('response', response);
+      console.log("userData", userData);
+      this.googleAuthResponse = response;
+    }
+  }
+};
+</script>
 
 <style>
 .navBar {
