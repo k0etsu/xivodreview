@@ -241,7 +241,12 @@ export default {
     },
     submitURLs() {
       // this.resetURLs();
-      this.getTwitchId(this.vod_url);
+      if (this.vod_url.includes('twitch')) {
+        this.getTwitchId(this.vod_url);
+      }
+      else if (this.vod_url.includes('youtube')) {
+        this.getYoutubeId(this.vod_url);
+      }
       this.getReportId(this.fflogs_url);
     },
     resetURLs() {
@@ -388,7 +393,41 @@ export default {
       console.log(googleAuthData);
       this.googleAuthData = googleAuthData;
     },
-    getYoutubePlayer() {
+    async getYoutubeId(youtubeUrl: string) {
+      try {
+        const url = new URL(youtubeUrl);
+        console.log(url)
+        var video = url.href.split("watch?")[1];
+        console.log(video)
+        var queries = video.split('&');
+        console.log(queries)
+        for (const query of queries) {
+          if (query.includes('v=')) {
+            this.youtubeId = query.replace('v=', '');
+          }
+        };
+      } catch (error) {
+        console.log(error);
+        this.youtubeId = "Please enter a valid YouTube VOD URL";
+      } finally {
+        this.getYoutubeData(this.youtubeId);
+      }
+    },
+    getYoutubeData(videoId: string) {
+      fetch("http://localhost:3001/youtube?videoId=" + videoId)
+        .then(async (response) => {
+          this.youtubeData = await response.json();
+          console.log(this.youtubeData)
+        })
+        .catch((error) => {
+          console.error("there was an error fetching youtube data: ", error);
+        })
+        .finally(() => {
+          this.twitchVodStart = parseInt(this.youtubeData.timeArr[0].startTime);
+          this.getYoutubePlayer(this.youtubeId);
+        });
+    },
+    getYoutubePlayer(videoId: string) {
       const options = {
         'iv_load_policy': 3,
         'modestbranding': 1,
@@ -397,7 +436,7 @@ export default {
       this.player = new YT.Player('youtube-player', {
         height: '390',
         width: '640',
-        videoId: 'zwonlXSPQ5g',
+        videoId: videoId,
         playerVars: options,
       });
       var element = document.getElementById("youtube-player");

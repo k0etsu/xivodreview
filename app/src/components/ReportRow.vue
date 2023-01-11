@@ -75,7 +75,16 @@ export default {
   },
   methods: {
     goToTimestamp(pullTimeInVod: Number) {
-      this.player.seek(pullTimeInVod);
+      if (typeof this.player.seek === 'function') {
+        this.player.seek(pullTimeInVod);
+      }
+      else {
+        console.log(this.reportStart)
+        console.log(this.twitchVodStart)
+        console.log(this.fightEntry.startTime)
+        console.log(this.timeBeforePull)
+        this.player.seekTo(pullTimeInVod / 1000);
+      }
     },
   },
   created() {
