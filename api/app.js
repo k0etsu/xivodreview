@@ -18,6 +18,8 @@ const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET;
 const TWITCH_AUTH = "https://id.twitch.tv/oauth2/token";
 const TWITCH_API = "https://api.twitch.tv/helix/videos";
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+const YOUTUBE_API = "https://youtube.googleapis.com/youtube/v3/videos";
 
 const FFLOGS_OPTS = {
   method: "POST",
@@ -47,13 +49,35 @@ console.log(FFLOGS_CLIENT_ID + ":" + FFLOGS_CLIENT_SECRET);
 console.log(TWITCH_CLIENT_ID + ":" + TWITCH_CLIENT_SECRET);
 
 const hostname = '127.0.0.1';
-const port = 3000;
+const port = 3001;
 
 const server = https.createServer((req, res) => {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
   res.end('I did it!');
 });
+
+function getYoutubeDuration(duration) {
+  var totalSeconds = 0;
+  duration = duration.replace("PT", "");
+  console.log(duration);
+  if (duration.includes('H')) {
+    var hours = duration.split('H')[0];
+    duration = duration.split('H')[1];
+    totalSeconds += parseInt(hours) * 3600;
+  }
+  if (duration.includes('M')) {
+    var minutes = duration.split('M')[0];
+    duration = duration.split('M')[1];
+    totalSeconds += parseInt(minutes) * 60;
+  }
+  var seconds = duration.split('S')[0];
+  duration = duration.split('S')[1];
+  totalSeconds += parseInt(seconds);
+  console.log(hours, minutes, seconds)
+
+  return totalSeconds * 1000
+}
 
 var fflogsToken = new tokenCache('fflogs', FFLOGS_AUTH, FFLOGS_OPTS);
 var twitchToken = new tokenCache('twitch', TWITCH_AUTH, TWITCH_OPTS);
@@ -168,7 +192,7 @@ app.get("/twitch", (req, res, next) => {
     return got(TWITCH_API, options)
   // TODO: promise chaining cause can't figure out async/await
   }).then(data => {
-    var timeArr = []
+    var timeArr = [];
     for (const resData of JSON.parse(data["body"])["data"]) {
       timeArr.push({
         videoId: resData.id,
@@ -191,6 +215,43 @@ app.get("/twitch", (req, res, next) => {
   });
 });
 
-app.listen(3001, () => {
+app.get("/youtube", (req, res, next) => {
+  console.log("youtube");
+  console.log(req.query);
+  const options = {
+    method: "GET",
+    searchParams: {
+      part: "snippet,contentDetails",
+      id: req.query.videoId,
+      key: YOUTUBE_API_KEY
+    },
+    headers: {
+      "Accept": "application/json"
+    }
+  };
+  if (req.query.authToken) {
+    options.headers.Authorization = `Bearer ${req.query.authToken}`
+  }
+  got(YOUTUBE_API, options).then(data => {
+    var timeArr = [];
+    for (const resData of JSON.parse(data.body)["items"]) {
+      console.log(resData);
+      timeArr.push({
+        videoId: resData.id,
+        startTime: new Date(resData.snippet.publishedAt).getTime(),
+        duration: getYoutubeDuration(resData.contentDetails.duration)
+      });
+    };
+    res.json({
+      res: JSON.parse(data.body),
+      timeArr: timeArr,
+    });
+  }).catch(err => {
+    console.log(err);
+    res.send(err);
+  });
+});
+
+app.listen(port, () => {
   console.log("server running on port 3001");
 });
