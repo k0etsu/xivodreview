@@ -36,7 +36,7 @@ export default {
         this.player.seek(pullTimeInVod);
       }
       else {
-        this.player.seekTo(pullTimeInVod / 1000);
+        this.player.seekTo(pullTimeInVod);
       }
     },
   },

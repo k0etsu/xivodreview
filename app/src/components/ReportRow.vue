@@ -79,11 +79,7 @@ export default {
         this.player.seek(pullTimeInVod);
       }
       else {
-        console.log(this.reportStart)
-        console.log(this.twitchVodStart)
-        console.log(this.fightEntry.startTime)
-        console.log(this.timeBeforePull)
-        this.player.seekTo(pullTimeInVod / 1000);
+        this.player.seekTo(pullTimeInVod);
       }
     },
   },
