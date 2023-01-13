@@ -20,6 +20,7 @@ const TWITCH_AUTH = "https://id.twitch.tv/oauth2/token";
 const TWITCH_API = "https://api.twitch.tv/helix/videos";
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const YOUTUBE_API = "https://youtube.googleapis.com/youtube/v3/videos";
+const YOUTUBE_LIVESTREAM_API = "https://youtube.googleapis.com/youtube/v3/liveBroadcasts";
 
 const FFLOGS_OPTS = {
   method: "POST",
@@ -221,7 +222,7 @@ app.get("/youtube", (req, res, next) => {
   const options = {
     method: "GET",
     searchParams: {
-      part: "snippet,contentDetails",
+      part: "snippet,contentDetails,status",
       id: req.query.videoId,
       key: YOUTUBE_API_KEY
     },
@@ -232,14 +233,14 @@ app.get("/youtube", (req, res, next) => {
   if (req.query.authToken) {
     options.headers.Authorization = `Bearer ${req.query.authToken}`
   }
-  got(YOUTUBE_API, options).then(data => {
+  got(YOUTUBE_LIVESTREAM_API, options).then(data => {
     var timeArr = [];
     for (const resData of JSON.parse(data.body)["items"]) {
       console.log(resData);
       timeArr.push({
         videoId: resData.id,
-        startTime: new Date(resData.snippet.publishedAt).getTime(),
-        duration: getYoutubeDuration(resData.contentDetails.duration)
+        startTime: new Date(resData.snippet.actualStartTime).getTime(),
+        // duration: getYoutubeDuration(resData.contentDetails.duration)
       });
     };
     res.json({
