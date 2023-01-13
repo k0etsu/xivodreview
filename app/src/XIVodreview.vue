@@ -25,7 +25,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                       v-model.lazy.trim="vod_url"
                       placeholder="Twitch VOD URL"
                     />
-                    <label for="twitchUrl">Twitch VOD URL</label>
+                    <label for="twitchUrl">Twitch/YouTube VOD URL</label>
                   </div>
                 </div>
                 <div class="row align-items-center g-2">
@@ -47,7 +47,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                       v-model="timeBeforePull"
                     />
                     <label for="timeBeforePull"
-                      >Time before pull (in seconds)</label
+                      >Video sync/offset (in seconds)</label
                     >
                   </div>
                   <div class="col-lg-4">
@@ -168,6 +168,7 @@ export default {
   },
   created() {
     this.getCachedFights();
+    this.getCachedGoogleAuth();
   },
   watch: {
     reportData(newValue) {
@@ -392,6 +393,21 @@ export default {
       console.log('emitting from navigation bar');
       console.log(googleAuthData);
       this.googleAuthData = googleAuthData;
+      this.googleAuthData['expires_in'] = this.googleAuthData['expires_in'] * 1000;
+      this.googleAuthData['created_time'] = Date.now();
+      localStorage.setItem("cachedGoogleAuth", JSON.stringify(this.googleAuthData))
+    },
+    getCachedGoogleAuth() {
+      const cachedGoogleAuth = localStorage.getItem("cachedGoogleAuth");
+      if (cachedGoogleAuth) {
+        const cachedGoogleAuthObj = JSON.parse(cachedGoogleAuth);
+        if (cachedGoogleAuthObj["created_time"] + cachedGoogleAuthObj["expires_in"] > Date.now()) {
+          this.googleAuthData = JSON.parse(cachedGoogleAuth);
+        }
+        else {
+          localStorage.removeItem("cachedGoogleAuth");
+        };
+      };
     },
     async getYoutubeId(youtubeUrl: string) {
       try {
@@ -414,7 +430,9 @@ export default {
       }
     },
     getYoutubeData(videoId: string) {
-      fetch("http://localhost:3001/youtube?videoId=" + videoId)
+      if (Object.keys(this.googleAuthData).length !== 0) {
+        var authToken = this.googleAuthData.access_token;
+        fetch(`http://localhost:3001/youtube?videoId=${videoId}&authToken=${authToken}`)
         .then(async (response) => {
           this.youtubeData = await response.json();
           console.log(this.youtubeData)
@@ -426,6 +444,10 @@ export default {
           this.twitchVodStart = parseInt(this.youtubeData.timeArr[0].startTime);
           this.getYoutubePlayer(this.youtubeId);
         });
+      }
+      else {
+        alert("Authenticate with Google to use YouTube livestreams");
+      }
     },
     getYoutubePlayer(videoId: string) {
       const options = {

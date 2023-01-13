@@ -155,18 +155,18 @@ const login = () => {
           </li>
           <li class="nav-item">
             <!-- <GoogleLogin data-theme="filled_blue" :callback="callback" prompt auto-login> -->
-            <GoogleLogin :callback="callback" popup-type="TOKEN">
+            <!-- <GoogleLogin :callback="callback" popup-type="TOKEN">
               <button type="button" class="btn btn-dark">
                 Login using Google
               </button>
             </GoogleLogin>
             <button @click="login" type="button" class="btn btn-primary">
               Login using Google
-            </button>
+            </button> -->
             <button @click="googleLogin" type="button" class="btn btn-outline-primary">
               Login using Google
             </button>
-            <div id="googleAuthButton"></div>
+            <!-- <div id="googleAuthButton"></div> -->
           </li>
         </ul>
       </div>
