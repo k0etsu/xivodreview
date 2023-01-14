@@ -1,7 +1,22 @@
 <script setup lang="ts">
+import { googleSdkLoaded } from "vue3-google-login";
 defineProps<{
   msg: string;
 }>();
+const login = () => {
+  googleSdkLoaded((google) => {
+    google.accounts.oauth2
+      .initTokenClient({
+        client_id:
+          "613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com",
+        scope: "https://www.googleapis.com/auth/youtube.readonly",
+        callback: (response) => {
+          console.log("Handle the response", response);
+        },
+      })
+      .requestAccessToken();
+  });
+};
 </script>
 
 <template>
@@ -140,11 +155,91 @@ defineProps<{
               </li>
             </ul>
           </li>
+          <li class="nav-item">
+            <!-- <GoogleLogin data-theme="filled_blue" :callback="callback" prompt auto-login> -->
+            <!-- <GoogleLogin :callback="callback" popup-type="TOKEN">
+              <button type="button" class="btn btn-dark">
+                Login using Google
+              </button>
+            </GoogleLogin>
+            <button @click="login" type="button" class="btn btn-primary">
+              Login using Google
+            </button> -->
+            <button
+              @click="googleLogin"
+              type="button"
+              class="btn btn-outline-primary"
+            >
+              Login using Google
+            </button>
+            <!-- <div id="googleAuthButton"></div> -->
+          </li>
         </ul>
       </div>
     </nav>
   </header>
 </template>
+
+<script lang="ts">
+export default {
+  data() {
+    return {
+      googleAuthResponse: {},
+    };
+  },
+  emits: {
+    googleAuth: null,
+  },
+  watch: {
+    googleAuthResponse(newValue) {
+      console.log(newValue);
+      this.$emit("googleAuth", newValue);
+    },
+  },
+  methods: {
+    callback(response) {
+      // This callback will be triggered when the user selects or login to
+      // his Google account from the popup
+      // const userData = decodeCredential(response.credential);
+      console.log("response", response);
+      // console.log("userData", userData);
+      this.googleAuthResponse = response;
+    },
+    googleLogin() {
+      googleSdkLoaded((google) => {
+        google.accounts.oauth2
+          .initTokenClient({
+            client_id:
+              "613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com",
+            scope: "https://www.googleapis.com/auth/youtube.readonly",
+            callback: (response) => {
+              console.log("Handle the response", response);
+              this.$emit("googleAuth", response);
+            },
+          })
+          .requestAccessToken();
+      });
+    },
+  },
+  created() {
+    google.accounts.oauth2.initTokenClient({
+      client_id:
+        "613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com",
+      scope: "https://www.googleapis.com/auth/youtube.readonly",
+    });
+    google.accounts.id.initialize({
+      client_id:
+        "613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com",
+      callback: this.callback,
+    });
+    google.accounts.id.renderButton(
+      document.getElementById("googleAuthButton"),
+      { theme: "filled_blue", size: "large" }
+    );
+    google.accounts.id.prompt();
+  },
+};
+</script>
 
 <style>
 .navBar {

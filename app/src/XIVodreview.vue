@@ -4,13 +4,20 @@ import FFlogsReport from "./components/FFlogsReport.vue";
 </script>
 
 <template>
-  <NavigationBar class="navHeader" msg="GitHub" />
+  <NavigationBar
+    class="navHeader"
+    msg="GitHub"
+    @google-auth="googleAuthCallback"
+  />
   <div class="container-fluid overflow-hidden">
     <div class="no-scroll row">
       <div class="col-9">
         <div class="row g-0">
           <div class="vod-player col-12">
             <div id="twitch-player"></div>
+            <div id="youtube-player-wrapper">
+              <div id="youtube-player"></div>
+            </div>
           </div>
         </div>
         <div class="row g-0">
@@ -21,10 +28,10 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                   <div class="form-group form-floating">
                     <input
                       class="twitchUrl form-control"
-                      v-model.lazy.trim="twitch_url"
+                      v-model.lazy.trim="vod_url"
                       placeholder="Twitch VOD URL"
                     />
-                    <label for="twitchUrl">Twitch VOD URL</label>
+                    <label for="twitchUrl">Twitch/YouTube VOD URL</label>
                   </div>
                 </div>
                 <div class="row align-items-center g-2">
@@ -46,10 +53,10 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                       v-model="timeBeforePull"
                     />
                     <label for="timeBeforePull"
-                      >Time before pull (in seconds)</label
+                      >Video sync/offset (in seconds)</label
                     >
                   </div>
-                  <div class="col-lg-3">
+                  <div class="col-lg-4">
                     <button
                       class="btn btn-outline-primary me-2"
                       @click="submitURLs"
@@ -62,6 +69,9 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                     >
                       Reset
                     </button>
+                    <!-- <button type="button" class="btn btn-outline-warning me-2" @click="getYoutubePlayer">
+                      test
+                    </button> -->
                   </div>
                 </div>
               </div>
@@ -137,9 +147,11 @@ import FFlogsReport from "./components/FFlogsReport.vue";
 export default {
   data() {
     return {
-      twitch_url: "",
+      vod_url: "",
       twitchId: "",
       twitchData: null,
+      youtubeId: "",
+      youtubeData: null,
       twitchVodStart: 0,
       player: null,
       fflogs_url: "",
@@ -157,10 +169,12 @@ export default {
       cachedFights: {},
       cachedFightName: "",
       cachedFightSelected: "",
+      googleAuthData: {},
     };
   },
   created() {
     this.getCachedFights();
+    this.getCachedGoogleAuth();
   },
   watch: {
     reportData(newValue) {
@@ -174,10 +188,10 @@ export default {
     cachedFightSelected(encounter) {
       this.cachedFightName = encounter;
       if (encounter == "") {
-        this.twitch_url = "";
+        this.vod_url = "";
         this.fflogs_url = "";
       } else {
-        this.twitch_url = this.cachedFights[encounter].twitch;
+        this.vod_url = this.cachedFights[encounter].twitch;
         this.fflogs_url = this.cachedFights[encounter].fflogs;
       }
       this.submitURLs();
@@ -233,7 +247,12 @@ export default {
       });
     },
     submitURLs() {
-      this.getTwitchId(this.twitch_url);
+      this.resetURLs();
+      if (this.vod_url.includes("twitch")) {
+        this.getTwitchId(this.vod_url);
+      } else if (this.vod_url.includes("youtube")) {
+        this.getYoutubeId(this.vod_url);
+      }
       this.getReportId(this.fflogs_url);
     },
     resetURLs() {
@@ -243,10 +262,17 @@ export default {
       // TODO: Clear logs
     },
     removeIframes() {
-      var iframes = document.querySelectorAll("iframe");
-      for (var i = 0; i < iframes.length; i++) {
-        iframes[i].parentNode.removeChild(iframes[i]);
-      }
+      // var iframes = document.querySelectorAll("iframe");
+      // for (var i = 0; i < iframes.length; i++) {
+      //   iframes[i].parentNode.removeChild(iframes[i]);
+      // }
+      const twitchPlayer = document.getElementById("twitch-player");
+      twitchPlayer.innerHTML = "";
+      const youtubePlayer = document.getElementById("youtube-player-wrapper");
+      youtubePlayer.innerHTML = "";
+      let div = document.createElement("div");
+      div.id = "youtube-player";
+      youtubePlayer.append(div);
       this.player = null;
     },
     testData() {
@@ -363,7 +389,7 @@ export default {
     addCachedFight() {
       if (this.cachedFightName != "") {
         this.cachedFights[this.cachedFightName] = {
-          twitch: this.twitch_url,
+          twitch: this.vod_url,
           fflogs: this.fflogs_url,
         };
         localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
@@ -374,6 +400,100 @@ export default {
       delete this.cachedFights[this.cachedFightName];
       this.cachedFightName = "";
       localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
+    },
+    googleAuthCallback(googleAuthData: Object) {
+      console.log("emitting from navigation bar");
+      console.log(googleAuthData);
+      this.googleAuthData = googleAuthData;
+      this.googleAuthData["expires_in"] =
+        this.googleAuthData["expires_in"] * 1000;
+      this.googleAuthData["created_time"] = Date.now();
+      localStorage.setItem(
+        "cachedGoogleAuth",
+        JSON.stringify(this.googleAuthData)
+      );
+    },
+    getCachedGoogleAuth() {
+      const cachedGoogleAuth = localStorage.getItem("cachedGoogleAuth");
+      if (cachedGoogleAuth) {
+        const cachedGoogleAuthObj = JSON.parse(cachedGoogleAuth);
+        if (
+          cachedGoogleAuthObj["created_time"] +
+            cachedGoogleAuthObj["expires_in"] >
+          Date.now()
+        ) {
+          this.googleAuthData = JSON.parse(cachedGoogleAuth);
+        } else {
+          localStorage.removeItem("cachedGoogleAuth");
+        }
+      }
+    },
+    async getYoutubeId(youtubeUrl: string) {
+      try {
+        const url = new URL(youtubeUrl);
+        console.log(url);
+        var video = url.href.split("watch?")[1];
+        console.log(video);
+        var queries = video.split("&");
+        console.log(queries);
+        for (const query of queries) {
+          if (query.includes("v=")) {
+            this.youtubeId = query.replace("v=", "");
+          }
+        }
+      } catch (error) {
+        console.log(error);
+        this.youtubeId = "Please enter a valid YouTube VOD URL";
+      } finally {
+        this.getYoutubeData(this.youtubeId);
+      }
+    },
+    getYoutubeData(videoId: string) {
+      if (Object.keys(this.googleAuthData).length !== 0) {
+        var authToken = this.googleAuthData.access_token;
+        fetch(
+          `https://api.yamanote.co/youtube?videoId=${videoId}&authToken=${authToken}`
+        )
+          .then(async (response) => {
+            this.youtubeData = await response.json();
+            console.log(this.youtubeData);
+          })
+          .catch((error) => {
+            console.error("there was an error fetching youtube data: ", error);
+          })
+          .finally(() => {
+            this.twitchVodStart = parseInt(
+              this.youtubeData.timeArr[0].startTime
+            );
+            this.getYoutubePlayer(this.youtubeId);
+          });
+      } else {
+        alert("Authenticate with Google to use YouTube livestreams");
+      }
+    },
+    getYoutubePlayer(videoId: string) {
+      const options = {
+        iv_load_policy: 3,
+        modestbranding: 1,
+        playsinline: 1,
+      };
+      this.player = new YT.Player("youtube-player", {
+        height: "390",
+        width: "640",
+        videoId: videoId,
+        playerVars: options,
+      });
+      var element = document.getElementById("youtube-player");
+      element.style.position = "absolute";
+      element.style.width = "100%";
+      element.style.height = "100%";
+      element.style.top = "0";
+      this.player.addEventListener("onReady", () => {
+        this.player.setPlaybackQuality("highres");
+      });
+      this.player.addEventListener("onStateChange", () => {
+        this.player.setPlaybackQuality("highres");
+      });
     },
   },
 };

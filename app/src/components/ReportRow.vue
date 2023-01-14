@@ -75,7 +75,11 @@ export default {
   },
   methods: {
     goToTimestamp(pullTimeInVod: Number) {
-      this.player.seek(pullTimeInVod);
+      if (typeof this.player.seek === "function") {
+        this.player.seek(pullTimeInVod);
+      } else {
+        this.player.seekTo(pullTimeInVod);
+      }
     },
   },
   created() {
