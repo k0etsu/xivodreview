@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import ReportRow from "./ReportRow.vue"
+import ReportRow from "./ReportRow.vue";
 </script>
 
 <template>
@@ -10,13 +10,16 @@
         <th scope="col">Pull</th>
         <th scope="col">Fight Percentage</th>
         <th scope="col">Goto Pull</th>
-        <th scope="col">FFLogs Link</th>
+        <th scope="col">Deaths</th>
+        <th scope="col">FFLogs</th>
       </tr>
     </thead>
     <tbody>
       <ReportRow
         v-for="fightEntry in fightEntries"
+        :key="fightEntry.id"
         :fightEntry="fightEntry"
+        :deathData="deathData"
         :reportId="reportId"
         :reportStart="reportStart"
         :twitchVodStart="twitchVodStart"
@@ -30,32 +33,17 @@
 <script lang="ts">
 export default {
   props: [
-    'fightTitle',
-    'fightEntries',
-    'reportId',
-    'reportStart',
-    'twitchVodStart',
-    'timeBeforePull',
-    'player'
+    "fightTitle",
+    "fightEntries",
+    "deathData",
+    "reportId",
+    "reportStart",
+    "twitchVodStart",
+    "timeBeforePull",
+    "player",
   ],
   components: {
-    ReportRow
+    ReportRow,
   },
-  created() {
-    console.log("reporttable created");
-    console.log(this.fightTitle);
-    console.log(this.fightEntries);
-    console.log(this.reportStart);
-    console.log(this.twitchVodStart);
-    console.log(this.player);
-  },
-  updated() {
-    console.log("reporttable updated");
-    console.log(this.fightTitle);
-    console.log(this.fightEntries);
-    console.log(this.reportStart);
-    console.log(this.twitchVodStart);
-    console.log(this.player);
-  }
-}
+};
 </script>
