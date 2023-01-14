@@ -1,20 +1,22 @@
 <script setup lang="ts">
-import { decodeCredential } from 'vue3-google-login'
-import { googleSdkLoaded } from "vue3-google-login"
+import { googleSdkLoaded } from "vue3-google-login";
 defineProps<{
   msg: string;
 }>();
 const login = () => {
   googleSdkLoaded((google) => {
-    google.accounts.oauth2.initTokenClient({
-      client_id: '613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com',
-      scope: 'https://www.googleapis.com/auth/youtube.readonly',
-      callback: (response) => {
-        console.log("Handle the response", response)
-      }
-    }).requestAccessToken()
-  })
-}
+    google.accounts.oauth2
+      .initTokenClient({
+        client_id:
+          "613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com",
+        scope: "https://www.googleapis.com/auth/youtube.readonly",
+        callback: (response) => {
+          console.log("Handle the response", response);
+        },
+      })
+      .requestAccessToken();
+  });
+};
 </script>
 
 <template>
@@ -163,7 +165,11 @@ const login = () => {
             <button @click="login" type="button" class="btn btn-primary">
               Login using Google
             </button> -->
-            <button @click="googleLogin" type="button" class="btn btn-outline-primary">
+            <button
+              @click="googleLogin"
+              type="button"
+              class="btn btn-outline-primary"
+            >
               Login using Google
             </button>
             <!-- <div id="googleAuthButton"></div> -->
@@ -182,44 +188,49 @@ export default {
     };
   },
   emits: {
-    googleAuth: null
+    googleAuth: null,
   },
   watch: {
     googleAuthResponse(newValue) {
-      console.log(newValue)
-      this.$emit('googleAuth', newValue)
-    }
+      console.log(newValue);
+      this.$emit("googleAuth", newValue);
+    },
   },
   methods: {
     callback(response) {
       // This callback will be triggered when the user selects or login to
       // his Google account from the popup
       // const userData = decodeCredential(response.credential);
-      console.log('response', response);
+      console.log("response", response);
       // console.log("userData", userData);
       this.googleAuthResponse = response;
     },
     googleLogin() {
       googleSdkLoaded((google) => {
-        google.accounts.oauth2.initTokenClient({
-          client_id: '613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com',
-          scope: 'https://www.googleapis.com/auth/youtube.readonly',
-          callback: (response) => {
-            console.log("Handle the response", response)
-            this.$emit('googleAuth', response)
-          }
-        }).requestAccessToken()
-      })
+        google.accounts.oauth2
+          .initTokenClient({
+            client_id:
+              "613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com",
+            scope: "https://www.googleapis.com/auth/youtube.readonly",
+            callback: (response) => {
+              console.log("Handle the response", response);
+              this.$emit("googleAuth", response);
+            },
+          })
+          .requestAccessToken();
+      });
     },
   },
   created() {
     google.accounts.oauth2.initTokenClient({
-      client_id: "613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com",
-      scope: "https://www.googleapis.com/auth/youtube.readonly"
-    })
+      client_id:
+        "613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com",
+      scope: "https://www.googleapis.com/auth/youtube.readonly",
+    });
     google.accounts.id.initialize({
-      client_id: "613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com",
-      callback: this.callback
+      client_id:
+        "613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com",
+      callback: this.callback,
     });
     google.accounts.id.renderButton(
       document.getElementById("googleAuthButton"),
