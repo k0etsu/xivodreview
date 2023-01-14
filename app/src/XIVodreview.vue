@@ -247,7 +247,8 @@ export default {
       });
     },
     submitURLs() {
-      this.resetURLs();
+      // this.resetURLs();
+      this.removeIframes();
       if (this.vod_url.includes("twitch")) {
         this.getTwitchId(this.vod_url);
       } else if (this.vod_url.includes("youtube")) {
