@@ -11,7 +11,9 @@ import FFlogsReport from "./components/FFlogsReport.vue";
         <div class="row g-0">
           <div class="vod-player col-12">
             <div id="twitch-player"></div>
-            <div id="youtube-player"></div>
+            <div id="youtube-player-wrapper">
+              <div id="youtube-player"></div>
+            </div>
           </div>
         </div>
         <div class="row g-0">
@@ -241,7 +243,7 @@ export default {
       });
     },
     submitURLs() {
-      // this.resetURLs();
+      this.resetURLs();
       if (this.vod_url.includes('twitch')) {
         this.getTwitchId(this.vod_url);
       }
@@ -257,10 +259,17 @@ export default {
       // TODO: Clear logs
     },
     removeIframes() {
-      var iframes = document.querySelectorAll("iframe");
-      for (var i = 0; i < iframes.length; i++) {
-        iframes[i].parentNode.removeChild(iframes[i]);
-      }
+      // var iframes = document.querySelectorAll("iframe");
+      // for (var i = 0; i < iframes.length; i++) {
+      //   iframes[i].parentNode.removeChild(iframes[i]);
+      // }
+      const twitchPlayer = document.getElementById("twitch-player");
+      twitchPlayer.innerHTML = "";
+      const youtubePlayer = document.getElementById("youtube-player-wrapper");
+      youtubePlayer.innerHTML = "";
+      let div = document.createElement("div")
+      div.id = "youtube-player";
+      youtubePlayer.append(div);
       this.player = null;
     },
     testData() {
