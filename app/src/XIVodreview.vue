@@ -65,9 +65,9 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                     >
                       Reset
                     </button>
-                    <button type="button" class="btn btn-outline-warning me-2" @click="getYoutubePlayer">
+                    <!-- <button type="button" class="btn btn-outline-warning me-2" @click="getYoutubePlayer">
                       test
-                    </button>
+                    </button> -->
                   </div>
                 </div>
               </div>
