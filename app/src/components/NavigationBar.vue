@@ -25,7 +25,7 @@ const login = () => {
       class="container-fluid bd-gutter flex-wrap flex-lg-nowrap"
       aria-label="Main navigation"
     >
-      <a class="navbar-brand" href="#">xivodreview</a>
+      <a class="navbar-brand" href="/">xivodreview</a>
       <button
         class="navbar-toggler"
         type="button"
@@ -39,6 +39,9 @@ const login = () => {
       </button>
       <div class="collapse navbar-collapse" id="navbarNavDropdown">
         <ul class="navbar-nav flex-row flex-wrap bd-navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link py-2 px-0 px-lg-2" href="/privacy-policy.html">Privacy Policy</a>
+          </li>
           <li class="nav-item">
             <a
               class="nav-link py-2 px-0 px-lg-2"
