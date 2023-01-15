@@ -203,6 +203,9 @@ export default {
         const url = new URL(twitchUrl);
         var video = url.pathname.split("/");
         var videoIndex = video.indexOf("videos");
+        if (videoIndex == -1) {
+          videoIndex = video.indexOf("video");
+        };
         this.twitchId = video[videoIndex + 1];
       } catch (error) {
         this.twitchId = "Please enter a valid Twitch VOD URL";
