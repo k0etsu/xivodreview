@@ -18,6 +18,30 @@ import FFlogsReport from "./components/FFlogsReport.vue";
             <div id="youtube-player-wrapper">
               <div id="youtube-player"></div>
             </div>
+            <div id="google-homepage-shit">
+              <h5>xivodreview usage</h5>
+              <p>
+                This application is used for aligning livestream archives
+                (Twitch/YouTube) with FFLogs reporting tool for reviewing fights
+                and their mechanics. Input a link to both the VOD and the FFLogs
+                report and then submit. If you need to use a YouTube livestream,
+                you will need to authenticate with Google first.
+              </p>
+              <br />
+              <p>
+                <strong> Regarding Google Authentication </strong>
+              </p>
+              <p>
+                This site uses Sign In with Google to authenticate with Google's
+                YouTube Live Broadcasts API. This is necessary for users that
+                want to use xivodreview with YouTube livestreams (especially if
+                they are set to private; assume this would be the case for teams
+                that are racing or for those that use copious plugins). No user
+                data is stored by this application. Authentication with Google
+                is strictly used to reach the YouTube Live Broadcasts API on
+                behalf of the user.
+              </p>
+            </div>
           </div>
         </div>
         <div class="row g-0">
@@ -205,7 +229,7 @@ export default {
         var videoIndex = video.indexOf("videos");
         if (videoIndex == -1) {
           videoIndex = video.indexOf("video");
-        };
+        }
         this.twitchId = video[videoIndex + 1];
       } catch (error) {
         this.twitchId = "Please enter a valid Twitch VOD URL";
@@ -236,7 +260,7 @@ export default {
         autoplay: false,
       };
       if (this.player != null) {
-        this.removeIframes();
+        this.removePlayer();
       }
       this.player = new Twitch.Player("twitch-player", options);
       var element = document.getElementById("twitch-player");
@@ -251,7 +275,8 @@ export default {
     },
     submitURLs() {
       // this.resetURLs();
-      this.removeIframes();
+      this.hideGoogleWarning();
+      this.removePlayer();
       if (this.vod_url.includes("twitch")) {
         this.getTwitchId(this.vod_url);
       } else if (this.vod_url.includes("youtube")) {
@@ -260,12 +285,21 @@ export default {
       this.getReportId(this.fflogs_url);
     },
     resetURLs() {
-      this.removeIframes();
+      this.removePlayer();
       this.cachedFightSelected = "";
       this.cachedFightName = "";
+      this.showGoogleWarning();
       // TODO: Clear logs
     },
-    removeIframes() {
+    hideGoogleWarning() {
+      var element = document.getElementById("google-homepage-shit");
+      element.style.display = "none";
+    },
+    showGoogleWarning() {
+      var element = document.getElementById("google-homepage-shit");
+      element.style.display = "block";
+    },
+    removePlayer() {
       // var iframes = document.querySelectorAll("iframe");
       // for (var i = 0; i < iframes.length; i++) {
       //   iframes[i].parentNode.removeChild(iframes[i]);
@@ -480,6 +514,7 @@ export default {
         iv_load_policy: 3,
         modestbranding: 1,
         playsinline: 1,
+        rel: 0,
       };
       this.player = new YT.Player("youtube-player", {
         height: "390",
@@ -529,17 +564,10 @@ export default {
   position: relative;
   height: 0;
 }
-
-.inputForm {
-  min-width: 25em;
-}
-
-.resetButton {
-  min-width: 10em;
-  text-align: center;
-}
-
-.timeLabel {
-  margin-bottom: 0em;
+#google-homepage-shit {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
 }
 </style>
