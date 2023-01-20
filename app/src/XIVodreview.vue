@@ -203,11 +203,13 @@ export default {
   watch: {
     reportData(newValue) {
       const fightsPerInstance = {};
-      newValue.data.reportData.report.fights.forEach((fight) => {
-        fightsPerInstance[fight.name] = fightsPerInstance[fight.name] || [];
-        fightsPerInstance[fight.name].push(fight);
-      });
-      this.fightData = fightsPerInstance;
+      if (newValue) {
+        newValue.data.reportData.report.fights.forEach((fight) => {
+          fightsPerInstance[fight.name] = fightsPerInstance[fight.name] || [];
+          fightsPerInstance[fight.name].push(fight);
+        });
+        this.fightData = fightsPerInstance;
+      }
     },
     cachedFightSelected(encounter) {
       this.cachedFightName = encounter;
@@ -217,8 +219,8 @@ export default {
       } else {
         this.vod_url = this.cachedFights[encounter].twitch;
         this.fflogs_url = this.cachedFights[encounter].fflogs;
+        this.submitURLs();
       }
-      this.submitURLs();
     },
   },
   methods: {
@@ -259,7 +261,7 @@ export default {
         // parent: ["embed.example.com"]
         autoplay: false,
       };
-      if (this.player != null) {
+      if (this.player) {
         this.removePlayer();
       }
       this.player = new Twitch.Player("twitch-player", options);
@@ -286,8 +288,8 @@ export default {
     },
     resetURLs() {
       this.removePlayer();
-      this.cachedFightSelected = "";
       this.cachedFightName = "";
+      this.cachedFightSelected = "";
       this.showGoogleWarning();
       // TODO: Clear logs
     },
