@@ -19,7 +19,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
               <div id="youtube-player"></div>
             </div>
             <div id="google-homepage-shit">
-              <h5>xivodreview usage</h5>
+              <h5>Usage</h5>
               <p>
                 This application is used for aligning livestream archives
                 (Twitch/YouTube) with FFLogs reporting tool for reviewing fights
