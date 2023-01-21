@@ -222,7 +222,7 @@ app.get("/youtube", (req, res, next) => {
   const options = {
     method: "GET",
     searchParams: {
-      part: "snippet,contentDetails,liveStreamingDetails",
+      part: "snippet,contentDetails,liveStreamingDetails,status",
       id: req.query.videoId,
       key: YOUTUBE_API_KEY
     },
