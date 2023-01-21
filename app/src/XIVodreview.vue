@@ -9,8 +9,8 @@ import FFlogsReport from "./components/FFlogsReport.vue";
     msg="GitHub"
     @google-auth="googleAuthCallback"
   />
-  <div class="container-fluid overflow-hidden">
-    <div class="no-scroll row">
+  <div class="container-fluid overflow-hidden no-scroll">
+    <div class="row">
       <div class="col-9">
         <div class="row g-0">
           <div class="vod-player col-12">
@@ -541,11 +541,11 @@ export default {
 </script>
 
 <style scoped>
-/* .navHeader {
-  height: 2.5vh;
-} */
+.navHeader {
+  height: 4.5vh;
+}
 .no-scroll {
-  height: 95.5vh;
+  height: 93.5vh;
 }
 .vod-player {
   height: 100%;
