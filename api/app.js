@@ -222,7 +222,7 @@ app.get("/youtube", (req, res, next) => {
   const options = {
     method: "GET",
     searchParams: {
-      part: "snippet,contentDetails,status",
+      part: "snippet,contentDetails,liveStreamingDetails",
       id: req.query.videoId,
       key: YOUTUBE_API_KEY
     },
@@ -233,13 +233,13 @@ app.get("/youtube", (req, res, next) => {
   if (req.query.authToken) {
     options.headers.Authorization = `Bearer ${req.query.authToken}`
   }
-  got(YOUTUBE_LIVESTREAM_API, options).then(data => {
+  got(YOUTUBE_API, options).then(data => {
     var timeArr = [];
     for (const resData of JSON.parse(data.body)["items"]) {
       console.log(resData);
       timeArr.push({
         videoId: resData.id,
-        startTime: new Date(resData.snippet.actualStartTime).getTime(),
+        startTime: new Date(resData.liveStreamingDetails.actualStartTime).getTime(),
         // duration: getYoutubeDuration(resData.contentDetails.duration)
       });
     };
