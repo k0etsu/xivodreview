@@ -151,7 +151,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
           </div>
         </div>
       </div>
-      <div class="fflogs-report overflow-auto col-3" v-if="fightData && player">
+      <div class="fflogs-report overflow-auto col" v-if="fightData && player">
         <FFlogsReport
           :key="reportId"
           :fightData="fightData"
@@ -545,7 +545,7 @@ export default {
   height: 4vh;
 }
 .no-scroll {
-  height: 94vh;
+  height: 96vh;
 }
 .vod-player {
   height: 100%;
