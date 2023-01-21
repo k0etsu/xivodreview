@@ -473,21 +473,16 @@ export default {
     },
     async getYoutubeId(youtubeUrl: string) {
       try {
-        console.log(youtubeUrl);
         const url = new URL(youtubeUrl);
-        console.log(url);
         if (youtubeUrl.includes("youtube.com")) {
           var video = url.href.split("watch?")[1];
-          console.log(video);
           var queries = video.split("&");
-          console.log(queries);
           for (const query of queries) {
             if (query.includes("v=")) {
               this.youtubeId = query.replace("v=", "");
             }
           }
         } else if (youtubeUrl.includes("youtu.be")) {
-          console.log(youtubeUrl);
           this.youtubeId = url.pathname.split("/")[1];
         }
       } catch (error) {
