@@ -281,7 +281,10 @@ export default {
       this.removePlayer();
       if (this.vod_url.includes("twitch")) {
         this.getTwitchId(this.vod_url);
-      } else if (this.vod_url.includes("youtube")) {
+      } else if (
+        this.vod_url.includes("youtube") ||
+        this.vod_url.includes("youtu.be")
+      ) {
         this.getYoutubeId(this.vod_url);
       }
       this.getReportId(this.fflogs_url);
@@ -470,16 +473,22 @@ export default {
     },
     async getYoutubeId(youtubeUrl: string) {
       try {
+        console.log(youtubeUrl);
         const url = new URL(youtubeUrl);
         console.log(url);
-        var video = url.href.split("watch?")[1];
-        console.log(video);
-        var queries = video.split("&");
-        console.log(queries);
-        for (const query of queries) {
-          if (query.includes("v=")) {
-            this.youtubeId = query.replace("v=", "");
+        if (youtubeUrl.includes("youtube.com")) {
+          var video = url.href.split("watch?")[1];
+          console.log(video);
+          var queries = video.split("&");
+          console.log(queries);
+          for (const query of queries) {
+            if (query.includes("v=")) {
+              this.youtubeId = query.replace("v=", "");
+            }
           }
+        } else if (youtubeUrl.includes("youtu.be")) {
+          console.log(youtubeUrl);
+          this.youtubeId = url.pathname.split("/")[1];
         }
       } catch (error) {
         console.log(error);
