@@ -11,7 +11,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
   />
   <div class="container-fluid overflow-hidden no-scroll">
     <div class="row">
-      <div class="col-9">
+      <div class="col-9 player-input">
         <div class="row g-0">
           <div class="vod-player col-12">
             <div id="twitch-player"></div>
@@ -556,9 +556,14 @@ export default {
   padding-top: 0.25em;
 }
 
+.player-input {
+  width: 73vw;
+}
+
 .fflogs-report {
   max-height: 100%;
   padding-left: 1em;
+  width: 27vw;
 }
 
 .vod-player {
