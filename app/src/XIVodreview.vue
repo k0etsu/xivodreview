@@ -9,8 +9,8 @@ import FFlogsReport from "./components/FFlogsReport.vue";
     msg="GitHub"
     @google-auth="googleAuthCallback"
   />
-  <div class="container-fluid overflow-hidden no-scroll">
-    <div class="row">
+  <div class="container-fluid overflow-hidden">
+    <div class="row no-scroll">
       <div class="col-9 player-input">
         <div class="row g-0">
           <div class="vod-player col-12">
@@ -151,7 +151,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
           </div>
         </div>
       </div>
-      <div class="fflogs-report overflow-auto col" v-if="fightData && player">
+      <div class="fflogs-report overflow-auto col-3" v-if="fightData && player">
         <FFlogsReport
           :key="reportId"
           :fightData="fightData"
