@@ -259,7 +259,7 @@ export default {
       }
     },
     getTwitchData(videoId: string) {
-      fetch("http://localhost:3001/twitch?videoId=" + videoId)
+      fetch("https://api.yamanote.co/twitch?videoId=" + videoId)
         .then(async (response) => {
           this.twitchData = await response.json();
         })
@@ -355,7 +355,7 @@ export default {
       }
     },
     getReportData(reportId: string) {
-      fetch("http://localhost:3001/fflogs?reportId=" + reportId)
+      fetch("https://api.yamanote.co/fflogs?reportId=" + reportId)
         .then(async (response) => {
           this.reportData = await response.json();
         })
@@ -378,7 +378,7 @@ export default {
     },
     getReportDeathData(reportId, startTime, endTime) {
       fetch(
-        `http://localhost:3001/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`
+        `https://api.yamanote.co/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`
       )
         .then(async (response) => {
           this.reportData = await response.json();
@@ -507,7 +507,7 @@ export default {
       if (Object.keys(this.googleAuthToken).length != 0) {
         var authToken = this.googleAuthToken.access_token;
         fetch(
-          `http://localhost:3001/youtube?videoId=${videoId}&authToken=${authToken}`
+          `https://api.yamanote.co/youtube?videoId=${videoId}&authToken=${authToken}`
         )
           .then(async (response) => {
             this.youtubeData = await response.json();
