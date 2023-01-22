@@ -334,7 +334,7 @@ export default {
     },
     showGoogleWarning() {
       var element = document.getElementById("google-homepage-shit");
-      element.style.display = "block";
+      element.style.display = "auto";
     },
     removePlayer() {
       // var iframes = document.querySelectorAll("iframe");
