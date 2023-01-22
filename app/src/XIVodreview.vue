@@ -18,29 +18,39 @@ import FFlogsReport from "./components/FFlogsReport.vue";
             <div id="youtube-player-wrapper">
               <div id="youtube-player"></div>
             </div>
-            <div id="google-homepage-shit">
-              <h5>Usage</h5>
-              <p>
-                This application is used for aligning livestream archives
-                (Twitch/YouTube) with FFLogs reporting tool for reviewing fights
-                and their mechanics. Input a link to both the VOD and the FFLogs
-                report and then submit. If you need to use a YouTube livestream,
-                you will need to authenticate with Google first.
-              </p>
-              <br />
-              <p>
-                <strong> Regarding Google Authentication </strong>
-              </p>
-              <p>
-                This site uses Sign In with Google to authenticate with Google's
-                YouTube Live Broadcasts API. This is necessary for users that
-                want to use xivodreview with YouTube livestreams (especially if
-                they are set to private; assume this would be the case for teams
-                that are racing or for those that use copious plugins). No user
-                data is stored by this application. Authentication with Google
-                is strictly used to reach the YouTube Live Broadcasts API on
-                behalf of the user.
-              </p>
+            <div
+              id="google-homepage-shit"
+              class="row align-items-center justify-content-center"
+            >
+              <div class="col-10 offset-md-1">
+                <h5>Usage</h5>
+                <p>
+                  This application is used for aligning livestream archives
+                  (Twitch/YouTube) with FFLogs reporting tool for reviewing
+                  fights and their mechanics. Input a link to both the VOD and
+                  the FFLogs report and then submit. If you need to use a
+                  YouTube livestream, you might need to authenticate with Google
+                  first depending on the privacy settings for the VOD.
+                </p>
+                <p>
+                  Encounters can be saved for easier use if switching between
+                  POV's or coming back at a later time.
+                </p>
+                <br />
+                <p>
+                  <strong> Regarding Google Authentication </strong>
+                </p>
+                <p>
+                  This site uses Sign In with Google to authenticate with
+                  Google's YouTube Data API. This is necessary for users that
+                  want to use xivodreview with private YouTube livestreams
+                  (assume this would be the case for teams that are racing or
+                  for those that use copious plugins). No user data is stored by
+                  this application. Authentication with Google is strictly used
+                  to reach the YouTube Data API on behalf of the user.
+                </p>
+              </div>
+              <div class="col-1"></div>
             </div>
           </div>
         </div>
@@ -222,7 +232,7 @@ export default {
     reportData(newValue) {
       const fightsPerInstance = {};
       if (newValue) {
-        newValue.data.reportData.report.fights.forEach((fight) => {
+        newValue.data.reportData.report.fights.forEach((fight: Object) => {
           fightsPerInstance[fight.name] = fightsPerInstance[fight.name] || [];
           fightsPerInstance[fight.name].push(fight);
         });
@@ -506,32 +516,35 @@ export default {
       }
     },
     getYoutubeData(videoId: string) {
+      var authToken = "";
+      var getUrl = "";
       if (Object.keys(this.googleAuthToken).length != 0) {
-        var authToken = this.googleAuthToken.access_token;
-        fetch(
-          `https://api.yamanote.co/youtube?videoId=${videoId}&authToken=${authToken}`
-        )
-          .then(async (response) => {
-            this.youtubeData = await response.json();
-          })
-          .catch((error) => {
-            console.error("there was an error fetching youtube data: ", error);
-          })
-          .finally(() => {
-            if (this.youtubeData.res.pageInfo.totalResults > 0) {
-              this.vodStartTime = parseInt(
-                this.youtubeData.timeArr[0].startTime
-              );
-              this.getYoutubePlayer(this.youtubeId);
-            } else {
-              alert(
-                "You might be trying to use a private YouTube VOD. Please authenticate with the correct account."
-              );
-            }
-          });
+        authToken = this.googleAuthToken.access_token;
+        console.log(authToken);
+        getUrl = `https://api.yamanote.co/youtube?videoId=${videoId}&authToken=${authToken}`;
       } else {
-        alert("Authenticate with Google to use YouTube livestreams");
+        getUrl = `https://api.yamanote.co/youtube?videoId=${videoId}`;
       }
+      fetch(getUrl)
+        .then(async (response) => {
+          this.youtubeData = await response.json();
+        })
+        .catch((error) => {
+          console.error("there was an error fetching youtube data: ", error);
+        })
+        .finally(() => {
+          console.log(this.youtubeData);
+          if (this.youtubeData.res.pageInfo.totalResults > 0) {
+            this.vodStartTime = parseInt(this.youtubeData.timeArr[0].startTime);
+            this.getYoutubePlayer(this.youtubeId);
+          } else {
+            alert(
+              "You might be trying to use a private YoutTube VOD or URL is incorrect. Please double check YouTube URL or authenticate with the correct account."
+            );
+            this.googleTokenClient.requestAccessToken();
+            this.showGoogleWarning();
+          }
+        });
     },
     getYoutubePlayer(videoId: string) {
       const YT = window.YT;
@@ -599,5 +612,7 @@ export default {
   height: 100%;
   width: 100%;
   top: 0;
+  text-align: justify;
+  text-justify: auto;
 }
 </style>

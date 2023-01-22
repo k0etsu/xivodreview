@@ -16,7 +16,13 @@ import DeathRow from "./DeathRow.vue";
       <tbody class="table-group-divider">
         <DeathRow
           v-for="death in deathData[fightId]"
-          :key="death.timestamp"
+          :key="
+            reportId +
+            death.player +
+            death.source +
+            death.ability +
+            death.timestamp
+          "
           :deathData="death"
           :reportStart="reportStart"
           :vodStartTime="vodStartTime"
@@ -33,6 +39,7 @@ export default {
   props: [
     "fightId",
     "deathData",
+    "reportId",
     "reportStart",
     "vodStartTime",
     "timeBeforePull",
