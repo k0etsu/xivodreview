@@ -158,7 +158,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
           :deathData="deathData"
           :reportId="reportId"
           :reportStart="reportStart"
-          :twitchVodStart="twitchVodStart"
+          :vodStartTime="vodStartTime"
           :timeBeforePull="timeBeforePull"
           :player="player"
         />
@@ -176,7 +176,7 @@ export default {
       twitchData: null,
       youtubeId: "",
       youtubeData: null,
-      twitchVodStart: 0,
+      vodStartTime: 0,
       player: null,
       fflogs_url: "",
       reportId: "",
@@ -194,11 +194,29 @@ export default {
       cachedFightName: "",
       cachedFightSelected: "",
       googleAuthData: {},
+      googleTokenClient: {},
+      googleAuthToken: {},
     };
   },
   created() {
     this.getCachedFights();
-    this.getCachedGoogleAuth();
+    this.getCachedGoogleToken();
+    const google = window.google;
+    this.googleTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id:
+        "613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com",
+      scope: "https://www.googleapis.com/auth/youtube.readonly",
+      callback: (tokenResponse) => {
+        this.googleAuthToken = tokenResponse;
+        this.googleAuthToken["expires_in"] =
+          this.googleAuthToken["expires_in"] * 1000;
+        this.googleAuthToken["created_time"] = Date.now();
+        localStorage.setItem(
+          "cachedGoogleAuthToken",
+          JSON.stringify(this.googleAuthToken)
+        );
+      }
+    });
   },
   watch: {
     reportData(newValue) {
@@ -234,6 +252,7 @@ export default {
         }
         this.twitchId = video[videoIndex + 1];
       } catch (error) {
+        console.log(error)
         this.twitchId = "Please enter a valid Twitch VOD URL";
       } finally {
         this.getTwitchData(this.twitchId);
@@ -248,11 +267,12 @@ export default {
           console.error("there was an error fetching twitch data: ", error);
         })
         .finally(() => {
-          this.twitchVodStart = parseInt(this.twitchData.timeArr[0].startTime);
+          this.vodStartTime = parseInt(this.twitchData.timeArr[0].startTime);
           this.getTwitchPlayer(this.twitchId);
         });
     },
     async getTwitchPlayer(videoId: string) {
+      const Twitch = window.Twitch;
       var options = {
         width: "100%",
         height: "100%",
@@ -317,14 +337,6 @@ export default {
       div.id = "youtube-player";
       youtubePlayer.append(div);
       this.player = null;
-    },
-    testData() {
-      console.log(this.twitchData.res.data);
-      console.log(this.twitchData.timeArr[0].startTime);
-      console.log(this.reportData.data.rateLimitData);
-      console.log(this.reportData.data.reportData);
-      console.log(this.twitchVodStart);
-      console.log(this.reportStart);
     },
     goToTimestamp(timestamp: string) {
       const vodTime = parseInt(timestamp);
@@ -445,8 +457,7 @@ export default {
       localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
     },
     googleAuthCallback(googleAuthData: Object) {
-      console.log("emitting from navigation bar");
-      console.log(googleAuthData);
+      this.googleTokenClient.requestAccessToken();
       this.googleAuthData = googleAuthData;
       this.googleAuthData["expires_in"] =
         this.googleAuthData["expires_in"] * 1000;
@@ -456,18 +467,18 @@ export default {
         JSON.stringify(this.googleAuthData)
       );
     },
-    getCachedGoogleAuth() {
-      const cachedGoogleAuth = localStorage.getItem("cachedGoogleAuth");
-      if (cachedGoogleAuth) {
-        const cachedGoogleAuthObj = JSON.parse(cachedGoogleAuth);
+    getCachedGoogleToken() {
+      const cachedGoogleAuthToken = localStorage.getItem("cachedGoogleAuthToken");
+      if (cachedGoogleAuthToken) {
+        const cachedGoogleAuthObj = JSON.parse(cachedGoogleAuthToken);
         if (
           cachedGoogleAuthObj["created_time"] +
             cachedGoogleAuthObj["expires_in"] >
           Date.now()
         ) {
-          this.googleAuthData = JSON.parse(cachedGoogleAuth);
+          this.googleAuthToken = JSON.parse(cachedGoogleAuthToken);
         } else {
-          localStorage.removeItem("cachedGoogleAuth");
+          localStorage.removeItem("cachedGoogleToken");
         }
       }
     },
@@ -493,29 +504,34 @@ export default {
       }
     },
     getYoutubeData(videoId: string) {
-      if (Object.keys(this.googleAuthData).length !== 0) {
-        var authToken = this.googleAuthData.access_token;
+      if (Object.keys(this.googleAuthToken).length != 0) {
+        var authToken = this.googleAuthToken.access_token;
         fetch(
           `https://api.yamanote.co/youtube?videoId=${videoId}&authToken=${authToken}`
         )
           .then(async (response) => {
             this.youtubeData = await response.json();
-            console.log(this.youtubeData);
           })
           .catch((error) => {
             console.error("there was an error fetching youtube data: ", error);
           })
           .finally(() => {
-            this.twitchVodStart = parseInt(
-              this.youtubeData.timeArr[0].startTime
-            );
-            this.getYoutubePlayer(this.youtubeId);
+            if (this.youtubeData.res.pageInfo.totalResults > 0) {
+              this.vodStartTime = parseInt(
+                this.youtubeData.timeArr[0].startTime
+              );
+              this.getYoutubePlayer(this.youtubeId);
+            }
+            else {
+              alert("You might be trying to use a private YouTube VOD. Please authenticate with the correct account.")
+            }
           });
       } else {
         alert("Authenticate with Google to use YouTube livestreams");
       }
     },
     getYoutubePlayer(videoId: string) {
+      const YT = window.YT;
       const options = {
         iv_load_policy: 3,
         modestbranding: 1,

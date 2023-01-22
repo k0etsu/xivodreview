@@ -19,7 +19,7 @@ import DeathRow from "./DeathRow.vue";
           :key="death.timestamp"
           :deathData="death"
           :reportStart="reportStart"
-          :twitchVodStart="twitchVodStart"
+          :vodStartTime="vodStartTime"
           :timeBeforePull="timeBeforePull"
           :player="player"
         />
@@ -34,7 +34,7 @@ export default {
     "fightId",
     "deathData",
     "reportStart",
-    "twitchVodStart",
+    "vodStartTime",
     "timeBeforePull",
     "player",
   ],
