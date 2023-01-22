@@ -17,7 +17,7 @@ import ReportRow from "./ReportRow.vue";
     <tbody>
       <ReportRow
         v-for="fightEntry in fightEntries"
-        :key="fightEntry.id"
+        :key="reportId + fightTitle + fightEntry.id"
         :fightEntry="fightEntry"
         :deathData="deathData"
         :reportId="reportId"

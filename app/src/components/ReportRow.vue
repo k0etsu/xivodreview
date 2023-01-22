@@ -43,8 +43,10 @@ import DeathTable from "./DeathTable.vue";
   </tr>
   <tr class="collapse" :id="'deaths-' + fightEntry.id">
     <DeathTable
+      :key="reportId + fightEntry.id"
       :fightId="fightEntry.id"
       :deathData="deathData"
+      :reportId="reportId"
       :reportStart="reportStart"
       :vodStartTime="vodStartTime"
       :timeBeforePull="timeBeforePull"

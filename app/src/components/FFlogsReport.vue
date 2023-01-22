@@ -5,7 +5,7 @@ import ReportTable from "./ReportTable.vue";
 <template>
   <ReportTable
     v-for="(fightEntries, fightTitle) in fightData"
-    :key="fightTitle"
+    :key="reportId + fightTitle"
     :fightTitle="fightTitle"
     :fightEntries="fightEntries"
     :deathData="deathData"
