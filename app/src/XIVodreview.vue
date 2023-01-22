@@ -22,7 +22,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
               id="google-homepage-shit"
               class="row align-items-center justify-content-center"
             >
-              <div class="col-10 offset-md-1">
+              <div data-bs-theme="dark" class="col-10 offset-md-1 text-body">
                 <h5>Usage</h5>
                 <p>
                   This application is used for aligning livestream archives
@@ -585,6 +585,10 @@ export default {
 }
 .vod-player {
   height: 100%;
+  padding-top: 56.25%;
+  position: relative;
+  height: 0;
+  background: black;
 }
 
 .deadspace {
@@ -602,11 +606,6 @@ export default {
   width: 27vw;
 }
 
-.vod-player {
-  padding-top: 56.25%;
-  position: relative;
-  height: 0;
-}
 #google-homepage-shit {
   position: absolute;
   height: 100%;
