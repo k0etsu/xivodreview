@@ -215,7 +215,7 @@ export default {
           "cachedGoogleAuthToken",
           JSON.stringify(this.googleAuthToken)
         );
-      }
+      },
     });
   },
   watch: {
@@ -252,7 +252,7 @@ export default {
         }
         this.twitchId = video[videoIndex + 1];
       } catch (error) {
-        console.log(error)
+        console.log(error);
         this.twitchId = "Please enter a valid Twitch VOD URL";
       } finally {
         this.getTwitchData(this.twitchId);
@@ -468,7 +468,9 @@ export default {
       );
     },
     getCachedGoogleToken() {
-      const cachedGoogleAuthToken = localStorage.getItem("cachedGoogleAuthToken");
+      const cachedGoogleAuthToken = localStorage.getItem(
+        "cachedGoogleAuthToken"
+      );
       if (cachedGoogleAuthToken) {
         const cachedGoogleAuthObj = JSON.parse(cachedGoogleAuthToken);
         if (
@@ -521,9 +523,10 @@ export default {
                 this.youtubeData.timeArr[0].startTime
               );
               this.getYoutubePlayer(this.youtubeId);
-            }
-            else {
-              alert("You might be trying to use a private YouTube VOD. Please authenticate with the correct account.")
+            } else {
+              alert(
+                "You might be trying to use a private YouTube VOD. Please authenticate with the correct account."
+              );
             }
           });
       } else {
