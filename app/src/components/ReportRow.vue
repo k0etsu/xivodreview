@@ -46,7 +46,7 @@ import DeathTable from "./DeathTable.vue";
       :fightId="fightEntry.id"
       :deathData="deathData"
       :reportStart="reportStart"
-      :twitchVodStart="twitchVodStart"
+      :vodStartTime="vodStartTime"
       :timeBeforePull="timeBeforePull"
       :player="player"
     />
@@ -66,7 +66,7 @@ export default {
     "deathData",
     "reportId",
     "reportStart",
-    "twitchVodStart",
+    "vodStartTime",
     "timeBeforePull",
     "player",
   ],
@@ -85,7 +85,7 @@ export default {
   created() {
     this.pullTimeInVod =
       Math.floor(
-        (this.reportStart - this.twitchVodStart + this.fightEntry.startTime) /
+        (this.reportStart - this.vodStartTime + this.fightEntry.startTime) /
           1000
       ) - this.timeBeforePull;
     this.timestamp = new Date(this.pullTimeInVod * 1000)
@@ -95,7 +95,7 @@ export default {
   updated() {
     this.pullTimeInVod =
       Math.floor(
-        (this.reportStart - this.twitchVodStart + this.fightEntry.startTime) /
+        (this.reportStart - this.vodStartTime + this.fightEntry.startTime) /
           1000
       ) - this.timeBeforePull;
     this.timestamp = new Date(this.pullTimeInVod * 1000)

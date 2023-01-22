@@ -11,7 +11,7 @@ import ReportTable from "./ReportTable.vue";
     :deathData="deathData"
     :reportId="reportId"
     :reportStart="reportStart"
-    :twitchVodStart="twitchVodStart"
+    :vodStartTime="vodStartTime"
     :timeBeforePull="timeBeforePull"
     :player="player"
   />
@@ -24,7 +24,7 @@ export default {
     "deathData",
     "reportId",
     "reportStart",
-    "twitchVodStart",
+    "vodStartTime",
     "timeBeforePull",
     "player",
   ],
