@@ -42,8 +42,7 @@ export default {
   created() {
     this.pullTimeInVod =
       Math.floor(
-        (this.reportStart - this.vodStartTime + this.deathData.timestamp) /
-          1000
+        (this.reportStart - this.vodStartTime + this.deathData.timestamp) / 1000
       ) - this.timeBeforePull;
     this.timestamp = new Date(this.pullTimeInVod * 1000)
       .toISOString()
@@ -52,8 +51,7 @@ export default {
   updated() {
     this.pullTimeInVod =
       Math.floor(
-        (this.reportStart - this.vodStartTime + this.deathData.timestamp) /
-          1000
+        (this.reportStart - this.vodStartTime + this.deathData.timestamp) / 1000
       ) - this.timeBeforePull;
     this.timestamp = new Date(this.pullTimeInVod * 1000)
       .toISOString()

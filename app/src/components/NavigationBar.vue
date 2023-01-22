@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { googleSdkLoaded, decodeCredential } from "vue3-google-login";
 defineProps<{
   msg: string;
 }>();
@@ -26,7 +25,9 @@ defineProps<{
       <div class="collapse navbar-collapse" id="navbarNavDropdown">
         <ul class="navbar-nav flex-row flex-wrap bd-navbar-nav">
           <li class="nav-item">
-            <a class="nav-link py-2 px-0 px-lg-2" href="/privacy-policy.html">Privacy Policy</a>
+            <a class="nav-link py-2 px-0 px-lg-2" href="/privacy-policy.html"
+              >Privacy Policy</a
+            >
           </li>
           <li class="nav-item">
             <a
@@ -145,7 +146,12 @@ defineProps<{
             </ul>
           </li>
           <li class="nav-item">
-            <GoogleLogin data-theme="filled_blue" :callback="callback" prompt auto-login />
+            <GoogleLogin
+              data-theme="filled_blue"
+              :callback="callback"
+              prompt
+              auto-login
+            />
           </li>
         </ul>
       </div>
