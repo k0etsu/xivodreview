@@ -321,6 +321,8 @@ export default {
     },
     resetURLs() {
       this.removePlayer();
+      this.vod_url = "";
+      this.fflogs_url = "";
       this.cachedFightName = "";
       this.cachedFightSelected = "";
       this.showGoogleWarning();
@@ -520,7 +522,6 @@ export default {
       var getUrl = "";
       if (Object.keys(this.googleAuthToken).length != 0) {
         authToken = this.googleAuthToken.access_token;
-        console.log(authToken);
         getUrl = `https://api.yamanote.co/youtube?videoId=${videoId}&authToken=${authToken}`;
       } else {
         getUrl = `https://api.yamanote.co/youtube?videoId=${videoId}`;
@@ -533,7 +534,6 @@ export default {
           console.error("there was an error fetching youtube data: ", error);
         })
         .finally(() => {
-          console.log(this.youtubeData);
           if (this.youtubeData.res.pageInfo.totalResults > 0) {
             this.vodStartTime = parseInt(this.youtubeData.timeArr[0].startTime);
             this.getYoutubePlayer(this.youtubeId);
