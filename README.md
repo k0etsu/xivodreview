@@ -1,6 +1,7 @@
 # xivodreview
+[![ko-fi](https://img.shields.io/badge/donate-ko--fi-blue)](https://ko-fi.com/k0etsu)
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/K3K1I3DWE)
-<br>
+
 Raiding (or not, up to you) tool to help with VOD review utilizing FFLogs report data and Twitch (YouTube too eventually) VODs.
 <br><br>
 ## Overall process flow
