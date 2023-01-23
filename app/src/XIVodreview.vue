@@ -8,8 +8,9 @@ import FFlogsReport from "./components/FFlogsReport.vue";
     class="navHeader"
     msg="GitHub"
     :googleAuthToken="googleAuthToken"
-    @google-auth="googleAuthCallback"
+    @google-auth="getGoogleAuthToken"
     @remove-google-auth-token="clearGoogleAuthToken"
+    @get-google-auth-token="getGoogleAuthToken"
   />
   <div class="container-fluid overflow-hidden">
     <div class="row no-scroll">
@@ -487,7 +488,7 @@ export default {
       this.cachedFightName = "";
       localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
     },
-    googleAuthCallback(googleAuthData: Object) {
+    getGoogleAuthToken(googleAuthData: Object) {
       this.googleTokenClient.requestAccessToken();
       this.googleAuthData = googleAuthData;
       this.googleAuthData["expires_in"] =

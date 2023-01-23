@@ -71,6 +71,24 @@ defineProps<{
               Authenticated with Google
             </button>
           </li>
+          <li v-else>
+            <button
+              v-if="colorTheme === 'dark'"
+              type="button"
+              class="btn btn-outline-light text-nowrap"
+              @click="$emit('getGoogleAuthToken')"
+            >
+              Authenticate with Google
+            </button>
+            <button
+              v-if="colorTheme === 'light'"
+              type="button"
+              class="btn btn-outline-dark text-nowrap"
+              @click="$emit('getGoogleAuthToken')"
+            >
+              Authenticate with Google
+            </button>
+          </li>
           <li class="nav-item dropdown">
             <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
               <symbol id="circle-half" viewBox="0 0 16 16">
@@ -204,7 +222,7 @@ export default {
       tooltipList: null,
     };
   },
-  emits: ["googleAuth", "removeGoogleAuthToken"],
+  emits: ["googleAuth", "removeGoogleAuthToken", "getGoogleAuthToken"],
   watch: {
     googleAuthResponse(newValue) {
       this.$emit("googleAuth", newValue);
