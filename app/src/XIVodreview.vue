@@ -38,6 +38,16 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                   Encounters can be saved for easier use if switching between
                   POV's or coming back at a later time.
                 </p>
+                <p>
+                  If you wish to use a private YouTube Livestream/VOD, you must
+                  ensure that you are logged into the correct Google account
+                  that has been shared the video.
+                  <br />
+                  If you are using Firefox and want to use a private YouTube VOD
+                  with this tool, you may need to whitelist this domain in the
+                  "Enhanced Tracking Protection" section to allow cross-site
+                  cookies. Otherwise, the player embed may not work.
+                </p>
                 <br />
                 <p>
                   <strong> Regarding Google Authentication </strong>
