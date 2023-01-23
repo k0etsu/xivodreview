@@ -45,8 +45,7 @@ defineProps<{
               googleAuthToken.created_time + googleAuthToken.expires_in >
               Date.now()
             "
-            id="google-auth-notification"
-            class="nav-item"
+            class="nav-item py-1 px-0 px-lg-2"
           >
             <button
               v-if="colorTheme === 'dark'"
@@ -71,7 +70,7 @@ defineProps<{
               Authenticated with Google
             </button>
           </li>
-          <li v-else>
+          <li v-else class="nav-item py-1 px-0 px-lg-2">
             <button
               v-if="colorTheme === 'dark'"
               type="button"
