@@ -7,6 +7,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
   <NavigationBar
     class="navHeader"
     msg="GitHub"
+    :googleAuthToken="googleAuthToken"
     @google-auth="googleAuthCallback"
   />
   <div class="container-fluid overflow-hidden">
@@ -206,6 +207,7 @@ export default {
       googleAuthData: {},
       googleTokenClient: {},
       googleAuthToken: {},
+      googleAuthTokenTimer: 0,
     };
   },
   created() {
@@ -224,6 +226,12 @@ export default {
         localStorage.setItem(
           "cachedGoogleAuthToken",
           JSON.stringify(this.googleAuthToken)
+        );
+        clearTimeout(this.googleAuthTokenTimer);
+        const tokenTimeout = this.googleAuthToken["expires_in"];
+        this.googleAuthTokenTimer = setTimeout(
+          this.clearGoogleAuthToken,
+          tokenTimeout
         );
       },
     });
@@ -491,10 +499,25 @@ export default {
           Date.now()
         ) {
           this.googleAuthToken = JSON.parse(cachedGoogleAuthToken);
+          var tokenTimeout =
+            this.googleAuthToken["created_time"] +
+            this.googleAuthToken["expires_in"] -
+            Date.now();
+          this.googleAuthTokenTimer = setTimeout(
+            this.clearGoogleAuthToken,
+            tokenTimeout
+          );
         } else {
-          localStorage.removeItem("cachedGoogleToken");
+          localStorage.removeItem("cachedGoogleAuthToken");
         }
       }
+    },
+    clearGoogleAuthToken() {
+      if (this.googleAuthTokenTimer) {
+        clearTimeout(this.googleAuthTokenTimer);
+      }
+      this.googleAuthToken = {};
+      this.googleAuthTokenTimer = 0;
     },
     async getYoutubeId(youtubeUrl: string) {
       try {

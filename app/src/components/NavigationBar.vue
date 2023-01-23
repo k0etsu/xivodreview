@@ -1,6 +1,7 @@
 <script setup lang="ts">
 defineProps<{
   msg: string;
+  googleAuthToken: {};
 }>();
 </script>
 
@@ -39,6 +40,16 @@ defineProps<{
           </li>
         </ul>
         <ul class="navbar-nav flex-row flex-wrap ms-md-auto">
+          <li
+            v-if="
+              googleAuthToken.created_time + googleAuthToken.expires_in >
+              Date.now()
+            "
+            id="google-auth-notification"
+            class="nav-item py-2 py-0 px-lg-2"
+          >
+            Authenticated with Google
+          </li>
           <li class="nav-item dropdown">
             <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
               <symbol id="circle-half" viewBox="0 0 16 16">
@@ -147,6 +158,7 @@ defineProps<{
           </li>
           <li class="nav-item">
             <GoogleLogin
+              id="google-auth-button"
               data-theme="filled_blue"
               :callback="callback"
               prompt
@@ -198,5 +210,13 @@ export default {
 .navLink {
   text-align: left;
   margin-right: 1em;
+}
+
+#bd-theme {
+  margin-left: 1em;
+}
+
+#google-auth-button {
+  margin-left: 1em;
 }
 </style>
