@@ -9,6 +9,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
     msg="GitHub"
     :googleAuthToken="googleAuthToken"
     @google-auth="googleAuthCallback"
+    @remove-google-auth-token="clearGoogleAuthToken"
   />
   <div class="container-fluid overflow-hidden">
     <div class="row no-scroll">
@@ -518,6 +519,7 @@ export default {
       }
       this.googleAuthToken = {};
       this.googleAuthTokenTimer = 0;
+      localStorage.removeItem("cachedGoogleAuthToken");
     },
     async getYoutubeId(youtubeUrl: string) {
       try {

@@ -46,9 +46,30 @@ defineProps<{
               Date.now()
             "
             id="google-auth-notification"
-            class="nav-item py-2 py-0 px-lg-2"
+            class="nav-item"
           >
-            Authenticated with Google
+            <button
+              v-if="colorTheme === 'dark'"
+              type="button"
+              class="btn btn-dark text-nowrap"
+              data-bs-toggle="tooltip"
+              data-bs-placement="left"
+              data-bs-title="Remove Google Authentication"
+              @click="$emit('removeGoogleAuthToken')"
+            >
+              Authenticated with Google
+            </button>
+            <button
+              v-if="colorTheme === 'light'"
+              type="button"
+              class="btn btn-light text-nowrap"
+              data-bs-toggle="tooltip"
+              data-bs-placement="left"
+              data-bs-title="Remove Google Authentication"
+              @click="$emit('removeGoogleAuthToken')"
+            >
+              Authenticated with Google
+            </button>
           </li>
           <li class="nav-item dropdown">
             <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
@@ -99,6 +120,7 @@ defineProps<{
                   type="button"
                   class="dropdown-item d-flex align-items-center"
                   data-bs-theme-value="light"
+                  @click="setLightTheme"
                 >
                   <svg
                     class="bi me-2 opacity-50 theme-icon"
@@ -119,6 +141,7 @@ defineProps<{
                   type="button"
                   class="dropdown-item d-flex align-items-center"
                   data-bs-theme-value="dark"
+                  @click="setDarkTheme"
                 >
                   <svg
                     class="bi me-2 opacity-50 theme-icon"
@@ -139,6 +162,7 @@ defineProps<{
                   type="button"
                   class="dropdown-item d-flex align-items-center active"
                   data-bs-theme-value="auto"
+                  @click="getColorTheme"
                 >
                   <svg
                     class="bi me-2 opacity-50 theme-icon"
@@ -176,11 +200,11 @@ export default {
   data() {
     return {
       googleAuthResponse: {},
+      colorTheme: "",
+      tooltipList: null,
     };
   },
-  emits: {
-    googleAuth: null,
-  },
+  emits: ["googleAuth", "removeGoogleAuthToken"],
   watch: {
     googleAuthResponse(newValue) {
       this.$emit("googleAuth", newValue);
@@ -190,6 +214,29 @@ export default {
     callback(response) {
       this.googleAuthResponse = response;
     },
+    getColorTheme() {
+      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        this.colorTheme = "dark";
+      } else {
+        this.colorTheme = "light";
+      }
+    },
+    setDarkTheme() {
+      this.colorTheme = "dark";
+    },
+    setLightTheme() {
+      this.colorTheme = "light";
+    },
+  },
+  created() {
+    this.colorTheme = localStorage.getItem("theme");
+    if (this.colorTheme == "auto") {
+      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        this.colorTheme = "dark";
+      } else {
+        this.colorTheme = "light";
+      }
+    }
   },
 };
 </script>
