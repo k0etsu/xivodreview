@@ -13,7 +13,8 @@ dotenv.config()
 const FFLOGS_CLIENT_ID = process.env.FFLOGS_CLIENT_ID;
 const FFLOGS_CLIENT_SECRET = process.env.FFLOGS_CLIENT_SECRET;
 const FFLOGS_AUTH = "https://www.fflogs.com/oauth/token";
-const FFLOGS_API = "https://www.fflogs.com/api/v2/client";
+const FFLOGS_CLIENT_API = "https://www.fflogs.com/api/v2/client";
+const FFLOGS_USER_API = "https://www.fflogs.com/api/v2/user";
 const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET;
 const TWITCH_AUTH = "https://id.twitch.tv/oauth2/token";
@@ -159,6 +160,13 @@ app.get("/fflogs", (req, res, next) => {
   }
 }`;
     // setup options to pass to got()
+    var url = '';
+    if (req.query.authToken != undefined) {
+      token = req.query.authToken;
+      url = FFLOGS_USER_API;
+    } else {
+      url = FFLOGS_CLIENT_API;
+    };
     const options = {
       method: "GET",
       searchParams: {query: query},
@@ -166,7 +174,7 @@ app.get("/fflogs", (req, res, next) => {
         "Authorization": `Bearer ${token}`
       }
     };
-    return got(FFLOGS_API, options)
+    return got(url, options)
   // TODO: promise chaining cause can't figure out async/await
   }).then(data => {
     res.json(JSON.parse(data["body"]))
