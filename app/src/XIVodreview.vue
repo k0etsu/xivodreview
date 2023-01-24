@@ -718,7 +718,7 @@ export default {
             "popup=true,width=500, height=500"
           );
           const checkPopup = setInterval(() => {
-            if (fflogsPopup.window.location.href.includes("localhost:3000")) {
+            if (fflogsPopup.window.location.href.includes("xivodreview.com")) {
               fflogsPopup.close()
             };
             if (!fflogsPopup || !fflogsPopup.closed) return;
