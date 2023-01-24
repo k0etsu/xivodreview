@@ -8,9 +8,12 @@ import FFlogsReport from "./components/FFlogsReport.vue";
     class="navHeader"
     msg="GitHub"
     :googleAuthToken="googleAuthToken"
+    :fflogsAuthToken="fflogsAuthToken"
     @google-auth="getGoogleAuthToken"
-    @remove-google-auth-token="clearGoogleAuthToken"
     @get-google-auth-token="getGoogleAuthToken"
+    @clear-google-auth-token="clearGoogleAuthToken"
+    @get-fflogs-auth-token="getFflogsAuthToken"
+    @clear-fflogs-auth-token="clearFflogsAuthToken"
   />
   <div class="container-fluid overflow-hidden">
     <div class="row no-scroll">
@@ -220,11 +223,19 @@ export default {
       googleTokenClient: {},
       googleAuthToken: {},
       googleAuthTokenTimer: 0,
+      fflogsAuthState: "",
+      fflogsCodeVerifier: "",
+      fflogsCodeChallenge: "",
+      fflogsAuthUrl: URL,
+      fflogsAuthCode: "",
+      fflogsAuthToken: {},
+      fflogsAuthTokenTimer: 0,
     };
   },
   created() {
     this.getCachedFights();
     this.getCachedGoogleToken();
+    this.getCachedFflogsAuthToken();
     const google = window.google;
     this.googleTokenClient = google.accounts.oauth2.initTokenClient({
       client_id:
@@ -269,6 +280,28 @@ export default {
         this.fflogs_url = this.cachedFights[encounter].fflogs;
         this.submitURLs();
       }
+    },
+    async fflogsAuthCode(code) {
+      const fflogsClientId = "984bcd26-7d4e-4d0a-b8aa-80b24755d685";
+      await fetch("https://www.fflogs.com/oauth/token", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          client_id: fflogsClientId,
+          code_verifier: this.fflogsCodeVerifier,
+          redirect_uri: "http://localhost:3000",
+          grant_type: "authorization_code",
+          code: code
+        })
+      })
+      .then(async (res) => {
+        this.fflogsAuthToken = await res.json();
+        this.fflogsAuthToken["created_time"] = Date.now();
+        localStorage.setItem("cachedFflogsAuthToken", JSON.stringify(this.fflogsAuthToken));
+      })
     },
   },
   methods: {
@@ -387,7 +420,13 @@ export default {
       }
     },
     getReportData(reportId: string) {
-      fetch("https://api.yamanote.co/fflogs?reportId=" + reportId)
+      var getUrl = "";
+      if (Object.keys(this.fflogsAuthToken).length != 0) {
+        getUrl = `https://api.yamanote.co/fflogs?reportId=${reportId}&authToken=${this.fflogsAuthToken.access_token}`
+      } else {
+        getUrl = `https://api.yamanote.co/fflogs?reportId=${reportId}`
+      }
+      fetch(getUrl)
         .then(async (response) => {
           this.reportData = await response.json();
         })
@@ -395,23 +434,41 @@ export default {
           console.error("there was an error fetching fflogs data: ", error);
         })
         .finally(() => {
-          this.reportStart = parseInt(
-            this.reportData.data.reportData.report.startTime
-          );
-          this.reportEnd = parseInt(
-            this.reportData.data.reportData.report.endTime
-          );
-          this.getReportDeathData(
-            this.reportId,
-            0,
-            this.reportEnd - this.reportStart
-          );
+          if (this.reportData.errors) {
+            alert(this.reportData.errors[0].message + "\n\nTry authenticating with FF Logs if this report is private.")
+          } else {
+            this.reportStart = parseInt(
+              this.reportData.data.reportData.report.startTime
+            );
+            this.reportEnd = parseInt(
+              this.reportData.data.reportData.report.endTime
+            );
+            if (this.fflogsAuthToken) {
+              this.getReportDeathData(
+                this.reportId,
+                0,
+                this.reportEnd - this.reportStart,
+                this.fflogsAuthToken.access_token,
+              );
+            } else {
+              this.getReportDeathData(
+                this.reportId,
+                0,
+                this.reportEnd - this.reportStart,
+                {}
+              );
+            }
+          }
         });
     },
-    getReportDeathData(reportId, startTime, endTime) {
-      fetch(
-        `https://api.yamanote.co/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`
-      )
+    getReportDeathData(reportId, startTime, endTime, authToken) {
+      var getUrl = "";
+      if (authToken) {
+        getUrl = `https://api.yamanote.co/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}&authToken=${authToken}`
+      } else {
+        getUrl = `https://api.yamanote.co/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`
+      }
+      fetch(getUrl)
         .then(async (response) => {
           this.reportData = await response.json();
           this.getExtraReportData();
@@ -607,6 +664,91 @@ export default {
       this.player.addEventListener("onStateChange", () => {
         this.player.setPlaybackQuality("highres");
       });
+    },
+    dec2hex(dec) {
+      return ("0" + dec.toString(16)).substr(-2);
+    },
+    generateCodeVerifier() {
+      var array = new Uint32Array(56 / 2);
+      window.crypto.getRandomValues(array);
+      return Array.from(array, this.dec2hex).join("");
+    },
+    sha256(plain) {
+      // returns promise ArrayBuffer
+      const encoder = new TextEncoder();
+      const data = encoder.encode(plain);
+      return window.crypto.subtle.digest("SHA-256", data);
+    },
+    base64urlencode(a) {
+      var str = "";
+      var bytes = new Uint8Array(a);
+      var len = bytes.byteLength;
+      for (var i = 0; i < len; i++) {
+        str += String.fromCharCode(bytes[i]);
+      }
+      return btoa(str)
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+    },
+    async generateCodeChallengeFromVerifier(v) {
+      var hashed = await this.sha256(v);
+      var base64encoded = this.base64urlencode(hashed);
+      return base64encoded;
+    },
+    async createFflogsAuthUrl() {
+      const fflogsClientId = "984bcd26-7d4e-4d0a-b8aa-80b24755d685";
+      this.fflogsAuthState = this.generateCodeVerifier();
+      this.fflogsAuthUrl = new URL("https://www.fflogs.com/oauth/authorize");
+      this.fflogsAuthUrl.searchParams.set("client_id", fflogsClientId);
+      this.fflogsCodeVerifier = this.generateCodeVerifier();
+      this.fflogsCodeChallenge = await this.generateCodeChallengeFromVerifier(this.fflogsCodeVerifier);
+      this.fflogsAuthUrl.searchParams.set("code_challenge", this.fflogsCodeChallenge);
+      this.fflogsAuthUrl.searchParams.set("code_challenge_method", "S256");
+      this.fflogsAuthUrl.searchParams.set("state", this.fflogsAuthState);
+      this.fflogsAuthUrl.searchParams.set("redirect_uri", "http://localhost:3000");
+      this.fflogsAuthUrl.searchParams.set("response_type", "code");
+    },
+    async getFflogsAuthToken() {
+      this.createFflogsAuthUrl()
+        .then(async () => {
+          const fflogsPopup = window.open(
+            this.fflogsAuthUrl.href,
+            "fflogsAuth",
+            "popup=true,width=500, height=500"
+          );
+          const checkPopup = setInterval(() => {
+            if (fflogsPopup.window.location.href.includes("localhost:3000")) {
+              fflogsPopup.close()
+            };
+            if (!fflogsPopup || !fflogsPopup.closed) return;
+            clearInterval(checkPopup);
+            const url = new URL(fflogsPopup.location.href);
+            const state = url.searchParams.get("state");
+            if (state === this.fflogsAuthState) {
+              this.fflogsAuthCode = url.searchParams.get("code");
+            } else {
+              console.error("state does not match - abort or something");
+            }
+          }, 500);
+        });
+    },
+    getCachedFflogsAuthToken() {
+      const cachedfflogsAuthToken = localStorage.getItem("cachedFflogsAuthToken");
+      if (cachedfflogsAuthToken) {
+        const cachedFflogsAuthObj = JSON.parse(cachedfflogsAuthToken);
+        if (cachedFflogsAuthObj["created_time"] + cachedFflogsAuthObj["expires_in"] > Date.now()) {
+          this.fflogsAuthToken = cachedFflogsAuthObj;
+          var tokenTimeout = this.fflogsAuthToken["created_time"] + this.fflogsAuthToken["expires_in"] - Date.now();
+          this.fflogsAuthTokenTimer = setTimeout(this.clearFflogsAuthToken, tokenTimeout);
+        } else {
+          localStorage.removeItem("cachedFflogsAuthToken");
+        }
+      }
+    },
+    clearFflogsAuthToken() {
+      this.fflogsAuthToken = {};
+      localStorage.removeItem("cachedFflogsAuthToken");
     },
   },
 };
