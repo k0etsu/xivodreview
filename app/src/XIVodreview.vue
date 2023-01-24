@@ -292,7 +292,7 @@ export default {
         body: JSON.stringify({
           client_id: fflogsClientId,
           code_verifier: this.fflogsCodeVerifier,
-          redirect_uri: "http://localhost:3000",
+          redirect_uri: "https://xivodreview.com",
           grant_type: "authorization_code",
           code: code
         })
@@ -706,7 +706,7 @@ export default {
       this.fflogsAuthUrl.searchParams.set("code_challenge", this.fflogsCodeChallenge);
       this.fflogsAuthUrl.searchParams.set("code_challenge_method", "S256");
       this.fflogsAuthUrl.searchParams.set("state", this.fflogsAuthState);
-      this.fflogsAuthUrl.searchParams.set("redirect_uri", "http://localhost:3000");
+      this.fflogsAuthUrl.searchParams.set("redirect_uri", "https://xivodreview.com");
       this.fflogsAuthUrl.searchParams.set("response_type", "code");
     },
     async getFflogsAuthToken() {
