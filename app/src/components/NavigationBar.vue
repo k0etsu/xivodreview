@@ -2,6 +2,7 @@
 defineProps<{
   msg: string;
   googleAuthToken: {};
+  fflogsAuthToken: {};
 }>();
 </script>
 
@@ -40,6 +41,16 @@ defineProps<{
           </li>
         </ul>
         <ul class="navbar-nav flex-row flex-wrap ms-md-auto">
+          <li v-if="Object.keys(fflogsAuthToken).length == 0" class="nav-item py-1 px-0 px-lg-2">
+            <button type="button" class="btn btn-outline-primary text-nowrap" @click="$emit('getFflogsAuthToken')">
+              <img src="https://assets.rpglogs.com/img/ff/favicon.png?v=2" style="height: 1.5em;" />Login
+            </button>
+          </li>
+          <li v-else class="nav-item py-1 px-0 px-lg-2">
+            <button type="button" class="btn btn-outline-primary text-nowrap" @click="$emit('clearFflogsAuthToken')">
+              <img src="https://assets.rpglogs.com/img/ff/favicon.png?v=2" style="height: 1.5em;" />Logout
+            </button>
+          </li>
           <li
             v-if="
               googleAuthToken.created_time + googleAuthToken.expires_in >
@@ -54,7 +65,7 @@ defineProps<{
               data-bs-toggle="tooltip"
               data-bs-placement="left"
               data-bs-title="Remove Google Authentication"
-              @click="$emit('removeGoogleAuthToken')"
+              @click="$emit('clearGoogleAuthToken')"
             >
               Authenticated with Google
             </button>
@@ -65,7 +76,7 @@ defineProps<{
               data-bs-toggle="tooltip"
               data-bs-placement="left"
               data-bs-title="Remove Google Authentication"
-              @click="$emit('removeGoogleAuthToken')"
+              @click="$emit('clearGoogleAuthToken')"
             >
               Authenticated with Google
             </button>
@@ -221,7 +232,7 @@ export default {
       tooltipList: null,
     };
   },
-  emits: ["googleAuth", "removeGoogleAuthToken", "getGoogleAuthToken"],
+  emits: ["googleAuth", "clearGoogleAuthToken", "getGoogleAuthToken", "getFflogsAuthToken", "clearFflogsAuthToken"],
   watch: {
     googleAuthResponse(newValue) {
       this.$emit("googleAuth", newValue);
