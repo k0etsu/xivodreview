@@ -58,45 +58,13 @@ defineProps<{
             "
             class="nav-item py-1 px-0 px-lg-2"
           >
-            <button
-              v-if="colorTheme === 'dark'"
-              type="button"
-              class="btn btn-dark text-nowrap"
-              data-bs-toggle="tooltip"
-              data-bs-placement="left"
-              data-bs-title="Remove Google Authentication"
-              @click="$emit('clearGoogleAuthToken')"
-            >
-              Authenticated with Google
-            </button>
-            <button
-              v-if="colorTheme === 'light'"
-              type="button"
-              class="btn btn-light text-nowrap"
-              data-bs-toggle="tooltip"
-              data-bs-placement="left"
-              data-bs-title="Remove Google Authentication"
-              @click="$emit('clearGoogleAuthToken')"
-            >
-              Authenticated with Google
+            <button type="button" class="btn btn-outline-danger text-nowrap" @click="$emit('clearGoogleAuthToken')">
+              <img src="https://www.youtube.com/s/desktop/82a4cf4f/img/favicon_144x144.png" style="height: 1.5em;" /> Logout
             </button>
           </li>
           <li v-else class="nav-item py-1 px-0 px-lg-2">
-            <button
-              v-if="colorTheme === 'dark'"
-              type="button"
-              class="btn btn-outline-light text-nowrap"
-              @click="$emit('getGoogleAuthToken')"
-            >
-              Authenticate with Google
-            </button>
-            <button
-              v-if="colorTheme === 'light'"
-              type="button"
-              class="btn btn-outline-dark text-nowrap"
-              @click="$emit('getGoogleAuthToken')"
-            >
-              Authenticate with Google
+            <button type="button" class="btn btn-outline-danger text-nowrap" @click="$emit('getGoogleAuthToken')">
+              <img src="https://www.youtube.com/s/desktop/82a4cf4f/img/favicon_144x144.png" style="height: 1.5em;" /> Login
             </button>
           </li>
           <li class="nav-item dropdown">
