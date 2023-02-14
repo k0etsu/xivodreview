@@ -181,8 +181,6 @@ defineProps<{
               id="google-auth-button"
               data-theme="filled_blue"
               :callback="callback"
-              prompt
-              auto-login
             />
           </li>
         </ul>
