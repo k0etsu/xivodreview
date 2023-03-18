@@ -19,8 +19,8 @@ import FFlogsReport from "./components/FFlogsReport.vue";
     <div class="row no-scroll">
       <div class="col-9 player-input">
         <div class="row g-0 flex-row-thing">
-          <div class="vod-player col-12">
-            <div class="row g-0">
+          <div class="col-12">
+            <div class="vod-player row g-0">
               <div id="twitch-player"></div>
               <div id="youtube-player-wrapper">
                 <div id="youtube-player"></div>
@@ -71,7 +71,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
               </div>
             </div>
             <div class="row g-0">
-              <div class="pull-scrub"></div>
+              <div id="pull-scrub"></div>
             </div>
           </div>
         </div>
@@ -210,6 +210,7 @@ export default {
       youtubeData: null,
       vodStartTime: 0,
       player: null,
+      playerType: "",
       fflogs_url: "",
       reportId: "",
       reportData: null,
@@ -384,6 +385,7 @@ export default {
       this.fflogs_url = "";
       this.cachedFightName = "";
       this.cachedFightSelected = "";
+      this.playerType = "";
       this.showGoogleWarning();
       // TODO: Clear logs
     },
@@ -768,7 +770,7 @@ export default {
   height: 96vh;
 }
 .vod-player {
-  height: 84vh;
+  height: 81vh;
   /* padding-top: 56.25%; */
   display: block;
   position: relative;
@@ -791,6 +793,11 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+
+#pull-scrub {
+  height: 3vh;
+  background: #3f3f3f;
 }
 
 .player-input {
