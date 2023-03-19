@@ -85,7 +85,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
         <div class="row g-0 bottom-fixed">
           <div class="deadspace col-12">
             <div class="row g-2">
-              <div class="col-6">
+              <!-- <div class="col-6">
                 <div class="row align-items-center g-2">
                   <div class="form-group form-floating">
                     <input
@@ -131,12 +131,9 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                     >
                       Reset
                     </button>
-                    <!-- <button type="button" class="btn btn-outline-warning me-2" @click="getYoutubePlayer">
-                      test
-                    </button> -->
                   </div>
                 </div>
-              </div>
+              </div> -->
               <div class="col-6">
                 <div class="row align-items-center g-2">
                   <div class="form-group form-floating">
@@ -189,17 +186,79 @@ import FFlogsReport from "./components/FFlogsReport.vue";
           </div>
         </div>
       </div>
-      <div class="fflogs-report overflow-auto col-3" v-if="fightData && player">
-        <FFlogsReport
-          :key="reportId"
-          :fightData="fightData"
-          :deathData="deathData"
-          :reportId="reportId"
-          :reportStart="reportStart"
-          :vodStartTime="vodStartTime"
-          :timeBeforePull="timeBeforePull"
-          :player="player"
-        />
+      <div class="overflow-auto col-3">
+        <div class="accordian accordian-flush" id="control-flow">
+          <div class="accordian-item">
+            <h2 class="accordian-header" id="headingOne">
+              <button class="accordian-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                URL inputs
+              </button>
+            </h2>
+            <div id="collapseOne" class="accordian-collapse collapse show" aria-labelledby="headingOne">
+              <div class="accordian-body">
+                <div class="row align-items-center g-2">
+                    <div class="form-group form-floating">
+                      <input
+                        class="twitchUrl form-control"
+                        v-model.lazy.trim="vod_url"
+                        placeholder="Twitch VOD URL"
+                      />
+                      <label for="twitchUrl">Twitch/YouTube VOD URL</label>
+                    </div>
+                  </div>
+                  <div class="row align-items-center g-2">
+                    <div class="form-group form-floating">
+                      <input
+                        class="fflogsUrl form-control"
+                        v-model.lazy.trim="fflogs_url"
+                        placeholder="FFLogs Report URL"
+                      />
+                      <label for="fflogsUrl">FFLogs Report URL</label>
+                    </div>
+                  </div>
+                  <div class="row align-items-center g-2">
+                    <div class="form-group form-floating col-lg-3">
+                      <input
+                        id="timeBeforePull"
+                        class="form-control"
+                        type="number"
+                        v-model="timeBeforePull"
+                      />
+                      <label for="timeBeforePull"
+                        >Video sync/offset (in seconds)</label
+                      >
+                    </div>
+                    <div class="col-lg-4">
+                      <button
+                        class="btn btn-outline-primary me-2"
+                        @click="submitURLs"
+                      >
+                        Submit
+                      </button>
+                      <button
+                        class="btn btn-outline-secondary me-2"
+                        @click="resetURLs"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fflogs-report" v-if="fightData && player">
+          <FFlogsReport
+            :key="reportId"
+            :fightData="fightData"
+            :deathData="deathData"
+            :reportId="reportId"
+            :reportStart="reportStart"
+            :vodStartTime="vodStartTime"
+            :timeBeforePull="timeBeforePull"
+            :player="player"
+          />
+        </div>
       </div>
     </div>
   </div>
