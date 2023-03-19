@@ -18,59 +18,66 @@ import FFlogsReport from "./components/FFlogsReport.vue";
   <div class="container-fluid overflow-hidden">
     <div class="row no-scroll">
       <div class="col-9 player-input">
-        <div class="row g-0">
-          <div class="vod-player col-12">
-            <div id="twitch-player"></div>
-            <div id="youtube-player-wrapper">
-              <div id="youtube-player"></div>
-            </div>
-            <div
-              id="google-homepage-shit"
-              class="row align-items-center justify-content-center"
-            >
-              <div data-bs-theme="dark" class="col-10 offset-md-1 text-body">
-                <h5>Usage</h5>
-                <p>
-                  This application is used for aligning livestream archives
-                  (Twitch/YouTube) with FFLogs reporting tool for reviewing
-                  fights and their mechanics. Input a link to both the VOD and
-                  the FFLogs report and then submit. If you need to use a
-                  YouTube livestream, you might need to authenticate with Google
-                  first depending on the privacy settings for the VOD.
-                </p>
-                <p>
-                  Encounters can be saved for easier use if switching between
-                  POV's or coming back at a later time.
-                </p>
-                <p>
-                  If you wish to use a private YouTube Livestream/VOD, you must
-                  ensure that you are logged into the correct Google account
-                  that has been shared the video.
-                  <br />
-                  If you are using Firefox and want to use a private YouTube VOD
-                  with this tool, you may need to whitelist this domain in the
-                  "Enhanced Tracking Protection" section to allow cross-site
-                  cookies. Otherwise, the player embed may not work.
-                </p>
-                <br />
-                <p>
-                  <strong> Regarding Google Authentication </strong>
-                </p>
-                <p>
-                  This site uses Sign In with Google to authenticate with
-                  Google's YouTube Data API. This is necessary for users that
-                  want to use xivodreview with private YouTube livestreams
-                  (assume this would be the case for teams that are racing or
-                  for those that use copious plugins). No user data is stored by
-                  this application. Authentication with Google is strictly used
-                  to reach the YouTube Data API on behalf of the user.
-                </p>
+        <div class="row g-0 flex-row-thing">
+          <div class="col-12">
+            <div class="vod-player row g-0">
+              <div id="twitch-player"></div>
+              <div id="youtube-player-wrapper">
+                <div id="youtube-player"></div>
               </div>
-              <div class="col-1"></div>
+              <div
+                id="google-homepage-shit"
+                class="row align-items-center justify-content-center"
+              >
+                <div data-bs-theme="dark" class="col-10 offset-md-1 text-body">
+                  <h5>Usage</h5>
+                  <p>
+                    This application is used for aligning livestream archives
+                    (Twitch/YouTube) with FFLogs reporting tool for reviewing
+                    fights and their mechanics. Input a link to both the VOD and
+                    the FFLogs report and then submit. If you need to use a
+                    YouTube livestream, you might need to authenticate with Google
+                    first depending on the privacy settings for the VOD.
+                  </p>
+                  <p>
+                    Encounters can be saved for easier use if switching between
+                    POV's or coming back at a later time.
+                  </p>
+                  <p>
+                    If you wish to use a private YouTube Livestream/VOD, you must
+                    ensure that you are logged into the correct Google account
+                    that has been shared the video.
+                    <br />
+                    If you are using Firefox and want to use a private YouTube VOD
+                    with this tool, you may need to whitelist this domain in the
+                    "Enhanced Tracking Protection" section to allow cross-site
+                    cookies. Otherwise, the player embed may not work.
+                  </p>
+                  <br />
+                  <p>
+                    <strong> Regarding Google Authentication </strong>
+                  </p>
+                  <p>
+                    This site uses Sign In with Google to authenticate with
+                    Google's YouTube Data API. This is necessary for users that
+                    want to use xivodreview with private YouTube livestreams
+                    (assume this would be the case for teams that are racing or
+                    for those that use copious plugins). No user data is stored by
+                    this application. Authentication with Google is strictly used
+                    to reach the YouTube Data API on behalf of the user.
+                  </p>
+                </div>
+                <div class="col-1"></div>
+              </div>
+            </div>
+            <div class="row g-0">
+              <div id="pull-scrub" @mousemove="scrubMousePos" @click="scrubClick">
+                <span id="pull-scrub-span"></span>
+              </div>
             </div>
           </div>
         </div>
-        <div class="row g-0">
+        <div class="row g-0 bottom-fixed test-row">
           <div class="deadspace col-12">
             <div class="row g-2">
               <div class="col-6">
@@ -197,6 +204,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
 export default {
   data() {
     return {
+      api_url: "http://localhost:3001",
       vod_url: "",
       twitchId: "",
       twitchData: null,
@@ -204,6 +212,8 @@ export default {
       youtubeData: null,
       vodStartTime: 0,
       player: null,
+      playerType: "",
+      scrubTimer: 0, // not sure if these timers need to be null tbh
       fflogs_url: "",
       reportId: "",
       reportData: null,
@@ -214,6 +224,7 @@ export default {
       abilityData: [],
       npcData: [],
       deathData: {},
+      currentPull: {},
       timeBeforePull: 0,
       vodButtons: [],
       cachedFights: {},
@@ -303,8 +314,61 @@ export default {
         localStorage.setItem("cachedFflogsAuthToken", JSON.stringify(this.fflogsAuthToken));
       })
     },
+    currentPull(newValue) {
+      console.log(newValue);
+      if (this.scrubTimer == 0) {
+        this.scrubTimer = setInterval(() => {
+          this.updateScrubTime()
+        }, 200);
+      };
+      // setInterval(() => {
+      //   this.updateScrubTime()
+      // }, 1000);
+    }
   },
   methods: {
+    scrubMousePos(e) {
+      let timelineWidth = document.getElementById("pull-scrub").offsetWidth;
+      this.x = (e.offsetX / timelineWidth) * 100;
+      // this.x = e.offsetX;
+    },
+    scrubClick() {
+      this.scrubGotoTime(this.x);
+    },
+    updateScrubTime() {
+      if (this.player == null) {
+        return;
+      }
+      // 2023-03-19 TODO: this might be easier to purely animate since twitch player is ass and doesn't like to update current time
+      var timestamp = this.player.getCurrentTime();
+      var pullStartTime = (this.currentPull.startTime + this.reportStart - this.vodStartTime) / 1000;
+      var pullEndTime = (this.currentPull.endTime + this.reportStart - this.vodStartTime) / 1000;
+      var percentage = ((timestamp - pullStartTime) / (pullEndTime - pullStartTime)) * 100;
+      var span = document.getElementById("pull-scrub-span");
+      span.style.width = percentage+"%";
+    },
+    scrubGotoTime(percentage) {
+      var pullStartTime = (this.currentPull.startTime + this.reportStart - this.vodStartTime) / 1000;
+      var pullEndTime = (this.currentPull.endTime + this.reportStart - this.vodStartTime) / 1000;
+      var newTime = (pullEndTime - pullStartTime) * (percentage / 100) + pullStartTime;
+      if (this.playerType == "twitch") {
+        this.player.seek(newTime);
+      }
+      else if (this.playerType == "yubtub") {
+        this.player.seekTo(newTime);
+      };
+      if (this.scrubTimer == 0) {
+        this.scrubTimer = setInterval(() => {
+          this.updateScrubTime()
+        }, 200);
+      };
+    },
+    clearScrubTimer() {
+      var span = document.getElementById("pull-scrub-span");
+      span.style.width = "0";
+      clearInterval(this.scrubTimer);
+      this.scrubTimer = 0;
+    },
     async getTwitchId(twitchUrl: string) {
       try {
         const url = new URL(twitchUrl);
@@ -322,7 +386,7 @@ export default {
       }
     },
     getTwitchData(videoId: string) {
-      fetch("https://api.yamanote.co/twitch?videoId=" + videoId)
+      fetch(`${this.api_url}/twitch?videoId=${videoId}`)
         .then(async (response) => {
           this.twitchData = await response.json();
         })
@@ -356,11 +420,38 @@ export default {
       // player.setVolume(0.5);
       this.player.addEventListener(Twitch.Player.READY, () => {
         this.player.setQuality("chunked");
+        this.playerType = "twitch";
+      });
+      // this.player.addEventListener(Twitch.Player.PLAY)
+      this.player.addEventListener(Twitch.Player.PLAYING, () => {
+        setTimeout(() => {
+          this.getPullNumber(this.player.getCurrentTime())
+        }, 600);
+      });
+      this.player.addEventListener(Twitch.Player.SEEK, () => {
+        setTimeout(() => {
+          this.getPullNumber(this.player.getCurrentTime())
+        }, 600);
+      });
+      this.player.addEventListener(Twitch.Player.PAUSE, () => {
+        setTimeout(() => {
+          this.getPullNumber(this.player.getCurrentTime())
+        }, 600);
+      });
+    },
+    getPullNumber(timestamp) {
+      this.reportData.data.reportData.report.fights.every((fight: Object) => {
+        if (this.vodStartTime + timestamp * 1000 <= this.reportStart + fight.endTime) {
+          this.currentPull = fight;
+          return false;
+        };
+        return true;
       });
     },
     submitURLs() {
       // this.resetURLs();
       this.hideGoogleWarning();
+      this.clearScrubTimer();
       this.removePlayer();
       if (this.vod_url.includes("twitch")) {
         this.getTwitchId(this.vod_url);
@@ -378,7 +469,9 @@ export default {
       this.fflogs_url = "";
       this.cachedFightName = "";
       this.cachedFightSelected = "";
+      this.playerType = "";
       this.showGoogleWarning();
+      this.clearScrubTimer();
       // TODO: Clear logs
     },
     hideGoogleWarning() {
@@ -422,9 +515,9 @@ export default {
     getReportData(reportId: string) {
       var getUrl = "";
       if (Object.keys(this.fflogsAuthToken).length != 0) {
-        getUrl = `https://api.yamanote.co/fflogs?reportId=${reportId}&authToken=${this.fflogsAuthToken.access_token}`
+        getUrl = `${this.api_url}/fflogs?reportId=${reportId}&authToken=${this.fflogsAuthToken.access_token}`
       } else {
-        getUrl = `https://api.yamanote.co/fflogs?reportId=${reportId}`
+        getUrl = `${this.api_url}/fflogs?reportId=${reportId}`
       }
       fetch(getUrl)
         .then(async (response) => {
@@ -464,9 +557,9 @@ export default {
     getReportDeathData(reportId, startTime, endTime, authToken) {
       var getUrl = "";
       if (authToken) {
-        getUrl = `https://api.yamanote.co/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}&authToken=${authToken}`
+        getUrl = `${this.api_url}/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}&authToken=${authToken}`
       } else {
-        getUrl = `https://api.yamanote.co/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`
+        getUrl = `${this.api_url}/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`
       }
       fetch(getUrl)
         .then(async (response) => {
@@ -615,9 +708,9 @@ export default {
       var getUrl = "";
       if (Object.keys(this.googleAuthToken).length != 0) {
         authToken = this.googleAuthToken.access_token;
-        getUrl = `https://api.yamanote.co/youtube?videoId=${videoId}&authToken=${authToken}`;
+        getUrl = `${this.api_url}/youtube?videoId=${videoId}&authToken=${authToken}`;
       } else {
-        getUrl = `https://api.yamanote.co/youtube?videoId=${videoId}`;
+        getUrl = `${this.api_url}/youtube?videoId=${videoId}`;
       }
       fetch(getUrl)
         .then(async (response) => {
@@ -660,9 +753,16 @@ export default {
       element.style.top = "0";
       this.player.addEventListener("onReady", () => {
         this.player.setPlaybackQuality("highres");
+        this.playerType = "yubtub";
       });
-      this.player.addEventListener("onStateChange", () => {
+      this.player.addEventListener("onStateChange", (value) => {
         this.player.setPlaybackQuality("highres");
+        if (value.data == YT.PlayerState.PLAYING) {
+          this.getPullNumber(this.player.getCurrentTime());
+        }
+        else if (value.data == YT.PlayerState.PAUSED) {
+          this.getPullNumber(this.player.getCurrentTime());
+        };
       });
     },
     dec2hex(dec) {
@@ -762,10 +862,11 @@ export default {
   height: 96vh;
 }
 .vod-player {
-  height: 100%;
-  padding-top: 56.25%;
+  height: 81vh;
+  /* padding-top: 56.25%; */
+  display: block;
   position: relative;
-  height: 0;
+  width: 100%;
   background: black;
 }
 
@@ -774,14 +875,42 @@ export default {
   padding-top: 0.25em;
 }
 
+.test-row {
+  position: fixed;
+  bottom: 1vh;
+  width: 71vw;
+}
+
+.flex-row-thing {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+#pull-scrub {
+  height: 3vh;
+  background: #3f3f3f;
+  overflow: hidden;
+}
+
+#pull-scrub span {
+  display: inline-block;
+  /* position: absolute; */
+  /* top: 0;
+  left: 0; */
+  height: 3vh;
+  width: 0;
+  background: #482E66;
+}
+
 .player-input {
-  width: 73vw;
+  width: 72vw;
 }
 
 .fflogs-report {
   max-height: 100%;
   padding-left: 1em;
-  width: 27vw;
+  width: 28vw;
 }
 
 #google-homepage-shit {
