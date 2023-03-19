@@ -78,7 +78,11 @@ export default {
   methods: {
     goToTimestamp(pullTimeInVod: Number) {
       if (typeof this.player.seek === "function") {
+        this.player.pause();
         this.player.seek(pullTimeInVod);
+        setTimeout(() => {
+          this.player.play()
+        }, 500);
       } else {
         this.player.seekTo(pullTimeInVod);
       }

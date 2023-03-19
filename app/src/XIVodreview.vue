@@ -71,7 +71,9 @@ import FFlogsReport from "./components/FFlogsReport.vue";
               </div>
             </div>
             <div class="row g-0">
-              <div id="pull-scrub"></div>
+              <div id="pull-scrub" @mousemove="scrubMousePos" @click="scrubClick">
+                <span id="pull-scrub-span"></span>
+              </div>
             </div>
           </div>
         </div>
@@ -211,6 +213,7 @@ export default {
       vodStartTime: 0,
       player: null,
       playerType: "",
+      scrubTimer: 0, // not sure if these timers need to be null tbh
       fflogs_url: "",
       reportId: "",
       reportData: null,
@@ -221,6 +224,7 @@ export default {
       abilityData: [],
       npcData: [],
       deathData: {},
+      currentPull: {},
       timeBeforePull: 0,
       vodButtons: [],
       cachedFights: {},
@@ -310,8 +314,61 @@ export default {
         localStorage.setItem("cachedFflogsAuthToken", JSON.stringify(this.fflogsAuthToken));
       })
     },
+    currentPull(newValue) {
+      console.log(newValue);
+      if (this.scrubTimer == 0) {
+        this.scrubTimer = setInterval(() => {
+          this.updateScrubTime()
+        }, 200);
+      };
+      // setInterval(() => {
+      //   this.updateScrubTime()
+      // }, 1000);
+    }
   },
   methods: {
+    scrubMousePos(e) {
+      let timelineWidth = document.getElementById("pull-scrub").offsetWidth;
+      this.x = (e.offsetX / timelineWidth) * 100;
+      // this.x = e.offsetX;
+    },
+    scrubClick() {
+      this.scrubGotoTime(this.x);
+    },
+    updateScrubTime() {
+      if (this.player == null) {
+        return;
+      }
+      // 2023-03-19 TODO: this might be easier to purely animate since twitch player is ass and doesn't like to update current time
+      var timestamp = this.player.getCurrentTime();
+      var pullStartTime = (this.currentPull.startTime + this.reportStart - this.vodStartTime) / 1000;
+      var pullEndTime = (this.currentPull.endTime + this.reportStart - this.vodStartTime) / 1000;
+      var percentage = ((timestamp - pullStartTime) / (pullEndTime - pullStartTime)) * 100;
+      var span = document.getElementById("pull-scrub-span");
+      span.style.width = percentage+"%";
+    },
+    scrubGotoTime(percentage) {
+      var pullStartTime = (this.currentPull.startTime + this.reportStart - this.vodStartTime) / 1000;
+      var pullEndTime = (this.currentPull.endTime + this.reportStart - this.vodStartTime) / 1000;
+      var newTime = (pullEndTime - pullStartTime) * (percentage / 100) + pullStartTime;
+      if (this.playerType == "twitch") {
+        this.player.seek(newTime);
+      }
+      else if (this.playerType == "yubtub") {
+        this.player.seekTo(newTime);
+      };
+      if (this.scrubTimer == 0) {
+        this.scrubTimer = setInterval(() => {
+          this.updateScrubTime()
+        }, 200);
+      };
+    },
+    clearScrubTimer() {
+      var span = document.getElementById("pull-scrub-span");
+      span.style.width = "0";
+      clearInterval(this.scrubTimer);
+      this.scrubTimer = 0;
+    },
     async getTwitchId(twitchUrl: string) {
       try {
         const url = new URL(twitchUrl);
@@ -363,11 +420,38 @@ export default {
       // player.setVolume(0.5);
       this.player.addEventListener(Twitch.Player.READY, () => {
         this.player.setQuality("chunked");
+        this.playerType = "twitch";
+      });
+      // this.player.addEventListener(Twitch.Player.PLAY)
+      this.player.addEventListener(Twitch.Player.PLAYING, () => {
+        setTimeout(() => {
+          this.getPullNumber(this.player.getCurrentTime())
+        }, 600);
+      });
+      this.player.addEventListener(Twitch.Player.SEEK, () => {
+        setTimeout(() => {
+          this.getPullNumber(this.player.getCurrentTime())
+        }, 600);
+      });
+      this.player.addEventListener(Twitch.Player.PAUSE, () => {
+        setTimeout(() => {
+          this.getPullNumber(this.player.getCurrentTime())
+        }, 600);
+      });
+    },
+    getPullNumber(timestamp) {
+      this.reportData.data.reportData.report.fights.every((fight: Object) => {
+        if (this.vodStartTime + timestamp * 1000 <= this.reportStart + fight.endTime) {
+          this.currentPull = fight;
+          return false;
+        };
+        return true;
       });
     },
     submitURLs() {
       // this.resetURLs();
       this.hideGoogleWarning();
+      this.clearScrubTimer();
       this.removePlayer();
       if (this.vod_url.includes("twitch")) {
         this.getTwitchId(this.vod_url);
@@ -387,6 +471,7 @@ export default {
       this.cachedFightSelected = "";
       this.playerType = "";
       this.showGoogleWarning();
+      this.clearScrubTimer();
       // TODO: Clear logs
     },
     hideGoogleWarning() {
@@ -663,14 +748,21 @@ export default {
       });
       var element = document.getElementById("youtube-player");
       element.style.position = "absolute";
-      // element.style.width = "100%";
-      // element.style.height = "100%";
+      element.style.width = "100%";
+      element.style.height = "100%";
       element.style.top = "0";
       this.player.addEventListener("onReady", () => {
         this.player.setPlaybackQuality("highres");
+        this.playerType = "yubtub";
       });
-      this.player.addEventListener("onStateChange", () => {
+      this.player.addEventListener("onStateChange", (value) => {
         this.player.setPlaybackQuality("highres");
+        if (value.data == YT.PlayerState.PLAYING) {
+          this.getPullNumber(this.player.getCurrentTime());
+        }
+        else if (value.data == YT.PlayerState.PAUSED) {
+          this.getPullNumber(this.player.getCurrentTime());
+        };
       });
     },
     dec2hex(dec) {
@@ -798,6 +890,17 @@ export default {
 #pull-scrub {
   height: 3vh;
   background: #3f3f3f;
+  overflow: hidden;
+}
+
+#pull-scrub span {
+  display: inline-block;
+  /* position: absolute; */
+  /* top: 0;
+  left: 0; */
+  height: 3vh;
+  width: 0;
+  background: #482E66;
 }
 
 .player-input {
