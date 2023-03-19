@@ -186,11 +186,11 @@ import FFlogsReport from "./components/FFlogsReport.vue";
           </div>
         </div>
       </div>
-      <div class="overflow-auto col-3">
+      <div class="fflogs-report overflow-auto col-3">
         <div class="accordian accordian-flush" id="control-flow">
           <div class="accordian-item">
             <h2 class="accordian-header" id="headingOne">
-              <button class="accordian-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                 URL inputs
               </button>
             </h2>
@@ -247,7 +247,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
             </div>
           </div>
         </div>
-        <div class="fflogs-report" v-if="fightData && player">
+        <div v-if="fightData && player">
           <FFlogsReport
             :key="reportId"
             :fightData="fightData"
@@ -1006,7 +1006,6 @@ export default {
   width: 72vw;
 }
 
-.fflogs-report {
   max-height: 100%;
   padding-left: 1em;
   width: 28vw;
