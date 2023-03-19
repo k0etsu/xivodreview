@@ -902,7 +902,7 @@ export default {
   height: 96vh;
 }
 .vod-player {
-  height: 77vh;
+  height: 76vh;
   /* padding-top: 56.25%; */
   display: block;
   position: relative;
