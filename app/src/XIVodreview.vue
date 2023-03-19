@@ -1006,6 +1006,7 @@ export default {
   width: 72vw;
 }
 
+.fflogs-report {
   max-height: 100%;
   padding-left: 1em;
   width: 28vw;
