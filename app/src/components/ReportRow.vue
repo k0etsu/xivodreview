@@ -81,7 +81,7 @@ export default {
         this.player.pause();
         this.player.seek(pullTimeInVod);
         setTimeout(() => {
-          this.player.play()
+          this.player.play();
         }, 500);
       } else {
         this.player.seekTo(pullTimeInVod);

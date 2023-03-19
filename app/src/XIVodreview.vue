@@ -36,22 +36,23 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                     (Twitch/YouTube) with FFLogs reporting tool for reviewing
                     fights and their mechanics. Input a link to both the VOD and
                     the FFLogs report and then submit. If you need to use a
-                    YouTube livestream, you might need to authenticate with Google
-                    first depending on the privacy settings for the VOD.
+                    YouTube livestream, you might need to authenticate with
+                    Google first depending on the privacy settings for the VOD.
                   </p>
                   <p>
                     Encounters can be saved for easier use if switching between
                     POV's or coming back at a later time.
                   </p>
                   <p>
-                    If you wish to use a private YouTube Livestream/VOD, you must
-                    ensure that you are logged into the correct Google account
-                    that has been shared the video.
+                    If you wish to use a private YouTube Livestream/VOD, you
+                    must ensure that you are logged into the correct Google
+                    account that has been shared the video.
                     <br />
-                    If you are using Firefox and want to use a private YouTube VOD
-                    with this tool, you may need to whitelist this domain in the
-                    "Enhanced Tracking Protection" section to allow cross-site
-                    cookies. Otherwise, the player embed may not work.
+                    If you are using Firefox and want to use a private YouTube
+                    VOD with this tool, you may need to whitelist this domain in
+                    the "Enhanced Tracking Protection" section to allow
+                    cross-site cookies. Otherwise, the player embed may not
+                    work.
                   </p>
                   <br />
                   <p>
@@ -62,16 +63,20 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                     Google's YouTube Data API. This is necessary for users that
                     want to use xivodreview with private YouTube livestreams
                     (assume this would be the case for teams that are racing or
-                    for those that use copious plugins). No user data is stored by
-                    this application. Authentication with Google is strictly used
-                    to reach the YouTube Data API on behalf of the user.
+                    for those that use copious plugins). No user data is stored
+                    by this application. Authentication with Google is strictly
+                    used to reach the YouTube Data API on behalf of the user.
                   </p>
                 </div>
                 <div class="col-1"></div>
               </div>
             </div>
             <div class="row g-0">
-              <div id="pull-scrub" @mousemove="scrubMousePos" @click="scrubClick">
+              <div
+                id="pull-scrub"
+                @mousemove="scrubMousePos"
+                @click="scrubClick"
+              >
                 <span id="pull-scrub-span"></span>
               </div>
             </div>
@@ -204,7 +209,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
 export default {
   data() {
     return {
-      api_url: "http://localhost:3001",
+      api_url: "https://api.yamanote.co",
       vod_url: "",
       twitchId: "",
       twitchData: null,
@@ -298,33 +303,35 @@ export default {
         method: "POST",
         headers: {
           "Content-type": "application/json",
-          "Accept": "application/json"
+          Accept: "application/json",
         },
         body: JSON.stringify({
           client_id: fflogsClientId,
           code_verifier: this.fflogsCodeVerifier,
           redirect_uri: "https://xivodreview.com",
           grant_type: "authorization_code",
-          code: code
-        })
-      })
-      .then(async (res) => {
+          code: code,
+        }),
+      }).then(async (res) => {
         this.fflogsAuthToken = await res.json();
         this.fflogsAuthToken["created_time"] = Date.now();
-        localStorage.setItem("cachedFflogsAuthToken", JSON.stringify(this.fflogsAuthToken));
-      })
+        localStorage.setItem(
+          "cachedFflogsAuthToken",
+          JSON.stringify(this.fflogsAuthToken)
+        );
+      });
     },
     currentPull(newValue) {
       console.log(newValue);
       if (this.scrubTimer == 0) {
         this.scrubTimer = setInterval(() => {
-          this.updateScrubTime()
+          this.updateScrubTime();
         }, 200);
-      };
+      }
       // setInterval(() => {
       //   this.updateScrubTime()
       // }, 1000);
-    }
+    },
   },
   methods: {
     scrubMousePos(e) {
@@ -341,27 +348,36 @@ export default {
       }
       // 2023-03-19 TODO: this might be easier to purely animate since twitch player is ass and doesn't like to update current time
       var timestamp = this.player.getCurrentTime();
-      var pullStartTime = (this.currentPull.startTime + this.reportStart - this.vodStartTime) / 1000;
-      var pullEndTime = (this.currentPull.endTime + this.reportStart - this.vodStartTime) / 1000;
-      var percentage = ((timestamp - pullStartTime) / (pullEndTime - pullStartTime)) * 100;
+      var pullStartTime =
+        (this.currentPull.startTime + this.reportStart - this.vodStartTime) /
+        1000;
+      var pullEndTime =
+        (this.currentPull.endTime + this.reportStart - this.vodStartTime) /
+        1000;
+      var percentage =
+        ((timestamp - pullStartTime) / (pullEndTime - pullStartTime)) * 100;
       var span = document.getElementById("pull-scrub-span");
-      span.style.width = percentage+"%";
+      span.style.width = percentage + "%";
     },
     scrubGotoTime(percentage) {
-      var pullStartTime = (this.currentPull.startTime + this.reportStart - this.vodStartTime) / 1000;
-      var pullEndTime = (this.currentPull.endTime + this.reportStart - this.vodStartTime) / 1000;
-      var newTime = (pullEndTime - pullStartTime) * (percentage / 100) + pullStartTime;
+      var pullStartTime =
+        (this.currentPull.startTime + this.reportStart - this.vodStartTime) /
+        1000;
+      var pullEndTime =
+        (this.currentPull.endTime + this.reportStart - this.vodStartTime) /
+        1000;
+      var newTime =
+        (pullEndTime - pullStartTime) * (percentage / 100) + pullStartTime;
       if (this.playerType == "twitch") {
         this.player.seek(newTime);
-      }
-      else if (this.playerType == "yubtub") {
+      } else if (this.playerType == "yubtub") {
         this.player.seekTo(newTime);
-      };
+      }
       if (this.scrubTimer == 0) {
         this.scrubTimer = setInterval(() => {
-          this.updateScrubTime()
+          this.updateScrubTime();
         }, 200);
-      };
+      }
     },
     clearScrubTimer() {
       var span = document.getElementById("pull-scrub-span");
@@ -425,26 +441,29 @@ export default {
       // this.player.addEventListener(Twitch.Player.PLAY)
       this.player.addEventListener(Twitch.Player.PLAYING, () => {
         setTimeout(() => {
-          this.getPullNumber(this.player.getCurrentTime())
+          this.getPullNumber(this.player.getCurrentTime());
         }, 600);
       });
       this.player.addEventListener(Twitch.Player.SEEK, () => {
         setTimeout(() => {
-          this.getPullNumber(this.player.getCurrentTime())
+          this.getPullNumber(this.player.getCurrentTime());
         }, 600);
       });
       this.player.addEventListener(Twitch.Player.PAUSE, () => {
         setTimeout(() => {
-          this.getPullNumber(this.player.getCurrentTime())
+          this.getPullNumber(this.player.getCurrentTime());
         }, 600);
       });
     },
     getPullNumber(timestamp) {
       this.reportData.data.reportData.report.fights.every((fight: Object) => {
-        if (this.vodStartTime + timestamp * 1000 <= this.reportStart + fight.endTime) {
+        if (
+          this.vodStartTime + timestamp * 1000 <=
+          this.reportStart + fight.endTime
+        ) {
           this.currentPull = fight;
           return false;
-        };
+        }
         return true;
       });
     },
@@ -515,9 +534,9 @@ export default {
     getReportData(reportId: string) {
       var getUrl = "";
       if (Object.keys(this.fflogsAuthToken).length != 0) {
-        getUrl = `${this.api_url}/fflogs?reportId=${reportId}&authToken=${this.fflogsAuthToken.access_token}`
+        getUrl = `${this.api_url}/fflogs?reportId=${reportId}&authToken=${this.fflogsAuthToken.access_token}`;
       } else {
-        getUrl = `${this.api_url}/fflogs?reportId=${reportId}`
+        getUrl = `${this.api_url}/fflogs?reportId=${reportId}`;
       }
       fetch(getUrl)
         .then(async (response) => {
@@ -528,7 +547,10 @@ export default {
         })
         .finally(() => {
           if (this.reportData.errors) {
-            alert(this.reportData.errors[0].message + "\n\nTry authenticating with FF Logs if this report is private.")
+            alert(
+              this.reportData.errors[0].message +
+                "\n\nTry authenticating with FF Logs if this report is private."
+            );
           } else {
             this.reportStart = parseInt(
               this.reportData.data.reportData.report.startTime
@@ -541,7 +563,7 @@ export default {
                 this.reportId,
                 0,
                 this.reportEnd - this.reportStart,
-                this.fflogsAuthToken.access_token,
+                this.fflogsAuthToken.access_token
               );
             } else {
               this.getReportDeathData(
@@ -557,9 +579,9 @@ export default {
     getReportDeathData(reportId, startTime, endTime, authToken) {
       var getUrl = "";
       if (authToken) {
-        getUrl = `${this.api_url}/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}&authToken=${authToken}`
+        getUrl = `${this.api_url}/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}&authToken=${authToken}`;
       } else {
-        getUrl = `${this.api_url}/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`
+        getUrl = `${this.api_url}/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`;
       }
       fetch(getUrl)
         .then(async (response) => {
@@ -759,10 +781,9 @@ export default {
         this.player.setPlaybackQuality("highres");
         if (value.data == YT.PlayerState.PLAYING) {
           this.getPullNumber(this.player.getCurrentTime());
-        }
-        else if (value.data == YT.PlayerState.PAUSED) {
+        } else if (value.data == YT.PlayerState.PAUSED) {
           this.getPullNumber(this.player.getCurrentTime());
-        };
+        }
       });
     },
     dec2hex(dec) {
@@ -802,45 +823,64 @@ export default {
       this.fflogsAuthUrl = new URL("https://www.fflogs.com/oauth/authorize");
       this.fflogsAuthUrl.searchParams.set("client_id", fflogsClientId);
       this.fflogsCodeVerifier = this.generateCodeVerifier();
-      this.fflogsCodeChallenge = await this.generateCodeChallengeFromVerifier(this.fflogsCodeVerifier);
-      this.fflogsAuthUrl.searchParams.set("code_challenge", this.fflogsCodeChallenge);
+      this.fflogsCodeChallenge = await this.generateCodeChallengeFromVerifier(
+        this.fflogsCodeVerifier
+      );
+      this.fflogsAuthUrl.searchParams.set(
+        "code_challenge",
+        this.fflogsCodeChallenge
+      );
       this.fflogsAuthUrl.searchParams.set("code_challenge_method", "S256");
       this.fflogsAuthUrl.searchParams.set("state", this.fflogsAuthState);
-      this.fflogsAuthUrl.searchParams.set("redirect_uri", "https://xivodreview.com");
+      this.fflogsAuthUrl.searchParams.set(
+        "redirect_uri",
+        "https://xivodreview.com"
+      );
       this.fflogsAuthUrl.searchParams.set("response_type", "code");
     },
     async getFflogsAuthToken() {
-      this.createFflogsAuthUrl()
-        .then(async () => {
-          const fflogsPopup = window.open(
-            this.fflogsAuthUrl.href,
-            "fflogsAuth",
-            "popup=true,width=500, height=500"
-          );
-          const checkPopup = setInterval(() => {
-            if (fflogsPopup.window.location.href.includes("xivodreview.com")) {
-              fflogsPopup.close()
-            };
-            if (!fflogsPopup || !fflogsPopup.closed) return;
-            clearInterval(checkPopup);
-            const url = new URL(fflogsPopup.location.href);
-            const state = url.searchParams.get("state");
-            if (state === this.fflogsAuthState) {
-              this.fflogsAuthCode = url.searchParams.get("code");
-            } else {
-              console.error("state does not match - abort or something");
-            }
-          }, 500);
-        });
+      this.createFflogsAuthUrl().then(async () => {
+        const fflogsPopup = window.open(
+          this.fflogsAuthUrl.href,
+          "fflogsAuth",
+          "popup=true,width=500, height=500"
+        );
+        const checkPopup = setInterval(() => {
+          if (fflogsPopup.window.location.href.includes("xivodreview.com")) {
+            fflogsPopup.close();
+          }
+          if (!fflogsPopup || !fflogsPopup.closed) return;
+          clearInterval(checkPopup);
+          const url = new URL(fflogsPopup.location.href);
+          const state = url.searchParams.get("state");
+          if (state === this.fflogsAuthState) {
+            this.fflogsAuthCode = url.searchParams.get("code");
+          } else {
+            console.error("state does not match - abort or something");
+          }
+        }, 500);
+      });
     },
     getCachedFflogsAuthToken() {
-      const cachedfflogsAuthToken = localStorage.getItem("cachedFflogsAuthToken");
+      const cachedfflogsAuthToken = localStorage.getItem(
+        "cachedFflogsAuthToken"
+      );
       if (cachedfflogsAuthToken) {
         const cachedFflogsAuthObj = JSON.parse(cachedfflogsAuthToken);
-        if (cachedFflogsAuthObj["created_time"] + cachedFflogsAuthObj["expires_in"] > Date.now()) {
+        if (
+          cachedFflogsAuthObj["created_time"] +
+            cachedFflogsAuthObj["expires_in"] >
+          Date.now()
+        ) {
           this.fflogsAuthToken = cachedFflogsAuthObj;
-          var tokenTimeout = this.fflogsAuthToken["created_time"] + this.fflogsAuthToken["expires_in"] - Date.now();
-          this.fflogsAuthTokenTimer = setTimeout(this.clearFflogsAuthToken, tokenTimeout);
+          var tokenTimeout =
+            this.fflogsAuthToken["created_time"] +
+            this.fflogsAuthToken["expires_in"] -
+            Date.now();
+          this.fflogsAuthTokenTimer = setTimeout(
+            this.clearFflogsAuthToken,
+            tokenTimeout
+          );
         } else {
           localStorage.removeItem("cachedFflogsAuthToken");
         }
@@ -900,7 +940,7 @@ export default {
   left: 0; */
   height: 3vh;
   width: 0;
-  background: #482E66;
+  background: #482e66;
 }
 
 .player-input {
