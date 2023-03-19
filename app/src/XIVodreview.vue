@@ -82,7 +82,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
             </div>
           </div>
         </div>
-        <div class="row g-0 bottom-fixed test-row">
+        <div class="row g-0 bottom-fixed">
           <div class="deadspace col-12">
             <div class="row g-2">
               <div class="col-6">
@@ -902,7 +902,7 @@ export default {
   height: 96vh;
 }
 .vod-player {
-  height: 81vh;
+  height: 75vh;
   /* padding-top: 56.25%; */
   display: block;
   position: relative;
@@ -915,7 +915,7 @@ export default {
   padding-top: 0.25em;
 }
 
-.test-row {
+.bottom-fixed {
   position: fixed;
   bottom: 1vh;
   width: 71vw;
