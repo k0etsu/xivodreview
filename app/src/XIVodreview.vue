@@ -81,7 +81,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
               </div>
             </div>
             <div class="row justify-content-center g-2">
-              <div class="col-1"><p>Offset (ms)</p></div>
+              <div class="col-1"><p class="mt-2">Offset (ms)</p></div>
               <div class="col-4" style="width: 10em;">
                 <div class="input-group">
                   <button class="btn btn-outline-secondary" type="button" @click="decreaseOffset">-</button>
