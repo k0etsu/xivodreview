@@ -929,10 +929,10 @@ export default {
 
 <style scoped>
 .navHeader {
-  height: 4vh;
+  height: 3.3em;
 }
 .no-scroll {
-  height: 96vh;
+  height: 95vh;
 }
 .vod-player {
   height: 85vh;
