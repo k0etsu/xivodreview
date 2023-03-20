@@ -84,16 +84,16 @@ import FFlogsReport from "./components/FFlogsReport.vue";
         </div>
         <div class="row g-0 bottom-fixed">
           <div class="deadspace col-12">
-            <div class="row g-2">
+            <div class="row g-2 form-group form-floating">
               <input
                 id="timeBeforePull"
                 class="form-control"
                 type="number"
                 v-model="timeBeforePull"
               />
-              <label for="timeBeforePull"
-                >Video sync/offset (in seconds)</label
-              >
+              <label for="timeBeforePull">
+                Video sync/offset (in seconds)
+              </label>
             </div>
           </div>
         </div>
@@ -186,7 +186,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                     </div>
                   </div>
                   <div class="row align-items-center g-2">
-                    <div class="col-lg-6">
+                    <div class="col">
                       <button
                         class="btn btn-outline-info me-1"
                         @click="addCachedFight"
