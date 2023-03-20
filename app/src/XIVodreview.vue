@@ -82,11 +82,29 @@ import FFlogsReport from "./components/FFlogsReport.vue";
             </div>
             <div class="row justify-content-center g-2">
               <div class="col-1"><p class="mt-2">Offset (ms)</p></div>
-              <div class="col-4" style="width: 10em;">
+              <div class="col-4" style="width: 10em">
                 <div class="input-group">
-                  <button class="btn btn-outline-secondary" type="button" @click="decreaseOffset">-</button>
-                  <input id="timeBeforePull" class="form-control" v-model="timeBeforePull" disabled readonly />
-                  <button class="btn btn-outline-secondary" type="button" @click="increaseOffset">+</button>
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    @click="decreaseOffset"
+                  >
+                    -
+                  </button>
+                  <input
+                    id="timeBeforePull"
+                    class="form-control"
+                    v-model="timeBeforePull"
+                    disabled
+                    readonly
+                  />
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    @click="increaseOffset"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
             </div>
@@ -112,11 +130,22 @@ import FFlogsReport from "./components/FFlogsReport.vue";
         <div class="accordion accordion-flush" id="control-flow">
           <div class="accordion-item">
             <h2 class="accordion-header" id="headingOne">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              <button
+                class="accordion-button"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseOne"
+                aria-expanded="true"
+                aria-controls="collapseOne"
+              >
                 URL inputs
               </button>
             </h2>
-            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne">
+            <div
+              id="collapseOne"
+              class="accordion-collapse collapse show"
+              aria-labelledby="headingOne"
+            >
               <div class="accordion-body">
                 <div class="row align-items-center g-2">
                   <div class="form-group form-floating">
@@ -159,58 +188,69 @@ import FFlogsReport from "./components/FFlogsReport.vue";
           </div>
           <div class="accordion-item">
             <h2 class="accordion-header" id="headingTwo">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+              <button
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseTwo"
+                aria-expanded="false"
+                aria-controls="collapseTwo"
+              >
                 Saved Encounters
               </button>
             </h2>
-            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo">
+            <div
+              id="collapseTwo"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingTwo"
+            >
               <div class="accordion-body">
                 <div class="row align-items-center g-2">
-                    <div class="form-group form-floating">
-                      <input
-                        class="cachedFightName form-control"
-                        v-model.trim="cachedFightName"
-                        placeholder="Encounter Name"
-                      />
-                      <label for="cachedFightName">Encounter Name</label>
-                    </div>
+                  <div class="form-group form-floating">
+                    <input
+                      class="cachedFightName form-control"
+                      v-model.trim="cachedFightName"
+                      placeholder="Encounter Name"
+                    />
+                    <label for="cachedFightName">Encounter Name</label>
                   </div>
-                  <div class="row align-items-center g-2">
-                    <div class="form-group form-floating">
-                      <select
-                        id="cachedFights"
-                        v-model="cachedFightSelected"
-                        class="form-select"
-                        aria-label="Cached encounters"
+                </div>
+                <div class="row align-items-center g-2">
+                  <div class="form-group form-floating">
+                    <select
+                      id="cachedFights"
+                      v-model="cachedFightSelected"
+                      class="form-select"
+                      aria-label="Cached encounters"
+                    >
+                      <option
+                        v-for="(links, encounter) in cachedFights"
+                        :key="encounter"
+                        :encounter="encounter"
+                        :links="links"
                       >
-                        <option
-                          v-for="(links, encounter) in cachedFights"
-                          :key="encounter"
-                          :encounter="encounter"
-                          :links="links"
-                        >
-                          {{ encounter }}
-                        </option>
-                      </select>
-                      <label for="cachedFights">Old Encounters</label>
-                    </div>
+                        {{ encounter }}
+                      </option>
+                    </select>
+                    <label for="cachedFights">Old Encounters</label>
                   </div>
-                  <div class="row align-items-center g-2">
-                    <div class="col">
-                      <button
-                        class="btn btn-outline-info me-1"
-                        @click="addCachedFight"
-                      >
-                        Save Encounter
-                      </button>
-                      <button
-                        class="btn btn-outline-danger"
-                        @click="removeCachedFight"
-                      >
-                        Delete Encounter
-                      </button>
-                    </div>
+                </div>
+                <div class="row align-items-center g-2">
+                  <div class="col">
+                    <button
+                      class="btn btn-outline-info me-1"
+                      @click="addCachedFight"
+                    >
+                      Save Encounter
+                    </button>
+                    <button
+                      class="btn btn-outline-danger"
+                      @click="removeCachedFight"
+                    >
+                      Delete Encounter
+                    </button>
                   </div>
+                </div>
               </div>
             </div>
           </div>

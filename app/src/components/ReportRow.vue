@@ -90,14 +90,22 @@ export default {
   },
   created() {
     this.pullTimeInVod =
-      (this.reportStart - this.vodStartTime + this.fightEntry.startTime - this.timeBeforePull) / 1000;
+      (this.reportStart -
+        this.vodStartTime +
+        this.fightEntry.startTime -
+        this.timeBeforePull) /
+      1000;
     this.timestamp = new Date(this.pullTimeInVod * 1000)
       .toISOString()
       .slice(11, 19);
   },
   updated() {
     this.pullTimeInVod =
-      (this.reportStart - this.vodStartTime + this.fightEntry.startTime - this.timeBeforePull) / 1000;
+      (this.reportStart -
+        this.vodStartTime +
+        this.fightEntry.startTime -
+        this.timeBeforePull) /
+      1000;
     this.timestamp = new Date(this.pullTimeInVod * 1000)
       .toISOString()
       .slice(11, 19);
