@@ -81,12 +81,14 @@ import FFlogsReport from "./components/FFlogsReport.vue";
               </div>
             </div>
             <div class="row justify-content-center g-2">
-              <div class="col-4 input-group">
-                <button class="btn btn-outline-secondary" type="button">Button</button>
-                <input id="timeBeforePull" class="form-control" type="number" v-model="timeBeforePull" />
-                <button class="btn btn-outline-secondary" type="button">Button</button>
+              <div class="col-4">
+                <div class="input-group">
+                  <button class="btn btn-outline-secondary" type="button" @click="decreaseOffset">-</button>
+                  <input id="timeBeforePull" class="form-control" v-model="timeBeforePull" disabled readonly />
+                  <button class="btn btn-outline-secondary" type="button" @click="increaseOffset">+</button>
+                </div>
+                <div class="form-text">Video sync/offset (in milliseconds)</div>
               </div>
-              <div class="form-text">Video sync/offset (in seconds)</div>
             </div>
           </div>
         </div>
@@ -359,6 +361,12 @@ export default {
     },
   },
   methods: {
+    decreaseOffset() {
+      this.timeBeforePull = this.timeBeforePull - 500;
+    },
+    increaseOffset() {
+      this.timeBeforePull = this.timeBeforePull + 500;
+    },
     scrubMousePos(e) {
       let timelineWidth = document.getElementById("pull-scrub").offsetWidth;
       this.x = (e.offsetX / timelineWidth) * 100;

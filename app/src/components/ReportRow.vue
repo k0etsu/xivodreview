@@ -91,20 +91,18 @@ export default {
   created() {
     this.pullTimeInVod =
       Math.floor(
-        (this.reportStart - this.vodStartTime + this.fightEntry.startTime) /
-          1000
+        (this.reportStart - this.vodStartTime + this.fightEntry.startTime)
       ) - this.timeBeforePull;
-    this.timestamp = new Date(this.pullTimeInVod * 1000)
+    this.timestamp = new Date(this.pullTimeInVod)
       .toISOString()
       .slice(11, 19);
   },
   updated() {
     this.pullTimeInVod =
       Math.floor(
-        (this.reportStart - this.vodStartTime + this.fightEntry.startTime) /
-          1000
+        (this.reportStart - this.vodStartTime + this.fightEntry.startTime)
       ) - this.timeBeforePull;
-    this.timestamp = new Date(this.pullTimeInVod * 1000)
+    this.timestamp = new Date(this.pullTimeInVod)
       .toISOString()
       .slice(11, 19);
   },
