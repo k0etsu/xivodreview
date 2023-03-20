@@ -87,7 +87,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                   <input id="timeBeforePull" class="form-control" v-model="timeBeforePull" disabled readonly />
                   <button class="btn btn-outline-secondary" type="button" @click="increaseOffset">+</button>
                 </div>
-                <div class="form-text">Video sync/offset (in milliseconds)</div>
+                <div class="form-text">Offset (ms)</div>
               </div>
             </div>
           </div>
