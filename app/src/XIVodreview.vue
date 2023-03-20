@@ -81,13 +81,13 @@ import FFlogsReport from "./components/FFlogsReport.vue";
               </div>
             </div>
             <div class="row justify-content-center g-2">
+              <div class="col-1"><p>Offset (ms)</p></div>
               <div class="col-4" style="width: 10em;">
                 <div class="input-group">
                   <button class="btn btn-outline-secondary" type="button" @click="decreaseOffset">-</button>
                   <input id="timeBeforePull" class="form-control" v-model="timeBeforePull" disabled readonly />
                   <button class="btn btn-outline-secondary" type="button" @click="increaseOffset">+</button>
                 </div>
-                <div class="form-text">Offset (ms)</div>
               </div>
             </div>
           </div>
