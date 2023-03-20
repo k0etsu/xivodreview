@@ -80,11 +80,23 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                 <span id="pull-scrub-span"></span>
               </div>
             </div>
+            <div class="row g-2">
+              <div class="form-floating">
+                <label for="timeBeforePull">
+                  Video sync/offset (in seconds)
+                </label>
+                <div class="input-group">
+                  <button class="btn btn-outline-secondary" type="button">Button</button>
+                  <input id="timeBeforePull" class="form-control" type="number" v-model="timeBeforePull" />
+                  <button class="btn btn-outline-secondary" type="button">Button</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="row g-0 bottom-fixed">
+        <!-- <div class="row g-0 bottom-fixed">
           <div class="deadspace col-12">
-            <div class="row g-2 form-group form-floating">
+            <div class="row g-2 input-group form-group form-floating">
               <input
                 id="timeBeforePull"
                 class="form-control"
@@ -96,7 +108,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
               </label>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
       <div class="fflogs-report overflow-auto col-3">
         <div class="accordion accordion-flush" id="control-flow">
@@ -149,7 +161,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
           </div>
           <div class="accordion-item">
             <h2 class="accordion-header" id="headingTwo">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
                 Saved Encounters
               </button>
             </h2>
@@ -919,7 +931,7 @@ export default {
   height: 96vh;
 }
 .vod-player {
-  height: 90vh;
+  height: 85vh;
   /* padding-top: 56.25%; */
   display: block;
   position: relative;
