@@ -134,7 +134,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                   </div>
                 </div>
               </div> -->
-              <div class="col-6">
+              <!-- <div class="col-6">
                 <div class="row align-items-center g-2">
                   <div class="form-group form-floating">
                     <input
@@ -181,21 +181,21 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                     </button>
                   </div>
                 </div>
-              </div>
+              </div> -->
             </div>
           </div>
         </div>
       </div>
       <div class="fflogs-report overflow-auto col-3">
-        <div class="accordian accordian-flush" id="control-flow">
-          <div class="accordian-item">
-            <h2 class="accordian-header" id="headingOne">
+        <div class="accordion accordion-flush" id="control-flow">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
               <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                 URL inputs
               </button>
             </h2>
-            <div id="collapseOne" class="accordian-collapse collapse show" aria-labelledby="headingOne">
-              <div class="accordian-body">
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne">
+              <div class="accordion-body">
                 <div class="row align-items-center g-2">
                     <div class="form-group form-floating">
                       <input
@@ -240,6 +240,63 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                         @click="resetURLs"
                       >
                         Reset
+                      </button>
+                    </div>
+                  </div>
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTwo">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                Saved Encounters
+              </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo">
+              <div class="accordion-body">
+                <div class="row align-items-center g-2">
+                    <div class="form-group form-floating">
+                      <input
+                        class="cachedFightName form-control"
+                        v-model.trim="cachedFightName"
+                        placeholder="Encounter Name"
+                      />
+                      <label for="cachedFightName">Encounter Name</label>
+                    </div>
+                  </div>
+                  <div class="row align-items-center g-2">
+                    <div class="form-group form-floating">
+                      <select
+                        id="cachedFights"
+                        v-model="cachedFightSelected"
+                        class="form-select"
+                        aria-label="Cached encounters"
+                      >
+                        <option
+                          v-for="(links, encounter) in cachedFights"
+                          :key="encounter"
+                          :encounter="encounter"
+                          :links="links"
+                        >
+                          {{ encounter }}
+                        </option>
+                      </select>
+                      <label for="cachedFights">Old Encounters</label>
+                    </div>
+                  </div>
+                  <div class="row align-items-center g-2">
+                    <div class="col-lg-6">
+                      <button
+                        class="btn btn-outline-info me-1"
+                        @click="addCachedFight"
+                      >
+                        Save Encounter
+                      </button>
+                      <button
+                        class="btn btn-outline-danger"
+                        @click="removeCachedFight"
+                      >
+                        Delete Encounter
                       </button>
                     </div>
                   </div>
@@ -1021,14 +1078,14 @@ export default {
   text-justify: auto;
 }
 
-.accordian-heading .accordion-button:after {
+.accordion-heading .accordion-button:after {
     /* symbol for "opening" panels */
     font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
     content: "\e114";    /* adjust as needed, taken from bootstrap.css */
     float: right;        /* adjust as needed */
     color: grey;         /* adjust as needed */
 }
-.accordian-heading .accordion-button.collapsed:after {
+.accordion-heading .accordion-button.collapsed:after {
     /* symbol for "collapsed" panels */
     content: "\e080";    /* adjust as needed, taken from bootstrap.css */
 }
