@@ -80,17 +80,13 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                 <span id="pull-scrub-span"></span>
               </div>
             </div>
-            <div class="row g-2">
-              <div class="form-floating">
-                <label for="timeBeforePull">
-                  Video sync/offset (in seconds)
-                </label>
-                <div class="input-group">
-                  <button class="btn btn-outline-secondary" type="button">Button</button>
-                  <input id="timeBeforePull" class="form-control" type="number" v-model="timeBeforePull" />
-                  <button class="btn btn-outline-secondary" type="button">Button</button>
-                </div>
+            <div class="row justify-content-center g-2">
+              <div class="col-4 input-group">
+                <button class="btn btn-outline-secondary" type="button">Button</button>
+                <input id="timeBeforePull" class="form-control" type="number" v-model="timeBeforePull" />
+                <button class="btn btn-outline-secondary" type="button">Button</button>
               </div>
+              <div class="form-text">Video sync/offset (in seconds)</div>
             </div>
           </div>
         </div>
