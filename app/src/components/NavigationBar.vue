@@ -41,14 +41,31 @@ defineProps<{
           </li>
         </ul>
         <ul class="navbar-nav flex-row flex-wrap ms-md-auto">
-          <li v-if="Object.keys(fflogsAuthToken).length == 0" class="nav-item py-1 px-0 px-lg-2">
-            <button type="button" class="btn btn-outline-primary text-nowrap" @click="$emit('getFflogsAuthToken')">
-              <img src="https://assets.rpglogs.com/img/ff/favicon.png?v=2" style="height: 1.5em;" />Login
+          <li
+            v-if="Object.keys(fflogsAuthToken).length == 0"
+            class="nav-item py-1 px-0 px-lg-2"
+          >
+            <button
+              type="button"
+              class="btn btn-outline-primary text-nowrap"
+              @click="$emit('getFflogsAuthToken')"
+            >
+              <img
+                src="https://assets.rpglogs.com/img/ff/favicon.png?v=2"
+                style="height: 1.5em"
+              />Login
             </button>
           </li>
           <li v-else class="nav-item py-1 px-0 px-lg-2">
-            <button type="button" class="btn btn-outline-primary text-nowrap" @click="$emit('clearFflogsAuthToken')">
-              <img src="https://assets.rpglogs.com/img/ff/favicon.png?v=2" style="height: 1.5em;" />Logout
+            <button
+              type="button"
+              class="btn btn-outline-primary text-nowrap"
+              @click="$emit('clearFflogsAuthToken')"
+            >
+              <img
+                src="https://assets.rpglogs.com/img/ff/favicon.png?v=2"
+                style="height: 1.5em"
+              />Logout
             </button>
           </li>
           <li
@@ -58,13 +75,29 @@ defineProps<{
             "
             class="nav-item py-1 px-0 px-lg-2"
           >
-            <button type="button" class="btn btn-outline-danger text-nowrap" @click="$emit('clearGoogleAuthToken')">
-              <img src="https://www.youtube.com/s/desktop/82a4cf4f/img/favicon_144x144.png" style="height: 1.5em;" /> Logout
+            <button
+              type="button"
+              class="btn btn-outline-danger text-nowrap"
+              @click="$emit('clearGoogleAuthToken')"
+            >
+              <img
+                src="https://www.youtube.com/s/desktop/82a4cf4f/img/favicon_144x144.png"
+                style="height: 1.5em"
+              />
+              Logout
             </button>
           </li>
           <li v-else class="nav-item py-1 px-0 px-lg-2">
-            <button type="button" class="btn btn-outline-danger text-nowrap" @click="$emit('getGoogleAuthToken')">
-              <img src="https://www.youtube.com/s/desktop/82a4cf4f/img/favicon_144x144.png" style="height: 1.5em;" /> Login
+            <button
+              type="button"
+              class="btn btn-outline-danger text-nowrap"
+              @click="$emit('getGoogleAuthToken')"
+            >
+              <img
+                src="https://www.youtube.com/s/desktop/82a4cf4f/img/favicon_144x144.png"
+                style="height: 1.5em"
+              />
+              Login
             </button>
           </li>
           <li class="nav-item dropdown">
@@ -198,7 +231,13 @@ export default {
       tooltipList: null,
     };
   },
-  emits: ["googleAuth", "clearGoogleAuthToken", "getGoogleAuthToken", "getFflogsAuthToken", "clearFflogsAuthToken"],
+  emits: [
+    "googleAuth",
+    "clearGoogleAuthToken",
+    "getGoogleAuthToken",
+    "getFflogsAuthToken",
+    "clearFflogsAuthToken",
+  ],
   watch: {
     googleAuthResponse(newValue) {
       this.$emit("googleAuth", newValue);

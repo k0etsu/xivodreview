@@ -78,7 +78,11 @@ export default {
   methods: {
     goToTimestamp(pullTimeInVod: Number) {
       if (typeof this.player.seek === "function") {
+        this.player.pause();
         this.player.seek(pullTimeInVod);
+        setTimeout(() => {
+          this.player.play();
+        }, 500);
       } else {
         this.player.seekTo(pullTimeInVod);
       }
@@ -86,20 +90,22 @@ export default {
   },
   created() {
     this.pullTimeInVod =
-      Math.floor(
-        (this.reportStart - this.vodStartTime + this.fightEntry.startTime) /
-          1000
-      ) - this.timeBeforePull;
+      (this.reportStart -
+        this.vodStartTime +
+        this.fightEntry.startTime -
+        this.timeBeforePull) /
+      1000;
     this.timestamp = new Date(this.pullTimeInVod * 1000)
       .toISOString()
       .slice(11, 19);
   },
   updated() {
     this.pullTimeInVod =
-      Math.floor(
-        (this.reportStart - this.vodStartTime + this.fightEntry.startTime) /
-          1000
-      ) - this.timeBeforePull;
+      (this.reportStart -
+        this.vodStartTime +
+        this.fightEntry.startTime -
+        this.timeBeforePull) /
+      1000;
     this.timestamp = new Date(this.pullTimeInVod * 1000)
       .toISOString()
       .slice(11, 19);
