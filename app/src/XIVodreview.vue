@@ -176,10 +176,19 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                       Submit
                     </button>
                     <button
-                      class="btn btn-outline-secondary"
+                      class="btn btn-outline-secondary me-1"
                       @click="resetURLs"
                     >
                       Reset
+                    </button>
+                    <button
+                      v-if="player !== null"
+                      class="btn btn-outline-secondary"
+                      data-bs-toggle="tooltip"
+                      data-bs-title="Copy to clipboard"
+                      @click="shareURLs"
+                    >
+                      Share
                     </button>
                   </div>
                 </div>
@@ -564,6 +573,7 @@ export default {
       this.playerType = "";
       this.showGoogleWarning();
       this.clearScrubTimer();
+      window.history.pushState({}, document.title, window.location.origin);
       // TODO: Clear logs
     },
     hideGoogleWarning() {
@@ -963,6 +973,48 @@ export default {
       this.fflogsAuthToken = {};
       localStorage.removeItem("cachedFflogsAuthToken");
     },
+    shareURLs() {
+      var vodId = "";
+      var vodType = "";
+      if (this.twitchId != "") {
+        vodId = this.twitchId;
+        vodType = "twitch";
+      } else if (this.youtubeId != "") {
+        vodId = this.youtubeId;
+        vodType = "youtube";
+      }
+      const shareUrl = `${window.location.origin}?${vodType}=${vodId}&fflogs=${this.reportId}`;
+      console.log(shareUrl);
+      navigator.clipboard.writeText(shareUrl);
+      alert(`Copied "${shareUrl}" to clipboard.`);
+    },
+  },
+  mounted() {
+    const queryObj = new URLSearchParams(window.location.search);
+    if (window.location.search != "") {
+      var check = 0;
+      for (const [key, value] of queryObj) {
+        if (key == "twitch") {
+          this.vod_url = `https://www.twitch.tv/videos/${value}`;
+          check += 1;
+        } else if (key == "youtube") {
+          this.vod_url = `https://www.youtube.com/watch?v=${value}`;
+          check += 1;
+        } else if (key == "fflogs") {
+          this.fflogs_url = `https://www.fflogs.com/reports/${value}`;
+          check += 1;
+        }
+      }
+      if (check == 2) {
+        this.submitURLs();
+      }
+    }
+    var tooltipTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
   },
 };
 </script>
