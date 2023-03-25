@@ -1070,13 +1070,12 @@ export default {
 }
 
 .player-input {
-  width: 72vw;
+  width: 71.5vw;
 }
 
 .fflogs-report {
   max-height: 100%;
-  padding-left: 1em;
-  width: 28vw;
+  width: 27.5vw;
 }
 
 #google-homepage-shit {
