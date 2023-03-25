@@ -1056,6 +1056,7 @@ export default {
   height: 3vh;
   background: #3f3f3f;
   overflow: hidden;
+  cursor: pointer;
 }
 
 #pull-scrub span {
