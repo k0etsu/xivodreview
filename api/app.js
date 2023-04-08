@@ -172,13 +172,13 @@ app.get("/fflogs", (req, res, next) => {
     };
     const options = {
       method: "GET",
-      searchParams: {query: query},
+      searchParams: { query: query },
       headers: {
         "Authorization": `Bearer ${token}`
       }
     };
     return got(url, options)
-  // TODO: promise chaining cause can't figure out async/await
+    // TODO: promise chaining cause can't figure out async/await
   }).then(data => {
     res.json(JSON.parse(data["body"]))
   }).catch(err => {
@@ -195,14 +195,14 @@ app.get("/twitch", (req, res, next) => {
     // setup options to pass to got()
     const options = {
       method: "GET",
-      searchParams: {id: req.query.videoId},
+      searchParams: { id: req.query.videoId },
       headers: {
         "Authorization": `Bearer ${token}`,
         "Client-Id": TWITCH_CLIENT_ID
       }
     };
     return got(TWITCH_API, options)
-  // TODO: promise chaining cause can't figure out async/await
+    // TODO: promise chaining cause can't figure out async/await
   }).then(data => {
     var timeArr = [];
     for (const resData of JSON.parse(data["body"])["data"]) {
