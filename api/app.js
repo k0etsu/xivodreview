@@ -130,6 +130,9 @@ app.get("/fflogs", (req, res, next) => {
         bossPercentage
         kill
         friendlyPlayers
+        lastPhase
+        lastPhaseAsAbsoluteIndex
+        lastPhaseIsIntermission
       }
       masterData {
         logVersion
