@@ -264,7 +264,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
             </div>
           </div>
         </div>
-        <div v-if="fightData && player">
+        <div v-if="fightData && player" style="margin-top: 1.5rem">
           <FFlogsReport
             :key="reportId"
             :fightData="fightData"
@@ -357,6 +357,20 @@ export default {
       if (newValue) {
         newValue.data.reportData.report.fights.forEach((fight: Object) => {
           fightsPerInstance[fight.name] = fightsPerInstance[fight.name] || [];
+          var fightPercentage = 100 - fight.fightPercentage;
+          var fightClass = "";
+          if (fightPercentage < 25) {
+            fightClass = "common";
+          } else if (fightPercentage < 50) {
+            fightClass = "uncommon";
+          } else if (fightPercentage < 75) {
+            fightClass = "rare";
+          } else if (fightPercentage < 90) {
+            fightClass = "epic";
+          } else if (fightPercentage < 100) {
+            fightClass = "legendary";
+          }
+          fight["class"] = fightClass;
           fightsPerInstance[fight.name].push(fight);
         });
         this.fightData = fightsPerInstance;
@@ -990,6 +1004,7 @@ export default {
     },
   },
   mounted() {
+    const bootstrap = window.bootstrap;
     const queryObj = new URLSearchParams(window.location.search);
     if (window.location.search != "") {
       var check = 0;
