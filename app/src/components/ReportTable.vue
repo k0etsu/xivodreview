@@ -8,8 +8,8 @@ import ReportRow from "./ReportRow.vue";
     <thead>
       <tr>
         <th scope="col">Pull</th>
-        <th scope="col">Fight Percentage</th>
-        <th scope="col">Goto Pull</th>
+        <!-- <th scope="col">Fight Percentage</th>
+        <th scope="col">Goto Pull</th> -->
         <th scope="col">Deaths</th>
         <th scope="col">FFLogs</th>
       </tr>
@@ -44,6 +44,9 @@ export default {
   ],
   components: {
     ReportRow,
+  },
+  created() {
+    console.log(this.fightEntries);
   },
 };
 </script>

@@ -126,7 +126,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
           </div>
         </div> -->
       </div>
-      <div class="fflogs-report overflow-auto col-3">
+      <div class="fflogs-report col-3">
         <div class="accordion accordion-flush" id="control-flow">
           <div class="accordion-item">
             <h2 class="accordion-header" id="headingOne">
@@ -264,7 +264,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
             </div>
           </div>
         </div>
-        <div v-if="fightData && player">
+        <div v-if="fightData && player" style="margin-top: 1.5rem">
           <FFlogsReport
             :key="reportId"
             :fightData="fightData"
@@ -357,6 +357,20 @@ export default {
       if (newValue) {
         newValue.data.reportData.report.fights.forEach((fight: Object) => {
           fightsPerInstance[fight.name] = fightsPerInstance[fight.name] || [];
+          var fightPercentage = 100 - fight.fightPercentage;
+          var fightClass = "";
+          if (fightPercentage < 25) {
+            fightClass = "common";
+          } else if (fightPercentage < 50) {
+            fightClass = "uncommon";
+          } else if (fightPercentage < 75) {
+            fightClass = "rare";
+          } else if (fightPercentage < 90) {
+            fightClass = "epic";
+          } else if (fightPercentage < 100) {
+            fightClass = "legendary";
+          }
+          fight["class"] = fightClass;
           fightsPerInstance[fight.name].push(fight);
         });
         this.fightData = fightsPerInstance;
@@ -990,6 +1004,7 @@ export default {
     },
   },
   mounted() {
+    const bootstrap = window.bootstrap;
     const queryObj = new URLSearchParams(window.location.search);
     if (window.location.search != "") {
       var check = 0;
@@ -1024,7 +1039,7 @@ export default {
   height: 3.3em;
 }
 .no-scroll {
-  height: 95vh;
+  height: 94vh;
 }
 .vod-player {
   height: 85vh;
@@ -1076,8 +1091,24 @@ export default {
 .fflogs-report {
   max-height: 100%;
   width: 27.5vw;
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+  overflow: auto;
+  overflow-y: overlay;
 }
-
+.fflogs-report::-webkit-scrollbar {
+  width: 0.2em;
+}
+.fflogs-report::-webkit-scrollbar-button {
+  display: none;
+}
+.fflogs-report::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+.fflogs-report::-webkit-scrollbar-thumb {
+  background-color: darkgrey;
+  outline: 1px solid slategrey;
+}
 #google-homepage-shit {
   position: absolute;
   height: 100%;

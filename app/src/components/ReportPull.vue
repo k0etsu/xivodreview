@@ -1,113 +1,56 @@
-<script setup lang="ts">
-import DeathTable from "./DeathTable.vue";
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <tr>
-    <!--   <th scope="row">{{ fightEntry.id }}</th>
-    <td v-if="fightEntry.kill === true">KILL</td>
-    <td v-else-if="fightEntry.fightPercentage == null">null</td>
-    <td v-else>{{ `${Number(100 - fightEntry.fightPercentage).toFixed(2)}%` }}</td> -->
-    <!-- <td>
-      <button
-        class="btn btn-outline-primary"
-        @click="goToTimestamp(pullTimeInVod)"
-      >
-        {{ timestamp }}
-      </button>
-    </td> -->
-    <td>
-      <button class="btn" @click="goToTimestamp(pullTimeInVod)">
-        <div class="pull-entry wipe">
-          <div class="pull-grid-cell-container">
-            <div class="percent-phase">
-              <div style="display: block">
-                <span
-                  v-if="fightEntry.fightPercentage === null"
-                  class="fight-grid-cell-percent common"
-                  >0%</span
-                >
-                <span
-                  v-else
-                  class="fight-grid-cell-percent"
-                  :class="fightEntry.class"
-                  >{{
-                    `${Number(100 - fightEntry.fightPercentage).toFixed(0)}%`
-                  }}</span
-                >
-                <span
-                  class="fight-grid-cell-phase"
-                  v-if="fightEntry.lastPhase != 0"
-                  >{{ `P${fightEntry.lastPhase}` }}</span
-                >
-              </div>
-            </div>
-            <div class="pull-info">
-              <span class="fight-grid-number">{{ fightEntry.id }}</span>
-              <span class="fight-grid-duration">{{
-                `(${new Date(fightEntry.endTime - fightEntry.startTime)
-                  .toISOString()
-                  .slice(14, 19)})`
-              }}</span>
-              <span class="fight-grid-time">{{
-                new Date(
-                  reportStart + fightEntry.startTime
-                ).toLocaleTimeString()
-              }}</span>
+  <div class="col-md-auto">
+    <button class="btn pull-button" @click="goToTimestamp(pullTimeInVod)">
+      <div class="pull-entry wipe">
+        <div class="pull-grid-cell-container">
+          <div class="percent-phase">
+            <div style="display: block">
+              <span
+                v-if="fightEntry.fightPercentage === null"
+                class="fight-grid-cell-percent common"
+                >0%</span
+              >
+              <span
+                v-else
+                class="fight-grid-cell-percent"
+                :class="fightEntry.class"
+                >{{
+                  `${Number(100 - fightEntry.fightPercentage).toFixed(0)}%`
+                }}</span
+              >
+              <span
+                class="fight-grid-cell-phase"
+                v-if="fightEntry.lastPhase != 0"
+                >{{ `P${fightEntry.lastPhase}` }}</span
+              >
             </div>
           </div>
-          <div class="wipes-percent-bg">
-            <div
-              class="wipes-percent-fg"
-              :class="`${fightEntry.class}-bg`"
-              :style="{
-                width: `${Number(100 - fightEntry.fightPercentage).toFixed(
-                  2
-                )}%`,
-              }"
-            ></div>
+          <div class="pull-info">
+            <span class="fight-grid-number">{{ fightEntry.id }}</span>
+            <span class="fight-grid-duration">{{
+              `(${new Date(fightEntry.endTime - fightEntry.startTime)
+                .toISOString()
+                .slice(14, 19)})`
+            }}</span>
+            <span class="fight-grid-time">{{
+              new Date(reportStart + fightEntry.startTime).toLocaleTimeString()
+            }}</span>
           </div>
         </div>
-      </button>
-    </td>
-    <td>
-      <button
-        class="btn btn-outline-danger table-buttons"
-        type="button"
-        data-bs-toggle="collapse"
-        :data-bs-target="'#deaths-' + fightEntry.id"
-        aria-expanded="false"
-      >
-        Expand
-      </button>
-    </td>
-    <td id="fflogs-link">
-      <a
-        :href="
-          'https://www.fflogs.com/reports/' +
-          reportId +
-          '/#fight=' +
-          fightEntry.id
-        "
-        class="btn btn-outline-info table-buttons"
-        role="button"
-        target="_blank"
-        >Report</a
-      >
-    </td>
-  </tr>
-  <tr class="collapse" :id="'deaths-' + fightEntry.id">
-    <DeathTable
-      :key="reportId + fightEntry.id"
-      :fightId="fightEntry.id"
-      :deathData="deathData"
-      :reportId="reportId"
-      :reportStart="reportStart"
-      :vodStartTime="vodStartTime"
-      :timeBeforePull="timeBeforePull"
-      :player="player"
-    />
-  </tr>
+        <div class="wipes-percent-bg">
+          <div
+            class="wipes-percent-fg"
+            :class="`${fightEntry.class}-bg`"
+            :style="{
+              width: `${Number(100 - fightEntry.fightPercentage).toFixed(2)}%`,
+            }"
+          ></div>
+        </div>
+      </div>
+    </button>
+  </div>
 </template>
 
 <script lang="ts">
@@ -127,9 +70,8 @@ export default {
     "timeBeforePull",
     "player",
   ],
-  components: {
-    DeathTable,
-  },
+  emits: ["getPullDeaths"],
+  components: {},
   methods: {
     goToTimestamp(pullTimeInVod: Number) {
       if (typeof this.player.seek === "function") {
@@ -141,6 +83,7 @@ export default {
       } else {
         this.player.seekTo(pullTimeInVod);
       }
+      this.$emit("getPullDeaths", this.fightEntry.id);
     },
   },
   created() {
@@ -169,6 +112,11 @@ export default {
 </script>
 
 <style scoped>
+.pull-button {
+  --bs-btn-padding-x: 0rem;
+  --bs-btn-padding-y: 0rem;
+}
+
 .pull-entry {
   border: 1px solid #303030;
   float: left;
