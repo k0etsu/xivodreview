@@ -126,7 +126,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
           </div>
         </div> -->
       </div>
-      <div class="fflogs-report overflow-auto col-3">
+      <div class="fflogs-report col-3">
         <div class="accordion accordion-flush" id="control-flow">
           <div class="accordion-item">
             <h2 class="accordion-header" id="headingOne">
@@ -1039,7 +1039,7 @@ export default {
   height: 3.3em;
 }
 .no-scroll {
-  height: 95vh;
+  height: 94vh;
 }
 .vod-player {
   height: 85vh;
@@ -1091,8 +1091,24 @@ export default {
 .fflogs-report {
   max-height: 100%;
   width: 27.5vw;
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+  overflow: auto;
+  overflow-y: overlay;
 }
-
+.fflogs-report::-webkit-scrollbar {
+  width: 0.2em;
+}
+.fflogs-report::-webkit-scrollbar-button {
+  display: none;
+}
+.fflogs-report::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+.fflogs-report::-webkit-scrollbar-thumb {
+  background-color: darkgrey;
+  outline: 1px solid slategrey;
+}
 #google-homepage-shit {
   position: absolute;
   height: 100%;

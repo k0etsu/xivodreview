@@ -18,7 +18,6 @@ import DeathTable from "./DeathTable.vue";
     @get-pull-deaths="getPullDeaths"
   />
   <div v-if="pullId > 0" style="margin-top: 1.5rem">
-    <h5>Pull Info</h5>
     <DeathTable
       :key="reportId + pullId"
       :fightId="pullId"
