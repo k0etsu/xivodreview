@@ -568,6 +568,8 @@ export default {
       this.hideGoogleWarning();
       this.clearScrubTimer();
       this.removePlayer();
+      this.twitchId = "";
+      this.youtubeId = "";
       if (this.vod_url.includes("twitch")) {
         this.getTwitchId(this.vod_url);
       } else if (
@@ -585,6 +587,8 @@ export default {
       this.cachedFightName = "";
       this.cachedFightSelected = "";
       this.playerType = "";
+      this.twitchId = "";
+      this.youtubeId = "";
       this.showGoogleWarning();
       this.clearScrubTimer();
       window.history.pushState({}, document.title, window.location.origin);
