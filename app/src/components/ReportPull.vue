@@ -10,8 +10,37 @@
               <span
                 v-if="fightEntry.fightPercentage === null"
                 class="fight-grid-cell-percent common"
-                >0%</span
+                >--</span
               >
+              <div
+                v-else-if="fightEntry.kill"
+                class="fight-grid-cell-percent kill"
+              >
+                <span>KILL</span>
+                <br />
+                <span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="1em"
+                    height="1em"
+                    fill="currentColor"
+                    class="bi bi-check-circle-fill"
+                    viewBox="0 0 16 16"
+                    style="margin-top: -0.5em"
+                  >
+                    <path
+                      d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
+                    />
+                  </svg>
+                </span>
+              </div>
+              <span
+                v-else-if="fightEntry.lastPhase != 0"
+                class="fight-grid-cell-percent"
+                :class="fightEntry.class"
+              >
+                {{ `${Number(fightEntry.bossPercentage).toFixed(0)}%` }}
+              </span>
               <span
                 v-else
                 class="fight-grid-cell-percent"
@@ -41,6 +70,12 @@
         </div>
         <div class="wipes-percent-bg">
           <div
+            v-if="fightEntry.kill"
+            class="wipes-percent-fg kill-bg"
+            style="width: 100%"
+          ></div>
+          <div
+            v-else
             class="wipes-percent-fg"
             :class="`${fightEntry.class}-bg`"
             :style="{
@@ -212,10 +247,15 @@ export default {
 .wipe {
   color: #e68066 !important;
 }
+.kill {
+  color: #80e666 !important;
+}
+.kill-bg {
+  background-color: #80e666 !important;
+}
 .common {
   color: #afafaf !important;
 }
-
 .common-bg {
   background-color: #ccc !important;
 }
