@@ -39,7 +39,9 @@
                 class="fight-grid-cell-percent"
                 :class="fightEntry.class"
               >
-                {{ `${Number(Math.floor(fightEntry.bossPercentage)).toFixed(0)}%` }}
+                {{
+                  `${Number(Math.floor(fightEntry.bossPercentage)).toFixed(0)}%`
+                }}
               </span>
               <span
                 v-else
@@ -155,7 +157,7 @@ export default {
 .pull-entry {
   border: 1px solid #303030;
   float: left;
-  margin: 5px 1px 1px 4px;
+  margin: 3px 1px 1px 2px;
   background-color: #141414;
 }
 
