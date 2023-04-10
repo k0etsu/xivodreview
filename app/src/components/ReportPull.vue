@@ -39,7 +39,9 @@
                 class="fight-grid-cell-percent"
                 :class="fightEntry.class"
               >
-                {{ `${Number(Math.floor(fightEntry.bossPercentage)).toFixed(0)}%` }}
+                {{
+                  `${Number(Math.floor(fightEntry.bossPercentage)).toFixed(0)}%`
+                }}
               </span>
               <span
                 v-else
