@@ -84,8 +84,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                     class="death-indicator"
                     :style="{
                       width: `${Number(
-                        ((death.timestamp -
-                          currentPull.startTime) /
+                        ((death.timestamp - currentPull.startTime) /
                           (currentPull.endTime - currentPull.startTime)) *
                           100
                       )}%`,
@@ -467,10 +466,16 @@ export default {
       // 2023-03-19 TODO: this might be easier to purely animate since twitch player is ass and doesn't like to update current time
       var timestamp = this.player.getCurrentTime();
       var pullStartTime =
-        (this.currentPull.startTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
+        (this.currentPull.startTime +
+          this.reportStart -
+          this.vodStartTime -
+          this.timeBeforePull) /
         1000;
       var pullEndTime =
-        (this.currentPull.endTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
+        (this.currentPull.endTime +
+          this.reportStart -
+          this.vodStartTime -
+          this.timeBeforePull) /
         1000;
       var percentage =
         ((timestamp - pullStartTime) / (pullEndTime - pullStartTime)) * 100;
@@ -479,10 +484,16 @@ export default {
     },
     scrubGotoTime(percentage) {
       var pullStartTime =
-        (this.currentPull.startTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
+        (this.currentPull.startTime +
+          this.reportStart -
+          this.vodStartTime -
+          this.timeBeforePull) /
         1000;
       var pullEndTime =
-        (this.currentPull.endTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
+        (this.currentPull.endTime +
+          this.reportStart -
+          this.vodStartTime -
+          this.timeBeforePull) /
         1000;
       var newTime =
         (pullEndTime - pullStartTime) * (percentage / 100) + pullStartTime;
@@ -1034,7 +1045,7 @@ export default {
     const bootstrap = window.bootstrap;
     const queryObj = new URLSearchParams(window.location.search);
     if (window.location.search != "") {
-      var check = { "offset": 0 };
+      var check = { offset: 0 };
       for (const [key, value] of queryObj) {
         if (key == "twitch") {
           this.vod_url = `https://www.twitch.tv/videos/${value}`;
