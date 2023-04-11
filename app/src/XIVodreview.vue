@@ -85,8 +85,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                     :style="{
                       width: `${Number(
                         ((death.timestamp -
-                          currentPull.startTime -
-                          timeBeforePull) /
+                          currentPull.startTime) /
                           (currentPull.endTime - currentPull.startTime)) *
                           100
                       )}%`,
@@ -468,10 +467,10 @@ export default {
       // 2023-03-19 TODO: this might be easier to purely animate since twitch player is ass and doesn't like to update current time
       var timestamp = this.player.getCurrentTime();
       var pullStartTime =
-        (this.currentPull.startTime + this.reportStart - this.vodStartTime) /
+        (this.currentPull.startTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
         1000;
       var pullEndTime =
-        (this.currentPull.endTime + this.reportStart - this.vodStartTime) /
+        (this.currentPull.endTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
         1000;
       var percentage =
         ((timestamp - pullStartTime) / (pullEndTime - pullStartTime)) * 100;
@@ -480,10 +479,10 @@ export default {
     },
     scrubGotoTime(percentage) {
       var pullStartTime =
-        (this.currentPull.startTime + this.reportStart - this.vodStartTime) /
+        (this.currentPull.startTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
         1000;
       var pullEndTime =
-        (this.currentPull.endTime + this.reportStart - this.vodStartTime) /
+        (this.currentPull.endTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
         1000;
       var newTime =
         (pullEndTime - pullStartTime) * (percentage / 100) + pullStartTime;
@@ -1025,7 +1024,7 @@ export default {
         vodId = this.youtubeId;
         vodType = "youtube";
       }
-      const shareUrl = `${window.location.origin}?${vodType}=${vodId}&fflogs=${this.reportId}`;
+      const shareUrl = `${window.location.origin}?${vodType}=${vodId}&fflogs=${this.reportId}&offest=${this.timeBeforePull}`;
       console.log(shareUrl);
       navigator.clipboard.writeText(shareUrl);
       alert(`Copied "${shareUrl}" to clipboard.`);
@@ -1035,20 +1034,23 @@ export default {
     const bootstrap = window.bootstrap;
     const queryObj = new URLSearchParams(window.location.search);
     if (window.location.search != "") {
-      var check = 0;
+      var check = { "offset": 0 };
       for (const [key, value] of queryObj) {
         if (key == "twitch") {
           this.vod_url = `https://www.twitch.tv/videos/${value}`;
-          check += 1;
+          check["vod"] = "twitch";
         } else if (key == "youtube") {
           this.vod_url = `https://www.youtube.com/watch?v=${value}`;
-          check += 1;
+          check["vod"] = "youtube";
         } else if (key == "fflogs") {
           this.fflogs_url = `https://www.fflogs.com/reports/${value}`;
-          check += 1;
+          check["fflogs"] = value;
+        } else if (key == "offset") {
+          this.timeBeforePull = Number(value);
+          check["offset"] = Number(value);
         }
       }
-      if (check == 2) {
+      if ("vod" in check && "fflogs" in check) {
         this.submitURLs();
       }
     }
