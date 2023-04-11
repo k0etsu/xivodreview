@@ -84,11 +84,21 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                     class="death-indicator"
                     :style="{
                       width: `${Number(
-                        ((death.timestamp - currentPull.startTime) /
+                        ((death.timestamp -
+                          currentPull.startTime -
+                          timeBeforePull) /
                           (currentPull.endTime - currentPull.startTime)) *
                           100
                       )}%`,
                     }"
+                    :key="
+                      reportId +
+                      death.player +
+                      death.source +
+                      death.ability +
+                      death.timestamp +
+                      currentPull.startTime
+                    "
                   ></div>
                 </div>
               </div>
