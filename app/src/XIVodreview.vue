@@ -78,6 +78,19 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                 @click="scrubClick"
               >
                 <span id="pull-scrub-span"></span>
+                <div class="death-indicators">
+                  <div
+                    v-for="death in deathData[currentPull.id]"
+                    class="death-indicator"
+                    :style="{
+                      width: `${Number(
+                        ((death.timestamp - currentPull.startTime) /
+                          (currentPull.endTime - currentPull.startTime)) *
+                          100
+                      )}%`,
+                    }"
+                  ></div>
+                </div>
               </div>
             </div>
             <div class="row justify-content-center g-2">
@@ -736,6 +749,7 @@ export default {
         finalDeathData[this.deathData[death].fight].push(this.deathData[death]);
       }
       this.deathData = finalDeathData;
+      console.log(this.deathData);
     },
     getCachedFights() {
       const cachedFights = localStorage.getItem("cachedFights");
@@ -1076,9 +1090,13 @@ export default {
   background: #3f3f3f;
   overflow: hidden;
   cursor: pointer;
+  z-index: 20;
+  display: flex;
+  position: relative;
+  /* flex-direction: column; */
 }
 
-#pull-scrub span {
+#pull-scrub-span {
   display: inline-block;
   /* position: absolute; */
   /* top: 0;
@@ -1086,6 +1104,35 @@ export default {
   height: 3vh;
   width: 0;
   background: #482e66;
+  z-index: 40;
+}
+
+.death-indicators {
+  /* left: 0;
+  right: 0; */
+  z-index: 50;
+  height: 3vh;
+  position: absolute;
+  width: 100%;
+}
+
+/* .death-indicators, .death-indicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+} */
+
+.death-indicator {
+  position: absolute;
+  z-index: 60;
+  width: 0px;
+  height: 3vh;
+  /* background: red; */
+  border-right: 1px solid;
+  border-left-color: transparent;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  border-right-color: red;
 }
 
 .player-input {
