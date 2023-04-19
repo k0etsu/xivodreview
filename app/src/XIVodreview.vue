@@ -296,6 +296,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
             :vodStartTime="vodStartTime"
             :timeBeforePull="timeBeforePull"
             :player="player"
+            @get-pull-num="getPullNum"
           />
         </div>
       </div>
@@ -317,6 +318,7 @@ export default {
       player: null,
       playerType: "",
       scrubTimer: 0, // not sure if these timers need to be null tbh
+      pullTimestamp: 0,
       fflogs_url: "",
       reportId: "",
       reportData: null,
@@ -435,17 +437,39 @@ export default {
     },
     currentPull(newValue) {
       console.log(newValue);
-      if (this.scrubTimer == 0) {
-        this.scrubTimer = setInterval(() => {
-          this.updateScrubTime();
-        }, 200);
-      }
+      this.pullTimestamp = (this.currentPull.startTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
+        1000;
+      clearInterval(this.scrubTimer);
+      setTimeout(() => {
+        this.scrubTimer = 0;
+        if (this.scrubTimer == 0) {
+          this.scrubTimer = setInterval(() => {
+            this.updateScrubTime();
+          }, 200);
+        }
+      }, 1500);
       // setInterval(() => {
       //   this.updateScrubTime()
       // }, 1000);
     },
+    pullTimestamp(newValue) {
+      var pullStartTime =
+        (this.currentPull.startTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
+        1000;
+      var pullEndTime =
+        (this.currentPull.endTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
+        1000;
+      var percentage =
+        ((newValue - pullStartTime) / (pullEndTime - pullStartTime)) * 100;
+      var span = document.getElementById("pull-scrub-span");
+      span.style.width = percentage + "%";
+    },
   },
   methods: {
+    getPullNum(pullId) {
+      console.log('getpullnum', pullId)
+      this.currentPull = this.reportData.data.reportData.report.fights[pullId - 1];
+    },
     decreaseOffset() {
       this.timeBeforePull = this.timeBeforePull - 500;
     },
@@ -465,17 +489,17 @@ export default {
         return;
       }
       // 2023-03-19 TODO: this might be easier to purely animate since twitch player is ass and doesn't like to update current time
-      var timestamp = this.player.getCurrentTime();
-      var pullStartTime =
-        (this.currentPull.startTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
-        1000;
-      var pullEndTime =
-        (this.currentPull.endTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
-        1000;
-      var percentage =
-        ((timestamp - pullStartTime) / (pullEndTime - pullStartTime)) * 100;
-      var span = document.getElementById("pull-scrub-span");
-      span.style.width = percentage + "%";
+      this.pullTimestamp = this.player.getCurrentTime();
+      // var pullStartTime =
+      //   (this.currentPull.startTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
+      //   1000;
+      // var pullEndTime =
+      //   (this.currentPull.endTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
+      //   1000;
+      // var percentage =
+      //   ((this.pullTimestamp - pullStartTime) / (pullEndTime - pullStartTime)) * 100;
+      // var span = document.getElementById("pull-scrub-span");
+      // span.style.width = percentage + "%";
     },
     scrubGotoTime(percentage) {
       var pullStartTime =
@@ -486,16 +510,21 @@ export default {
         1000;
       var newTime =
         (pullEndTime - pullStartTime) * (percentage / 100) + pullStartTime;
+      // this.pullTimestamp = newTime;
       if (this.playerType == "twitch") {
         this.player.seek(newTime);
       } else if (this.playerType == "yubtub") {
         this.player.seekTo(newTime);
       }
-      if (this.scrubTimer == 0) {
-        this.scrubTimer = setInterval(() => {
-          this.updateScrubTime();
-        }, 200);
-      }
+      // clearInterval(this.scrubTimer);
+      // setTimeout(() => {
+      //   this.scrubTimer = 0;
+      //   if (this.scrubTimer == 0) {
+      //     this.scrubTimer = setInterval(() => {
+      //       this.updateScrubTime();
+      //     }, 200);
+      //   }
+      // }, 1500);
     },
     clearScrubTimer() {
       var span = document.getElementById("pull-scrub-span");
@@ -560,17 +589,17 @@ export default {
       this.player.addEventListener(Twitch.Player.PLAYING, () => {
         setTimeout(() => {
           this.getPullNumber(this.player.getCurrentTime());
-        }, 600);
+        }, 2000);
       });
-      this.player.addEventListener(Twitch.Player.SEEK, () => {
-        setTimeout(() => {
-          this.getPullNumber(this.player.getCurrentTime());
-        }, 600);
-      });
+      // this.player.addEventListener(Twitch.Player.SEEK, () => {
+      //   setTimeout(() => {
+      //     this.getPullNumber(this.player.getCurrentTime());
+      //   }, 600);
+      // });
       this.player.addEventListener(Twitch.Player.PAUSE, () => {
         setTimeout(() => {
           this.getPullNumber(this.player.getCurrentTime());
-        }, 600);
+        }, 2000);
       });
     },
     getPullNumber(timestamp) {
