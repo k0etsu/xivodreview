@@ -47,6 +47,7 @@ export default {
     "timeBeforePull",
     "player",
   ],
+  emits: ["getPullNum"],
   components: {
     ReportGrid,
     DeathTable,
@@ -55,6 +56,7 @@ export default {
     getPullDeaths(pullId) {
       console.log("getpulldeaths", pullId);
       this.pullId = pullId;
+      this.$emit("getPullNum", pullId);
     },
   },
 };
