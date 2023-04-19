@@ -436,7 +436,11 @@ export default {
     },
     currentPull(newValue) {
       console.log(newValue);
-      this.pullTimestamp = (this.currentPull.startTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
+      this.pullTimestamp =
+        (this.currentPull.startTime +
+          this.reportStart -
+          this.vodStartTime -
+          this.timeBeforePull) /
         1000;
       clearInterval(this.scrubTimer);
       setTimeout(() => {
@@ -453,10 +457,16 @@ export default {
     },
     pullTimestamp(newValue) {
       var pullStartTime =
-        (this.currentPull.startTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
+        (this.currentPull.startTime +
+          this.reportStart -
+          this.vodStartTime -
+          this.timeBeforePull) /
         1000;
       var pullEndTime =
-        (this.currentPull.endTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
+        (this.currentPull.endTime +
+          this.reportStart -
+          this.vodStartTime -
+          this.timeBeforePull) /
         1000;
       var percentage =
         ((newValue - pullStartTime) / (pullEndTime - pullStartTime)) * 100;
@@ -466,8 +476,9 @@ export default {
   },
   methods: {
     getPullNum(pullId) {
-      console.log('getpullnum', pullId)
-      this.currentPull = this.reportData.data.reportData.report.fights[pullId - 1];
+      console.log("getpullnum", pullId);
+      this.currentPull =
+        this.reportData.data.reportData.report.fights[pullId - 1];
     },
     decreaseOffset() {
       this.timeBeforePull = this.timeBeforePull - 500;
