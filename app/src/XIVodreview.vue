@@ -877,12 +877,16 @@ export default {
       try {
         const url = new URL(youtubeUrl);
         if (youtubeUrl.includes("youtube.com")) {
-          var video = url.href.split("watch?")[1];
-          var queries = video.split("&");
-          for (const query of queries) {
-            if (query.includes("v=")) {
-              this.youtubeId = query.replace("v=", "");
+          if (youtubeUrl.includes("watch?")) {
+            var video = url.href.split("watch?")[1];
+            var queries = video.split("&");
+            for (const query of queries) {
+              if (query.includes("v=")) {
+                this.youtubeId = query.replace("v=", "");
+              }
             }
+          } else if (youtubeUrl.includes("/live/")) {
+            this.youtubeId = url.href.split("/live/")[1].split("?")[0];
           }
         } else if (youtubeUrl.includes("youtu.be")) {
           this.youtubeId = url.pathname.split("/")[1];
