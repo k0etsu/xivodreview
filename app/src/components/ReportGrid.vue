@@ -4,7 +4,7 @@ import ReportPull from "./ReportPull.vue";
 
 <template>
   <h4>{{ fightTitle }}</h4>
-  <div id="log-pulls" class="row g-0 justify-content-start">
+  <div class="row g-0 justify-content-start log-pulls">
     <ReportPull
       v-for="fightEntry in fightEntries"
       :key="reportId + fightTitle + fightEntry.id"
@@ -46,3 +46,9 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+  .log-pulls {
+    margin-bottom: 1.5em;
+  }
+</style>
