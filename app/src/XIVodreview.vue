@@ -1073,7 +1073,7 @@ export default {
         vodId = this.youtubeId;
         vodType = "youtube";
       }
-      const shareUrl = `${window.location.origin}?${vodType}=${vodId}&fflogs=${this.reportId}&offest=${this.timeBeforePull}`;
+      const shareUrl = `${window.location.origin}?${vodType}=${vodId}&fflogs=${this.reportId}&offset=${this.timeBeforePull}`;
       console.log(shareUrl);
       navigator.clipboard.writeText(shareUrl);
       alert(`Copied "${shareUrl}" to clipboard.`);
