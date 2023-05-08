@@ -410,9 +410,12 @@ export default {
     encounterData(newValue) {
       const worldData = newValue.data.worldData;
       this.encounterMap = new Map();
-      for(const encounter in worldData) {
+      for (const encounter in worldData) {
         if (worldData[encounter] !== null) {
-          this.encounterMap.set(worldData[encounter]['id'], worldData[encounter]['name']);
+          this.encounterMap.set(
+            worldData[encounter]["id"],
+            worldData[encounter]["name"]
+          );
         }
       }
       this.getFightData();
@@ -784,12 +787,12 @@ export default {
     },
     getEncounterData() {
       var getUrl = `${this.api_url}/encounters?`;
-      var encounterIds = []
+      var encounterIds = [];
       this.reportData.data.reportData.report.fights.forEach((fight: Object) => {
-        if(!encounterIds.includes(fight.encounterID)) {
+        if (!encounterIds.includes(fight.encounterID)) {
           encounterIds.push(fight.encounterID);
-          getUrl = getUrl + `id=${fight.encounterID}&`
-          console.log('encounterdata', getUrl)
+          getUrl = getUrl + `id=${fight.encounterID}&`;
+          console.log("encounterdata", getUrl);
         }
       });
       fetch(getUrl)
@@ -848,30 +851,33 @@ export default {
     getFightData() {
       const fightsPerInstance = {};
       if (this.reportData) {
-        this.reportData.data.reportData.report.fights.forEach((fight: Object) => {
-          var encounterName = "";
-          if (this.encounterMap.get(fight.encounterID)) {
-            encounterName = this.encounterMap.get(fight.encounterID);
-          } else {
-            encounterName = fight.name;
+        this.reportData.data.reportData.report.fights.forEach(
+          (fight: Object) => {
+            var encounterName = "";
+            if (this.encounterMap.get(fight.encounterID)) {
+              encounterName = this.encounterMap.get(fight.encounterID);
+            } else {
+              encounterName = fight.name;
+            }
+            fightsPerInstance[encounterName] =
+              fightsPerInstance[encounterName] || [];
+            var fightPercentage = 100 - fight.fightPercentage;
+            var fightClass = "";
+            if (fightPercentage < 25) {
+              fightClass = "common";
+            } else if (fightPercentage < 50) {
+              fightClass = "uncommon";
+            } else if (fightPercentage < 75) {
+              fightClass = "rare";
+            } else if (fightPercentage < 90) {
+              fightClass = "epic";
+            } else if (fightPercentage < 100) {
+              fightClass = "legendary";
+            }
+            fight["class"] = fightClass;
+            fightsPerInstance[encounterName].push(fight);
           }
-          fightsPerInstance[encounterName] = fightsPerInstance[encounterName] || [];
-          var fightPercentage = 100 - fight.fightPercentage;
-          var fightClass = "";
-          if (fightPercentage < 25) {
-            fightClass = "common";
-          } else if (fightPercentage < 50) {
-            fightClass = "uncommon";
-          } else if (fightPercentage < 75) {
-            fightClass = "rare";
-          } else if (fightPercentage < 90) {
-            fightClass = "epic";
-          } else if (fightPercentage < 100) {
-            fightClass = "legendary";
-          }
-          fight["class"] = fightClass;
-          fightsPerInstance[encounterName].push(fight);
-        });
+        );
         this.fightData = fightsPerInstance;
       }
     },

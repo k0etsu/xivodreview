@@ -48,7 +48,7 @@ export default {
 </script>
 
 <style scoped>
-  .log-pulls {
-    margin-bottom: 1.5em;
-  }
+.log-pulls {
+  margin-bottom: 1.5em;
+}
 </style>
