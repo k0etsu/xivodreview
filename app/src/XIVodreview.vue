@@ -327,6 +327,8 @@ export default {
       playerData: [],
       abilityData: [],
       npcData: [],
+      encounterData: {},
+      encounterMap: new Map(),
       deathData: {},
       currentPull: {},
       timeBeforePull: 0,
@@ -375,29 +377,45 @@ export default {
     });
   },
   watch: {
-    reportData(newValue) {
-      const fightsPerInstance = {};
-      if (newValue) {
-        newValue.data.reportData.report.fights.forEach((fight: Object) => {
-          fightsPerInstance[fight.name] = fightsPerInstance[fight.name] || [];
-          var fightPercentage = 100 - fight.fightPercentage;
-          var fightClass = "";
-          if (fightPercentage < 25) {
-            fightClass = "common";
-          } else if (fightPercentage < 50) {
-            fightClass = "uncommon";
-          } else if (fightPercentage < 75) {
-            fightClass = "rare";
-          } else if (fightPercentage < 90) {
-            fightClass = "epic";
-          } else if (fightPercentage < 100) {
-            fightClass = "legendary";
-          }
-          fight["class"] = fightClass;
-          fightsPerInstance[fight.name].push(fight);
-        });
-        this.fightData = fightsPerInstance;
+    // reportData(newValue) {
+    //   const fightsPerInstance = {};
+    //   if (newValue) {
+    //     newValue.data.reportData.report.fights.forEach((fight: Object) => {
+    //       var encounterName = "";
+    //       if (this.encounterMap.get(fight.encounterID)) {
+    //         encounterName = this.encounterMap.get(fight.encounterID);
+    //       } else {
+    //         encounterName = fight.name;
+    //       }
+    //       fightsPerInstance[encounterName] = fightsPerInstance[encounterName] || [];
+    //       var fightPercentage = 100 - fight.fightPercentage;
+    //       var fightClass = "";
+    //       if (fightPercentage < 25) {
+    //         fightClass = "common";
+    //       } else if (fightPercentage < 50) {
+    //         fightClass = "uncommon";
+    //       } else if (fightPercentage < 75) {
+    //         fightClass = "rare";
+    //       } else if (fightPercentage < 90) {
+    //         fightClass = "epic";
+    //       } else if (fightPercentage < 100) {
+    //         fightClass = "legendary";
+    //       }
+    //       fight["class"] = fightClass;
+    //       fightsPerInstance[encounterName].push(fight);
+    //     });
+    //     this.fightData = fightsPerInstance;
+    //   }
+    // },
+    encounterData(newValue) {
+      const worldData = newValue.data.worldData;
+      this.encounterMap = new Map();
+      for(const encounter in worldData) {
+        if (worldData[encounter] !== null) {
+          this.encounterMap.set(worldData[encounter]['id'], worldData[encounter]['name']);
+        }
       }
+      this.getFightData();
     },
     cachedFightSelected(encounter) {
       this.cachedFightName = encounter;
@@ -709,6 +727,7 @@ export default {
       fetch(getUrl)
         .then(async (response) => {
           this.reportData = await response.json();
+          await this.getEncounterData();
         })
         .catch((error) => {
           console.error("there was an error fetching fflogs data: ", error);
@@ -763,6 +782,27 @@ export default {
           );
         });
     },
+    getEncounterData() {
+      var getUrl = `${this.api_url}/encounters?`;
+      var encounterIds = []
+      this.reportData.data.reportData.report.fights.forEach((fight: Object) => {
+        if(!encounterIds.includes(fight.encounterID)) {
+          encounterIds.push(fight.encounterID);
+          getUrl = getUrl + `id=${fight.encounterID}&`
+          console.log('encounterdata', getUrl)
+        }
+      });
+      fetch(getUrl)
+        .then(async (response) => {
+          this.encounterData = await response.json();
+        })
+        .catch((error) => {
+          console.error(
+            "there was an error fetching fflogs encounter data: ",
+            error
+          );
+        });
+    },
     getExtraReportData() {
       this.playerData =
         this.reportData.data.reportData.report.masterData.players;
@@ -804,6 +844,36 @@ export default {
       }
       this.deathData = finalDeathData;
       console.log(this.deathData);
+    },
+    getFightData() {
+      const fightsPerInstance = {};
+      if (this.reportData) {
+        this.reportData.data.reportData.report.fights.forEach((fight: Object) => {
+          var encounterName = "";
+          if (this.encounterMap.get(fight.encounterID)) {
+            encounterName = this.encounterMap.get(fight.encounterID);
+          } else {
+            encounterName = fight.name;
+          }
+          fightsPerInstance[encounterName] = fightsPerInstance[encounterName] || [];
+          var fightPercentage = 100 - fight.fightPercentage;
+          var fightClass = "";
+          if (fightPercentage < 25) {
+            fightClass = "common";
+          } else if (fightPercentage < 50) {
+            fightClass = "uncommon";
+          } else if (fightPercentage < 75) {
+            fightClass = "rare";
+          } else if (fightPercentage < 90) {
+            fightClass = "epic";
+          } else if (fightPercentage < 100) {
+            fightClass = "legendary";
+          }
+          fight["class"] = fightClass;
+          fightsPerInstance[encounterName].push(fight);
+        });
+        this.fightData = fightsPerInstance;
+      }
     },
     getCachedFights() {
       const cachedFights = localStorage.getItem("cachedFights");
