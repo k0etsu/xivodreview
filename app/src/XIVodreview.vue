@@ -850,16 +850,13 @@ export default {
     },
     getFightData() {
       const fightsPerInstance = {};
-      var offset = null;
+      var fightNum = 1;
       if (this.reportData) {
         this.reportData.data.reportData.report.fights.forEach(
           (fight: Object) => {
             var encounterName = "";
-            if (offset == null) {
-              offset = 1 - fight.id;
-              console.log("getfightdata", offset);
-            }
-            fight.id = fight.id + offset;
+            fight.id = fightNum;
+            fightNum++;
             if (this.encounterMap.get(fight.encounterID)) {
               encounterName = this.encounterMap.get(fight.encounterID);
             } else {
