@@ -456,7 +456,7 @@ export default {
       });
     },
     currentPull(newValue) {
-      console.log(newValue);
+      console.log("currentPull", newValue);
       this.pullTimestamp =
         (this.currentPull.startTime +
           this.reportStart -
@@ -850,13 +850,12 @@ export default {
     },
     getFightData() {
       const fightsPerInstance = {};
-      var fightNum = 1;
+      var pullNum = 1;
       if (this.reportData) {
         this.reportData.data.reportData.report.fights.forEach(
           (fight: Object) => {
             var encounterName = "";
-            fight.id = fightNum;
-            fightNum++;
+            fight["pullNum"] = pullNum++;
             if (this.encounterMap.get(fight.encounterID)) {
               encounterName = this.encounterMap.get(fight.encounterID);
             } else {

@@ -59,7 +59,7 @@
             </div>
           </div>
           <div class="pull-info">
-            <span class="fight-grid-number">{{ fightEntry.id }}</span>
+            <span class="fight-grid-number">{{ fightEntry.pullNum }}</span>
             <span class="fight-grid-duration">{{
               `(${new Date(fightEntry.endTime - fightEntry.startTime)
                 .toISOString()
@@ -120,7 +120,7 @@ export default {
       } else {
         this.player.seekTo(pullTimeInVod);
       }
-      this.$emit("getPullDeaths", this.fightEntry.id);
+      this.$emit("getPullDeaths", this.fightEntry.id, this.fightEntry.pullNum);
     },
   },
   created() {

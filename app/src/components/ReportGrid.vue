@@ -37,8 +37,8 @@ export default {
     ReportPull,
   },
   methods: {
-    getPullDeaths(pullId) {
-      this.$emit("getPullDeaths", pullId);
+    getPullDeaths(pullId, pullNum) {
+      this.$emit("getPullDeaths", pullId, pullNum);
     },
   },
   created() {

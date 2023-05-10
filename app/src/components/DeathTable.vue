@@ -4,7 +4,7 @@ import DeathRow from "./DeathRow.vue";
 
 <template>
   <div class="row justify-content-end">
-    <h5 class="col" style="padding-top: 0.25em">Pull {{ fightId }}</h5>
+    <h5 class="col" style="padding-top: 0.25em">Pull {{ pullNum }}</h5>
     <div class="col-md-auto">
       <a
         :href="
@@ -99,6 +99,7 @@ import DeathRow from "./DeathRow.vue";
 export default {
   props: [
     "fightId",
+    "pullNum",
     "deathData",
     "reportId",
     "reportStart",

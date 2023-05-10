@@ -21,6 +21,7 @@ import DeathTable from "./DeathTable.vue";
     <DeathTable
       :key="reportId + pullId"
       :fightId="pullId"
+      :pullNum="pullNum"
       :deathData="deathData"
       :reportId="reportId"
       :reportStart="reportStart"
@@ -53,10 +54,11 @@ export default {
     DeathTable,
   },
   methods: {
-    getPullDeaths(pullId) {
-      console.log("getpulldeaths", pullId);
+    getPullDeaths(pullId, pullNum) {
+      console.log("getpulldeaths", pullId, pullNum);
       this.pullId = pullId;
-      this.$emit("getPullNum", pullId);
+      this.pullNum = pullNum;
+      this.$emit("getPullNum", pullNum);
     },
   },
 };
