@@ -335,7 +335,7 @@ export default {
       vodButtons: [],
       cachedFights: {},
       cachedFightName: "",
-      cachedFightSelected: "",
+      cachedFightSelected: null,
       googleAuthData: {},
       googleTokenClient: {},
       googleAuthToken: {},
@@ -421,14 +421,19 @@ export default {
       this.getFightData();
     },
     cachedFightSelected(encounter) {
-      this.cachedFightName = encounter;
-      if (encounter == "") {
-        this.vod_url = "";
-        this.fflogs_url = "";
-      } else {
-        this.vod_url = this.cachedFights[encounter].twitch;
+      if (encounter != null) {
+        this.cachedFightName = encounter;
+        this.vod_url = this.cachedFights[encounter].vod;
         this.fflogs_url = this.cachedFights[encounter].fflogs;
+        this.timeBeforePull = this.cachedFights[encounter].offset || 0;
         this.submitURLs();
+        this.cachedFightSelected = null;
+      }
+    },
+    timeBeforePull(newValue) {
+      if (this.cachedFights[this.cachedFightName]) {
+        this.cachedFights[this.cachedFightName]["offset"] = newValue;
+        localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
       }
     },
     async fflogsAuthCode(code) {
@@ -888,15 +893,23 @@ export default {
       if (cachedFights) {
         const cachedFightsObj = JSON.parse(cachedFights);
         Object.keys(cachedFightsObj).forEach((fightName) => {
+          if (!("vod" in cachedFightsObj[fightName])) {
+            cachedFightsObj[fightName]["vod"] = cachedFightsObj[fightName]["twitch"];
+          }
+          if (!("offset" in cachedFightsObj[fightName])) {
+            cachedFightsObj[fightName]["offset"] = 0;
+          }
           this.cachedFights[fightName] = cachedFightsObj[fightName];
         });
+        localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
       }
     },
     addCachedFight() {
       if (this.cachedFightName != "") {
         this.cachedFights[this.cachedFightName] = {
-          twitch: this.vod_url,
+          vod: this.vod_url,
           fflogs: this.fflogs_url,
+          offset: this.timeBeforePull,
         };
         localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
       }
