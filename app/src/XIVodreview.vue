@@ -76,6 +76,8 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                 id="pull-scrub"
                 @mousemove="scrubMousePos"
                 @click="scrubClick"
+                @mouseenter="showTimestamp"
+                @mouseleave="hideTimestamp"
               >
                 <span id="pull-scrub-span"></span>
                 <div class="death-indicators">
@@ -101,6 +103,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                 </div>
               </div>
             </div>
+            <div id="pull-timestamp">00:00</div>
             <div class="row justify-content-center g-2">
               <div class="col-1"><p class="mt-2">Offset (ms)</p></div>
               <div class="col-4" style="width: 10em">
@@ -518,10 +521,29 @@ export default {
     increaseOffset() {
       this.timeBeforePull = this.timeBeforePull + 500;
     },
+    showTimestamp() {
+      var timestamp = document.getElementById("pull-timestamp");
+      if (Object.keys(this.currentPull).length > 0) {
+        timestamp.style.visibility = "visible";
+      }
+    },
+    hideTimestamp() {
+      var timestamp = document.getElementById("pull-timestamp");
+      if (Object.keys(this.currentPull).length > 0) {
+        timestamp.style.visibility = "hidden";
+      }
+    },
     scrubMousePos(e) {
       let timelineWidth = document.getElementById("pull-scrub").offsetWidth;
       this.x = (e.offsetX / timelineWidth) * 100;
-      // this.x = e.offsetX;
+      if (Object.keys(this.currentPull).length > 0) {
+        var pullLength = this.currentPull.endTime - this.currentPull.startTime;
+        this.currentTimestamp = pullLength * this.x / 100;
+        var timestamp = document.getElementById("pull-timestamp");
+        timestamp.style.left = (e.clientX - 20) + "px";
+        timestamp.style.top = (document.getElementById("pull-scrub").getBoundingClientRect().y - 30) + "px";
+        timestamp.innerHTML = new Date(this.currentTimestamp).toISOString().slice(14, 19); 
+      }
     },
     scrubClick() {
       this.scrubGotoTime(this.x);
@@ -669,6 +691,7 @@ export default {
       this.removePlayer();
       this.twitchId = "";
       this.youtubeId = "";
+      this.currentPull = {};
       if (this.vod_url.includes("twitch")) {
         this.getTwitchId(this.vod_url);
       } else if (
@@ -688,6 +711,7 @@ export default {
       this.playerType = "";
       this.twitchId = "";
       this.youtubeId = "";
+      this.currentPull = {};
       this.showGoogleWarning();
       this.clearScrubTimer();
       window.history.pushState({}, document.title, window.location.origin);
@@ -1270,6 +1294,19 @@ export default {
   width: 0;
   background: #482e66;
   z-index: 40;
+}
+
+#pull-timestamp {
+  height: 30px;
+  width: 48px;
+  position: absolute;
+  visibility: hidden;
+  backface-visibility: hidden;
+  z-index: 9999999;
+  cursor: pointer;
+  background: #3f3f3f;
+  border: 2px solid black;
+  text-align: center;
 }
 
 .death-indicators {
