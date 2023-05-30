@@ -202,7 +202,13 @@ app.get("/encounters", (req, res, next) => {
       id
       name
       zone {
+        id
         name
+        difficulties {
+          id
+          name
+          sizes
+        }
       }
     }`
     })
@@ -212,7 +218,13 @@ app.get("/encounters", (req, res, next) => {
       id
       name
       zone {
+        id
         name
+        difficulties {
+          id
+          name
+          sizes
+        }
       }
     }`
   }
