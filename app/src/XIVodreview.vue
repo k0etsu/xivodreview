@@ -658,7 +658,7 @@ export default {
       // this.player.addEventListener(Twitch.Player.PLAY)
       this.player.addEventListener(Twitch.Player.PLAYING, () => {
         setTimeout(() => {
-          this.getPullNumber(this.player.getCurrentTime());
+          this.getPullNumber(this.player.getCurrentTime() - this.timeBeforePull);
         }, 2000);
       });
       // this.player.addEventListener(Twitch.Player.SEEK, () => {
@@ -668,7 +668,7 @@ export default {
       // });
       this.player.addEventListener(Twitch.Player.PAUSE, () => {
         setTimeout(() => {
-          this.getPullNumber(this.player.getCurrentTime());
+          this.getPullNumber(this.player.getCurrentTime() - this.timeBeforePull);
         }, 2000);
       });
     },
@@ -1081,9 +1081,9 @@ export default {
       this.player.addEventListener("onStateChange", (value) => {
         this.player.setPlaybackQuality("highres");
         if (value.data == YT.PlayerState.PLAYING) {
-          this.getPullNumber(this.player.getCurrentTime());
+          this.getPullNumber(this.player.getCurrentTime() - this.timeBeforePull);
         } else if (value.data == YT.PlayerState.PAUSED) {
-          this.getPullNumber(this.player.getCurrentTime());
+          this.getPullNumber(this.player.getCurrentTime() - this.timeBeforePull);
         }
       });
     },
