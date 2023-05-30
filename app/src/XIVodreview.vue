@@ -523,11 +523,15 @@ export default {
     },
     showTimestamp() {
       var timestamp = document.getElementById("pull-timestamp");
-      timestamp.style.visibility = "visible";
+      if (Object.keys(this.currentPull).length > 0) {
+        timestamp.style.visibility = "visible";
+      }
     },
     hideTimestamp() {
       var timestamp = document.getElementById("pull-timestamp");
-      timestamp.style.visibility = "hidden";
+      if (Object.keys(this.currentPull).length > 0) {
+        timestamp.style.visibility = "hidden";
+      }
     },
     scrubMousePos(e) {
       let timelineWidth = document.getElementById("pull-scrub").offsetWidth;
@@ -1296,13 +1300,13 @@ export default {
   height: 30px;
   width: 48px;
   position: absolute;
+  visibility: hidden;
   backface-visibility: hidden;
   z-index: 9999999;
   cursor: pointer;
   background: #3f3f3f;
   border: 2px solid black;
   text-align: center;
-  /* padding: 1px 0; */
 }
 
 .death-indicators {
