@@ -102,7 +102,7 @@ app.get("/fflogs", (req, res, next) => {
         dataType: Deaths
         startTime: ${req.query.startTime}
         endTime: ${req.query.endTime}
-        limit: 1000
+        limit: 10000
       ) {
         data
         nextPageTimestamp
