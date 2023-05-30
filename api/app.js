@@ -127,6 +127,7 @@ app.get("/fflogs", (req, res, next) => {
         startTime
         endTime
         encounterID
+        difficulty
         name
         fightPercentage
         bossPercentage
@@ -231,6 +232,7 @@ app.get("/encounters", (req, res, next) => {
     };
     return got(url, options)
   }).then(data => {
+    console.log(JSON.parse(data["body"]))
     res.json(JSON.parse(data["body"]))
   }).catch(err => {
     console.log(err)
