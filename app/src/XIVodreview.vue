@@ -328,7 +328,7 @@ export default {
       abilityData: [],
       npcData: [],
       encounterData: {},
-      encounterMap: new Map(),
+      encounterMap: {},
       deathData: {},
       currentPull: {},
       timeBeforePull: 0,
@@ -409,15 +409,21 @@ export default {
     // },
     encounterData(newValue) {
       const worldData = newValue.data.worldData;
-      this.encounterMap = new Map();
+      this.encounterMap = {};
       for (const encounter in worldData) {
         if (worldData[encounter] !== null) {
-          this.encounterMap.set(
-            worldData[encounter]["id"],
-            worldData[encounter]["name"]
-          );
+          var difficulties = {};
+          for (const difficulty of worldData[encounter]["zone"]["difficulties"]) {
+            difficulties[difficulty.id] = difficulty.name
+          }
+          var encounterInfo = {
+            name: worldData[encounter]["name"],
+            difficulties: difficulties
+          }
+          this.encounterMap[worldData[encounter]["id"]] = encounterInfo;
         }
       }
+      console.log("encounterMap", this.encounterMap);
       this.getFightData();
     },
     cachedFightSelected(encounter) {
@@ -861,8 +867,15 @@ export default {
           (fight: Object) => {
             var encounterName = "";
             fight["pullNum"] = pullNum++;
-            if (this.encounterMap.get(fight.encounterID)) {
-              encounterName = this.encounterMap.get(fight.encounterID);
+            if (this.encounterMap[fight.encounterID]) {
+              var encounter = this.encounterMap[fight.encounterID];
+              if (Object.keys(encounter.difficulties).length > 1) {
+                var difficulty = " - " + encounter.difficulties[fight.difficulty];
+                encounterName = this.encounterMap[fight.encounterID].name + difficulty;
+              }
+              else {
+                encounterName = this.encounterMap[fight.encounterID].name;
+              }
             } else {
               encounterName = fight.name;
             }
