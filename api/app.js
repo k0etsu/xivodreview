@@ -191,9 +191,6 @@ app.get("/fflogs", (req, res, next) => {
 });
 
 app.get("/encounters", (req, res, next) => {
-  console.log("encounters");
-  console.log(req.query);
-  console.log(req.query.id);
   var encounters = "";
   if (Array.isArray(req.query.id)) {
     req.query.id.forEach((id) => {
@@ -233,7 +230,6 @@ app.get("/encounters", (req, res, next) => {
   worldData {${encounters}
   }
 }`
-    console.log(query);
     var url = FFLOGS_CLIENT_API;
     const options = {
       method: "GET",
@@ -244,7 +240,6 @@ app.get("/encounters", (req, res, next) => {
     };
     return got(url, options)
   }).then(data => {
-    console.log(JSON.parse(data["body"]))
     res.json(JSON.parse(data["body"]))
   }).catch(err => {
     console.log(err)
