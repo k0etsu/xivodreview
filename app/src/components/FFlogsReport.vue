@@ -4,19 +4,22 @@ import DeathTable from "./DeathTable.vue";
 </script>
 
 <template>
-  <ReportGrid
-    v-for="(fightEntries, fightTitle) in fightData"
-    :key="reportId + fightTitle"
-    :fightTitle="fightTitle"
-    :fightEntries="fightEntries"
-    :deathData="deathData"
-    :reportId="reportId"
-    :reportStart="reportStart"
-    :vodStartTime="vodStartTime"
-    :timeBeforePull="timeBeforePull"
-    :player="player"
-    @get-pull-deaths="getPullDeaths"
-  />
+  <h4>Pulls</h4>
+  <div class="accordion accordion-flush">
+    <ReportGrid
+      v-for="(fightEntries, fightTitle) in fightData"
+      :key="reportId + fightTitle"
+      :fightTitle="fightTitle"
+      :fightEntries="fightEntries"
+      :deathData="deathData"
+      :reportId="reportId"
+      :reportStart="reportStart"
+      :vodStartTime="vodStartTime"
+      :timeBeforePull="timeBeforePull"
+      :player="player"
+      @get-pull-deaths="getPullDeaths"
+    />
+  </div>
   <div v-if="pullId > 0" style="margin-top: 1.5rem">
     <DeathTable
       :key="reportId + pullId"

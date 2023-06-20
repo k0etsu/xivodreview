@@ -3,7 +3,43 @@ import ReportPull from "./ReportPull.vue";
 </script>
 
 <template>
-  <h4>{{ fightTitle }}</h4>
+  <div class="accordion-item">
+    <h2 class="accordion-header" :id="fightTitle.replace(/\s+/g, '')">
+      <button
+        class="accordion-button collapsed"
+        type="button"
+        data-bs-toggle="collapse"
+        :data-bs-target="`#collapse-${fightTitle.replace(/\s+/g, '')}`"
+        aria-expanded="false"
+        :aria-controls="`collapse-${fightTitle.replace(/\s+/g, '')}`"
+      >
+        {{ fightTitle }}
+      </button>
+    </h2>
+    <div
+      :id="`collapse-${fightTitle.replace(/\s+/g, '')}`"
+      class="accordion-collapse collapse"
+      :aria-labelledby="fightTitle.replace(/\s+/g, '')"
+    >
+      <div class="accordion-body">
+        <div class="row g-0 justify-content-start log-pulls">
+          <ReportPull
+            v-for="fightEntry in fightEntries"
+            :key="reportId + fightTitle + fightEntry.id"
+            :fightEntry="fightEntry"
+            :deathData="deathData"
+            :reportId="reportId"
+            :reportStart="reportStart"
+            :vodStartTime="vodStartTime"
+            :timeBeforePull="timeBeforePull"
+            :player="player"
+            @get-pull-deaths="getPullDeaths"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- <h4>{{ fightTitle }}</h4>
   <div class="row g-0 justify-content-start log-pulls">
     <ReportPull
       v-for="fightEntry in fightEntries"
@@ -17,7 +53,7 @@ import ReportPull from "./ReportPull.vue";
       :player="player"
       @get-pull-deaths="getPullDeaths"
     />
-  </div>
+  </div> -->
 </template>
 
 <script lang="ts">
