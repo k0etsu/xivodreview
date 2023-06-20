@@ -417,13 +417,15 @@ export default {
       for (const encounter in worldData) {
         if (worldData[encounter] !== null) {
           var difficulties = {};
-          for (const difficulty of worldData[encounter]["zone"]["difficulties"]) {
-            difficulties[difficulty.id] = difficulty.name
+          for (const difficulty of worldData[encounter]["zone"][
+            "difficulties"
+          ]) {
+            difficulties[difficulty.id] = difficulty.name;
           }
           var encounterInfo = {
             name: worldData[encounter]["name"],
-            difficulties: difficulties
-          }
+            difficulties: difficulties,
+          };
           this.encounterMap[worldData[encounter]["id"]] = encounterInfo;
         }
       }
@@ -543,14 +545,21 @@ export default {
       this.x = (e.offsetX / timelineWidth) * 100;
       if (Object.keys(this.currentPull).length > 0) {
         var pullLength = this.currentPull.endTime - this.currentPull.startTime;
-        this.currentTimestamp = pullLength * this.x / 100;
+        this.currentTimestamp = (pullLength * this.x) / 100;
         var timestamp = document.getElementById("pull-timestamp");
         var indicator = document.getElementById("timeline-indicator");
-        timestamp.style.left = (e.clientX - 24) + "px";
-        timestamp.style.top = (document.getElementById("pull-scrub").getBoundingClientRect().y - 30) + "px";
-        timestamp.innerHTML = new Date(this.currentTimestamp).toISOString().slice(14, 19);
-        indicator.style.left = (e.clientX) + "px";
-        indicator.style.top = (document.getElementById("pull-scrub").getBoundingClientRect().y) + "px";
+        timestamp.style.left = e.clientX - 24 + "px";
+        timestamp.style.top =
+          document.getElementById("pull-scrub").getBoundingClientRect().y -
+          30 +
+          "px";
+        timestamp.innerHTML = new Date(this.currentTimestamp)
+          .toISOString()
+          .slice(14, 19);
+        indicator.style.left = e.clientX + "px";
+        indicator.style.top =
+          document.getElementById("pull-scrub").getBoundingClientRect().y +
+          "px";
       }
     },
     scrubClick() {
@@ -666,7 +675,9 @@ export default {
       // this.player.addEventListener(Twitch.Player.PLAY)
       this.player.addEventListener(Twitch.Player.PLAYING, () => {
         setTimeout(() => {
-          this.getPullNumber(this.player.getCurrentTime() + this.timeBeforePull / 1000);
+          this.getPullNumber(
+            this.player.getCurrentTime() + this.timeBeforePull / 1000
+          );
         }, 2000);
       });
       // this.player.addEventListener(Twitch.Player.SEEK, () => {
@@ -676,9 +687,11 @@ export default {
       // });
       this.player.addEventListener(Twitch.Player.PAUSE, () => {
         setTimeout(() => {
-          this.getPullNumber(this.player.getCurrentTime() + this.timeBeforePull / 1000);
+          this.getPullNumber(
+            this.player.getCurrentTime() + this.timeBeforePull / 1000
+          );
         }, 2000);
-      })
+      });
     },
     getPullNumber(timestamp) {
       this.reportData.data.reportData.report.fights.every((fight: Object) => {
@@ -710,10 +723,9 @@ export default {
       }
       this.getReportId(this.fflogs_url);
       if (
-        this.cachedFightName != "" && (
-          this.cachedFights[this.cachedFightName]["vod"] != this.vod_url ||
-          this.cachedFights[this.cachedFightName]["fflogs"] != this.fflogs_url
-        )
+        this.cachedFightName != "" &&
+        (this.cachedFights[this.cachedFightName]["vod"] != this.vod_url ||
+          this.cachedFights[this.cachedFightName]["fflogs"] != this.fflogs_url)
       ) {
         this.cachedFightName = "";
       }
@@ -910,10 +922,11 @@ export default {
             if (this.encounterMap[fight.encounterID]) {
               var encounter = this.encounterMap[fight.encounterID];
               if (Object.keys(encounter.difficulties).length > 1) {
-                var difficulty = " - " + encounter.difficulties[fight.difficulty];
-                encounterName = this.encounterMap[fight.encounterID].name + difficulty;
-              }
-              else {
+                var difficulty =
+                  " - " + encounter.difficulties[fight.difficulty];
+                encounterName =
+                  this.encounterMap[fight.encounterID].name + difficulty;
+              } else {
                 encounterName = this.encounterMap[fight.encounterID].name;
               }
             } else {
@@ -947,7 +960,8 @@ export default {
         const cachedFightsObj = JSON.parse(cachedFights);
         Object.keys(cachedFightsObj).forEach((fightName) => {
           if (!("vod" in cachedFightsObj[fightName])) {
-            cachedFightsObj[fightName]["vod"] = cachedFightsObj[fightName]["twitch"];
+            cachedFightsObj[fightName]["vod"] =
+              cachedFightsObj[fightName]["twitch"];
           }
           if (!("offset" in cachedFightsObj[fightName])) {
             cachedFightsObj[fightName]["offset"] = 0;
@@ -1097,9 +1111,13 @@ export default {
       this.player.addEventListener("onStateChange", (value) => {
         this.player.setPlaybackQuality("highres");
         if (value.data == YT.PlayerState.PLAYING) {
-          this.getPullNumber(this.player.getCurrentTime() + this.timeBeforePull / 1000);
+          this.getPullNumber(
+            this.player.getCurrentTime() + this.timeBeforePull / 1000
+          );
         } else if (value.data == YT.PlayerState.PAUSED) {
-          this.getPullNumber(this.player.getCurrentTime() + this.timeBeforePull / 1000);
+          this.getPullNumber(
+            this.player.getCurrentTime() + this.timeBeforePull / 1000
+          );
         }
       });
     },

@@ -40,7 +40,14 @@ defineProps<{
             >
           </li>
           <li class="nav-item">
-            <a href='https://ko-fi.com/K3K1I3DWE' target='_blank'><img height='36' style='border:0px;height:36px;margin:2px 8px;' src='https://storage.ko-fi.com/cdn/kofi3.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+            <a href="https://ko-fi.com/K3K1I3DWE" target="_blank"
+              ><img
+                height="36"
+                style="border: 0px; height: 36px; margin: 2px 8px"
+                src="https://storage.ko-fi.com/cdn/kofi3.png?v=3"
+                border="0"
+                alt="Buy Me a Coffee at ko-fi.com"
+            /></a>
             <!-- <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script><script type='text/javascript'>kofiwidget2.init('kofi', '#f26a66', 'K3K1I3DWE');kofiwidget2.draw();</script>  -->
           </li>
         </ul>
