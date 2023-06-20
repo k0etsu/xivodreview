@@ -275,13 +275,13 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                       class="btn btn-outline-info me-1"
                       @click="addCachedFight"
                     >
-                      Save Encounter
+                      Save
                     </button>
                     <button
-                      class="btn btn-outline-danger"
+                      class="btn btn-outline-danger float-end"
                       @click="removeCachedFight"
                     >
-                      Delete Encounter
+                      Delete
                     </button>
                   </div>
                 </div>
