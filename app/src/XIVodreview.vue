@@ -79,6 +79,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                 @mouseenter="showTimestamp"
                 @mouseleave="hideTimestamp"
               >
+                <div id="timeline-indicator"></div>
                 <span id="pull-scrub-span"></span>
                 <div class="death-indicators">
                   <div
@@ -523,14 +524,18 @@ export default {
     },
     showTimestamp() {
       var timestamp = document.getElementById("pull-timestamp");
+      var indicator = document.getElementById("timeline-indicator");
       if (Object.keys(this.currentPull).length > 0) {
         timestamp.style.visibility = "visible";
+        indicator.style.visibility = "visible";
       }
     },
     hideTimestamp() {
       var timestamp = document.getElementById("pull-timestamp");
+      var indicator = document.getElementById("timeline-indicator");
       if (Object.keys(this.currentPull).length > 0) {
         timestamp.style.visibility = "hidden";
+        indicator.style.visibility = "hidden";
       }
     },
     scrubMousePos(e) {
@@ -540,9 +545,12 @@ export default {
         var pullLength = this.currentPull.endTime - this.currentPull.startTime;
         this.currentTimestamp = pullLength * this.x / 100;
         var timestamp = document.getElementById("pull-timestamp");
-        timestamp.style.left = (e.clientX - 20) + "px";
+        var indicator = document.getElementById("timeline-indicator");
+        timestamp.style.left = (e.clientX - 24) + "px";
         timestamp.style.top = (document.getElementById("pull-scrub").getBoundingClientRect().y - 30) + "px";
-        timestamp.innerHTML = new Date(this.currentTimestamp).toISOString().slice(14, 19); 
+        timestamp.innerHTML = new Date(this.currentTimestamp).toISOString().slice(14, 19);
+        indicator.style.left = (e.clientX) + "px";
+        indicator.style.top = (document.getElementById("pull-scrub").getBoundingClientRect().y) + "px";
       }
     },
     scrubClick() {
@@ -701,6 +709,14 @@ export default {
         this.getYoutubeId(this.vod_url);
       }
       this.getReportId(this.fflogs_url);
+      if (
+        this.cachedFightName != "" && (
+          this.cachedFights[this.cachedFightName]["vod"] != this.vod_url ||
+          this.cachedFights[this.cachedFightName]["fflogs"] != this.fflogs_url
+        )
+      ) {
+        this.cachedFightName = "";
+      }
     },
     resetURLs() {
       this.removePlayer();
@@ -1307,6 +1323,17 @@ export default {
   background: #3f3f3f;
   border: 2px solid black;
   text-align: center;
+}
+
+#timeline-indicator {
+  height: 3vh;
+  width: 1px;
+  background: black;
+  position: absolute;
+  visibility: hidden;
+  backface-visibility: hidden;
+  z-index: 9999999;
+  cursor: pointer;
 }
 
 .death-indicators {
