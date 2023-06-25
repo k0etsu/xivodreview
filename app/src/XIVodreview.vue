@@ -6,7 +6,6 @@ import FFlogsReport from "./components/FFlogsReport.vue";
 <template>
   <NavigationBar
     class="navHeader"
-    msg="GitHub"
     :googleAuthToken="googleAuthToken"
     :fflogsAuthToken="fflogsAuthToken"
     @google-auth="getGoogleAuthToken"
@@ -105,9 +104,125 @@ import FFlogsReport from "./components/FFlogsReport.vue";
               </div>
             </div>
             <div id="pull-timestamp">00:00</div>
-            <div class="row justify-content-center g-2">
-              <div class="col-1"><p class="mt-2">Offset (ms)</p></div>
-              <div class="col-4" style="width: 10em">
+            <div class="row align-items-center g-0" style="margin-top: 4px">
+              <div
+                class="col-auto"
+                style="position: relative; width: 50px; top: -19px"
+              >
+                <button
+                  id="play-button"
+                  class="btn btn-outline-primary"
+                  @click="playVod"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="30"
+                    height="30"
+                    fill="currentColor"
+                    class="bi bi-play"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  id="pause-button"
+                  class="btn btn-outline-primary"
+                  @click="pauseVod"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="30"
+                    height="30"
+                    fill="currentColor"
+                    class="bi bi-pause"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div class="col-auto" style="margin-left: 10px">
+                <div id="current-timestamp">00:00 / 00:00</div>
+              </div>
+              <div class="col-auto" style="margin-left: 15px">
+                <button
+                  id="jump-backward"
+                  class="btn btn-outline-secondary"
+                  @click="jumpBackward"
+                >
+                  <svg
+                    width="30px"
+                    height="30px"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M13.91 10.8301H10.85L10.09 13.1201H12.38C13.22 13.1201 13.91 13.8001 13.91 14.6501C13.91 15.4901 13.23 16.1801 12.38 16.1801H10.09"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                    <path
+                      d="M10.02 4.46997L12 2"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                    <path
+                      d="M4.91 7.79999C3.8 9.27999 3.10999 11.11 3.10999 13.11C3.10999 18.02 7.09 22 12 22C16.91 22 20.89 18.02 20.89 13.11C20.89 8.19999 16.91 4.21997 12 4.21997C11.32 4.21997 10.66 4.31002 10.02 4.46002"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                  </svg>
+                </button>
+                <button
+                  id="jump-forward"
+                  class="btn btn-outline-secondary"
+                  @click="jumpForward"
+                >
+                  <svg
+                    width="30px"
+                    height="30px"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M13.98 4.46997L12 2"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                    <path
+                      d="M19.0899 7.79999C20.1999 9.27999 20.8899 11.11 20.8899 13.11C20.8899 18.02 16.9099 22 11.9999 22C7.08988 22 3.10986 18.02 3.10986 13.11C3.10986 8.19999 7.08988 4.21997 11.9999 4.21997C12.6799 4.21997 13.3399 4.31002 13.9799 4.46002"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                    <path
+                      d="M13.91 10.8301H10.85L10.0901 13.1201H12.3801C13.2201 13.1201 13.91 13.8001 13.91 14.6501C13.91 15.4901 13.2301 16.1801 12.3801 16.1801H10.0901"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+              <div class="col-auto" style="margin-left: 30px">Offset (ms)</div>
+              <div class="col-auto" style="margin-left: 25px; width: 10em">
                 <div class="input-group">
                   <button
                     class="btn btn-outline-secondary"
@@ -417,13 +532,15 @@ export default {
       for (const encounter in worldData) {
         if (worldData[encounter] !== null) {
           var difficulties = {};
-          for (const difficulty of worldData[encounter]["zone"]["difficulties"]) {
-            difficulties[difficulty.id] = difficulty.name
+          for (const difficulty of worldData[encounter]["zone"][
+            "difficulties"
+          ]) {
+            difficulties[difficulty.id] = difficulty.name;
           }
           var encounterInfo = {
             name: worldData[encounter]["name"],
-            difficulties: difficulties
-          }
+            difficulties: difficulties,
+          };
           this.encounterMap[worldData[encounter]["id"]] = encounterInfo;
         }
       }
@@ -471,25 +588,25 @@ export default {
       });
     },
     currentPull(newValue) {
-      console.log("currentPull", newValue);
-      this.pullTimestamp =
-        (this.currentPull.startTime +
-          this.reportStart -
-          this.vodStartTime -
-          this.timeBeforePull) /
-        1000;
-      clearInterval(this.scrubTimer);
-      setTimeout(() => {
-        this.scrubTimer = 0;
-        if (this.scrubTimer == 0) {
-          this.scrubTimer = setInterval(() => {
-            this.updateScrubTime();
-          }, 200);
-        }
-      }, 1500);
-      // setInterval(() => {
-      //   this.updateScrubTime()
-      // }, 1000);
+      if (Object.keys(newValue).length > 0) {
+        console.log("currentPull", newValue);
+        this.pullTimestamp =
+          (this.currentPull.startTime +
+            this.reportStart -
+            this.vodStartTime -
+            this.timeBeforePull) /
+          1000;
+        clearInterval(this.scrubTimer);
+        setTimeout(() => {
+          this.scrubTimer = 0;
+          if (this.scrubTimer == 0) {
+            this.scrubTimer = setInterval(() => {
+              this.updateScrubTime();
+              this.updateTimestamp();
+            }, 200);
+          }
+        }, 1500);
+      }
     },
     pullTimestamp(newValue) {
       var pullStartTime =
@@ -511,6 +628,71 @@ export default {
     },
   },
   methods: {
+    playVod() {
+      if (this.playerType == "twitch") {
+        this.player.play();
+      } else if (this.playerType == "yubtub") {
+        this.player.playVideo();
+      }
+      var playButton = document.getElementById("play-button");
+      var pauseButton = document.getElementById("pause-button");
+      playButton.style.visibility = "hidden";
+      pauseButton.style.visibility = "visible";
+    },
+    pauseVod() {
+      if (this.playerType == "twitch") {
+        this.player.pause();
+      } else if (this.playerType == "yubtub") {
+        this.player.pauseVideo();
+      }
+      var playButton = document.getElementById("play-button");
+      var pauseButton = document.getElementById("pause-button");
+      playButton.style.visibility = "visible";
+      pauseButton.style.visibility = "hidden";
+    },
+    jumpForward() {
+      var currTime = this.player.getCurrentTime();
+      if (this.playerType == "twitch") {
+        this.player.seek(currTime + 5);
+      } else if (this.playerType == "yubtub") {
+        this.player.seekTo(currTime + 5);
+      }
+    },
+    jumpBackward() {
+      var currTime = this.player.getCurrentTime();
+      if (this.playerType == "twitch") {
+        this.player.seek(currTime - 5);
+      } else if (this.playerType == "yubtub") {
+        this.player.seekTo(currTime - 5);
+      }
+    },
+    updateTimestamp() {
+      var pullLength = this.currentPull.endTime - this.currentPull.startTime;
+      var endTimestamp = new Date(pullLength).toISOString().slice(14, 19);
+      var vodTime =
+        this.player.getCurrentTime() -
+        (this.reportStart -
+          this.vodStartTime +
+          this.currentPull.startTime -
+          this.timeBeforePull) /
+          1000;
+      const minutes = Math.floor(vodTime / 60);
+      const seconds = Math.floor(vodTime - minutes * 60);
+      function str_pad_left(string, pad, length) {
+        return (new Array(length + 1).join(pad) + String(string)).slice(
+          -length
+        );
+      }
+      var currentTimestamp =
+        str_pad_left(minutes, "0", 2) + ":" + str_pad_left(seconds, "0", 2);
+      var timestamp = document.getElementById("current-timestamp");
+      if (vodTime > pullLength / 1000) {
+        currentTimestamp = endTimestamp;
+      } else if (vodTime < 0) {
+        currentTimestamp = "00:00";
+      }
+      timestamp.innerHTML = currentTimestamp + " / " + endTimestamp;
+    },
     getPullNum(pullId) {
       console.log("getpullnum", pullId);
       this.currentPull =
@@ -543,14 +725,21 @@ export default {
       this.x = (e.offsetX / timelineWidth) * 100;
       if (Object.keys(this.currentPull).length > 0) {
         var pullLength = this.currentPull.endTime - this.currentPull.startTime;
-        this.currentTimestamp = pullLength * this.x / 100;
+        this.currentTimestamp = (pullLength * this.x) / 100;
         var timestamp = document.getElementById("pull-timestamp");
         var indicator = document.getElementById("timeline-indicator");
-        timestamp.style.left = (e.clientX - 24) + "px";
-        timestamp.style.top = (document.getElementById("pull-scrub").getBoundingClientRect().y - 30) + "px";
-        timestamp.innerHTML = new Date(this.currentTimestamp).toISOString().slice(14, 19);
-        indicator.style.left = (e.clientX) + "px";
-        indicator.style.top = (document.getElementById("pull-scrub").getBoundingClientRect().y) + "px";
+        timestamp.style.left = e.clientX - 24 + "px";
+        timestamp.style.top =
+          document.getElementById("pull-scrub").getBoundingClientRect().y -
+          30 +
+          "px";
+        timestamp.innerHTML = new Date(this.currentTimestamp)
+          .toISOString()
+          .slice(14, 19);
+        indicator.style.left = e.clientX + "px";
+        indicator.style.top =
+          document.getElementById("pull-scrub").getBoundingClientRect().y +
+          "px";
       }
     },
     scrubClick() {
@@ -665,8 +854,11 @@ export default {
       });
       // this.player.addEventListener(Twitch.Player.PLAY)
       this.player.addEventListener(Twitch.Player.PLAYING, () => {
+        this.playVod();
         setTimeout(() => {
-          this.getPullNumber(this.player.getCurrentTime() + this.timeBeforePull / 1000);
+          this.getPullNumber(
+            this.player.getCurrentTime() + this.timeBeforePull / 1000
+          );
         }, 2000);
       });
       // this.player.addEventListener(Twitch.Player.SEEK, () => {
@@ -675,10 +867,13 @@ export default {
       //   }, 600);
       // });
       this.player.addEventListener(Twitch.Player.PAUSE, () => {
+        this.pauseVod();
         setTimeout(() => {
-          this.getPullNumber(this.player.getCurrentTime() + this.timeBeforePull / 1000);
+          this.getPullNumber(
+            this.player.getCurrentTime() + this.timeBeforePull / 1000
+          );
         }, 2000);
-      })
+      });
     },
     getPullNumber(timestamp) {
       this.reportData.data.reportData.report.fights.every((fight: Object) => {
@@ -710,10 +905,9 @@ export default {
       }
       this.getReportId(this.fflogs_url);
       if (
-        this.cachedFightName != "" && (
-          this.cachedFights[this.cachedFightName]["vod"] != this.vod_url ||
-          this.cachedFights[this.cachedFightName]["fflogs"] != this.fflogs_url
-        )
+        this.cachedFightName != "" &&
+        (this.cachedFights[this.cachedFightName]["vod"] != this.vod_url ||
+          this.cachedFights[this.cachedFightName]["fflogs"] != this.fflogs_url)
       ) {
         this.cachedFightName = "";
       }
@@ -910,10 +1104,11 @@ export default {
             if (this.encounterMap[fight.encounterID]) {
               var encounter = this.encounterMap[fight.encounterID];
               if (Object.keys(encounter.difficulties).length > 1) {
-                var difficulty = " - " + encounter.difficulties[fight.difficulty];
-                encounterName = this.encounterMap[fight.encounterID].name + difficulty;
-              }
-              else {
+                var difficulty =
+                  " - " + encounter.difficulties[fight.difficulty];
+                encounterName =
+                  this.encounterMap[fight.encounterID].name + difficulty;
+              } else {
                 encounterName = this.encounterMap[fight.encounterID].name;
               }
             } else {
@@ -947,7 +1142,8 @@ export default {
         const cachedFightsObj = JSON.parse(cachedFights);
         Object.keys(cachedFightsObj).forEach((fightName) => {
           if (!("vod" in cachedFightsObj[fightName])) {
-            cachedFightsObj[fightName]["vod"] = cachedFightsObj[fightName]["twitch"];
+            cachedFightsObj[fightName]["vod"] =
+              cachedFightsObj[fightName]["twitch"];
           }
           if (!("offset" in cachedFightsObj[fightName])) {
             cachedFightsObj[fightName]["offset"] = 0;
@@ -1097,9 +1293,15 @@ export default {
       this.player.addEventListener("onStateChange", (value) => {
         this.player.setPlaybackQuality("highres");
         if (value.data == YT.PlayerState.PLAYING) {
-          this.getPullNumber(this.player.getCurrentTime() + this.timeBeforePull / 1000);
+          this.playVod();
+          this.getPullNumber(
+            this.player.getCurrentTime() + this.timeBeforePull / 1000
+          );
         } else if (value.data == YT.PlayerState.PAUSED) {
-          this.getPullNumber(this.player.getCurrentTime() + this.timeBeforePull / 1000);
+          this.pauseVod();
+          this.getPullNumber(
+            this.player.getCurrentTime() + this.timeBeforePull / 1000
+          );
         }
       });
     },
@@ -1396,5 +1598,25 @@ export default {
   top: 0;
   text-align: justify;
   text-justify: auto;
+}
+#play-button {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  padding: 4px 6px 4px 7px;
+  visibility: visible;
+}
+#pause-button {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  padding: 4px 6px 4px 7px;
+  visibility: hidden;
+}
+#jump-forward {
+  padding: 3px 6px 4px 7px;
+}
+#jump-backward {
+  padding: 3px 6px 4px 7px;
 }
 </style>
