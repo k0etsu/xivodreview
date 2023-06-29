@@ -113,6 +113,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                   id="play-button"
                   class="btn btn-outline-primary"
                   @click="playVod"
+                  ref="focusPlay"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -131,6 +132,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                   id="pause-button"
                   class="btn btn-outline-primary"
                   @click="pauseVod"
+                  ref="focusPause"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -189,6 +191,7 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                   id="jump-forward"
                   class="btn btn-outline-secondary"
                   @click="jumpForward"
+                  style="margin-left: 5px"
                 >
                   <svg
                     width="30px"
@@ -638,6 +641,7 @@ export default {
       var pauseButton = document.getElementById("pause-button");
       playButton.style.visibility = "hidden";
       pauseButton.style.visibility = "visible";
+      this.focusPauseButton();
     },
     pauseVod() {
       if (this.playerType == "twitch") {
@@ -649,6 +653,7 @@ export default {
       var pauseButton = document.getElementById("pause-button");
       playButton.style.visibility = "visible";
       pauseButton.style.visibility = "hidden";
+      this.focusPlayButton();
     },
     jumpForward() {
       var currTime = this.player.getCurrentTime();
@@ -665,6 +670,14 @@ export default {
       } else if (this.playerType == "yubtub") {
         this.player.seekTo(currTime - 5);
       }
+    },
+    focusPlayButton() {
+      const focusButton = this.$refs.focusPlay;
+      focusButton.focus();
+    },
+    focusPauseButton() {
+      const focusButton = this.$refs.focusPause;
+      focusButton.focus();
     },
     updateTimestamp() {
       var pullLength = this.currentPull.endTime - this.currentPull.startTime;
@@ -744,6 +757,17 @@ export default {
     },
     scrubClick() {
       this.scrubGotoTime(this.x);
+      const whichButton = document.getElementById("play-button");
+      this.$nextTick(() => {
+        if (
+          getComputedStyle(whichButton).getPropertyValue("visibility") ==
+          "visible"
+        ) {
+          this.focusPlayButton();
+        } else {
+          this.focusPauseButton();
+        }
+      });
     },
     updateScrubTime() {
       if (this.player == null) {
