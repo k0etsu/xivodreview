@@ -758,7 +758,7 @@ export default {
     scrubClick() {
       this.scrubGotoTime(this.x);
       const whichButton = document.getElementById("play-button");
-      // this.$nextTick(() => {
+      this.$nextTick(() => {
         if (
           getComputedStyle(whichButton).getPropertyValue("visibility") ==
           "visible"
@@ -767,7 +767,7 @@ export default {
         } else {
           this.focusPauseButton();
         }
-      // });
+      });
     },
     updateScrubTime() {
       if (this.player == null) {
