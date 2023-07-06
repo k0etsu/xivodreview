@@ -758,7 +758,7 @@ export default {
     scrubClick() {
       this.scrubGotoTime(this.x);
       const whichButton = document.getElementById("play-button");
-      this.$nextTick(() => {
+      // this.$nextTick(() => {
         if (
           getComputedStyle(whichButton).getPropertyValue("visibility") ==
           "visible"
@@ -767,7 +767,7 @@ export default {
         } else {
           this.focusPauseButton();
         }
-      });
+      // });
     },
     updateScrubTime() {
       if (this.player == null) {
@@ -803,6 +803,10 @@ export default {
         (pullEndTime - pullStartTime) * (percentage / 100) + pullStartTime;
       // this.pullTimestamp = newTime;
       if (this.playerType == "twitch") {
+        this.player.seek(newTime);
+        this.player.seek(newTime);
+        this.player.seek(newTime);
+        this.player.seek(newTime);
         this.player.seek(newTime);
       } else if (this.playerType == "yubtub") {
         this.player.seekTo(newTime);
@@ -878,20 +882,32 @@ export default {
       });
       // this.player.addEventListener(Twitch.Player.PLAY)
       this.player.addEventListener(Twitch.Player.PLAYING, () => {
-        this.playVod();
+        // this.playVod();
+        var playButton = document.getElementById("play-button");
+        var pauseButton = document.getElementById("pause-button");
+        playButton.style.visibility = "hidden";
+        pauseButton.style.visibility = "visible";
+        this.focusPauseButton();
         setTimeout(() => {
           this.getPullNumber(
             this.player.getCurrentTime() + this.timeBeforePull / 1000
           );
         }, 2000);
       });
-      // this.player.addEventListener(Twitch.Player.SEEK, () => {
-      //   setTimeout(() => {
-      //     this.getPullNumber(this.player.getCurrentTime());
-      //   }, 600);
-      // });
+      this.player.addEventListener(Twitch.Player.SEEK, () => {
+        setTimeout(() => {
+          this.pullTimestamp = this.player.getCurrentTime();
+          this.pullTimestamp = this.player.getCurrentTime();
+          this.pullTimestamp = this.player.getCurrentTime();
+        }, 200);
+      });
       this.player.addEventListener(Twitch.Player.PAUSE, () => {
-        this.pauseVod();
+        // this.pauseVod();
+        var playButton = document.getElementById("play-button");
+        var pauseButton = document.getElementById("pause-button");
+        playButton.style.visibility = "visible";
+        pauseButton.style.visibility = "hidden";
+        this.focusPlayButton();
         setTimeout(() => {
           this.getPullNumber(
             this.player.getCurrentTime() + this.timeBeforePull / 1000
