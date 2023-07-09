@@ -24,6 +24,7 @@ export default {
     };
   },
   props: [
+    "fightStart",
     "deathData",
     "reportStart",
     "vodStartTime",
@@ -50,9 +51,9 @@ export default {
         this.deathData.timestamp -
         this.timeBeforePull) /
       1000;
-    this.timestamp = new Date(this.pullTimeInVod * 1000)
+    this.timestamp = new Date(this.deathData.timestamp - this.fightStart)
       .toISOString()
-      .slice(11, 19);
+      .slice(14, 19);
   },
   updated() {
     this.pullTimeInVod =

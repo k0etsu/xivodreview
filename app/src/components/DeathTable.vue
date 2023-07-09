@@ -54,6 +54,7 @@ import DeathRow from "./DeathRow.vue";
           death.ability +
           death.timestamp
         "
+        :fightStart="fightStart"
         :deathData="death"
         :reportStart="reportStart"
         :vodStartTime="vodStartTime"
@@ -97,8 +98,15 @@ import DeathRow from "./DeathRow.vue";
 
 <script lang="ts">
 export default {
+  data() {
+    return {
+      fightEntry: {},
+      fightStart: 0,
+    };
+  },
   props: [
     "fightId",
+    "fightData",
     "pullNum",
     "deathData",
     "reportId",
@@ -109,6 +117,18 @@ export default {
   ],
   components: {
     DeathRow,
+  },
+  created() {
+    for (const fightTitle in this.fightData) {
+      for (const index in this.fightData[fightTitle]) {
+        const fightEntry = this.fightData[fightTitle][index];
+        if (fightEntry.id == this.fightId) {
+          this.fightEntry = fightEntry;
+          this.fightStart = this.fightEntry.startTime;
+        }
+      }
+    }
+    // this.fightEntry = this.fightData
   },
 };
 </script>

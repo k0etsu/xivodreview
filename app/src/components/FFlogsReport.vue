@@ -24,6 +24,7 @@ import DeathTable from "./DeathTable.vue";
     <DeathTable
       :key="reportId + pullId"
       :fightId="pullId"
+      :fightData="fightData"
       :pullNum="pullNum"
       :deathData="deathData"
       :reportId="reportId"
