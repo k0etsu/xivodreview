@@ -4,22 +4,22 @@ import ReportPull from "./ReportPull.vue";
 
 <template>
   <div class="accordion-item">
-    <h2 class="accordion-header" :id="fightTitle.replace(/\s+/g, '')">
+    <h2 class="accordion-header" :id="fightTitle.replace(/[^a-zA-Z0-9]/g, '')">
       <button
         class="accordion-button collapsed"
         type="button"
         data-bs-toggle="collapse"
-        :data-bs-target="`#collapse-${fightTitle.replace(/\s+/g, '')}`"
+        :data-bs-target="`#collapse-${fightTitle.replace(/[^a-zA-Z0-9]/g, '')}`"
         aria-expanded="false"
-        :aria-controls="`collapse-${fightTitle.replace(/\s+/g, '')}`"
+        :aria-controls="`collapse-${fightTitle.replace(/[^a-zA-Z0-9]/g, '')}`"
       >
         {{ fightTitle }}
       </button>
     </h2>
     <div
-      :id="`collapse-${fightTitle.replace(/\s+/g, '')}`"
+      :id="`collapse-${fightTitle.replace(/[^a-zA-Z0-9]/g, '')}`"
       class="accordion-collapse collapse"
-      :aria-labelledby="fightTitle.replace(/\s+/g, '')"
+      :aria-labelledby="fightTitle.replace(/[^a-zA-Z0-9]/g, '')"
     >
       <div class="accordion-body">
         <div class="row g-0 justify-content-start log-pulls">
