@@ -62,9 +62,9 @@ export default {
         this.deathData.timestamp -
         this.timeBeforePull) /
       1000;
-    this.timestamp = new Date(this.pullTimeInVod * 1000)
-      .toISOString()
-      .slice(11, 19);
+    // this.timestamp = new Date(this.pullTimeInVod * 1000)
+    //   .toISOString()
+    //   .slice(11, 19);
   },
 };
 </script>
