@@ -671,6 +671,16 @@ export default {
         this.player.seekTo(currTime - 5);
       }
     },
+    handleKeydown(e) {
+      switch (e.keyCode) {
+        case 37:
+          this.jumpBackward();
+          break;
+        case 39:
+          this.jumpForward();
+          break;
+      }
+    },
     focusPlayButton() {
       const focusButton = this.$refs.focusPlay;
       focusButton.focus();
@@ -1462,6 +1472,12 @@ export default {
       navigator.clipboard.writeText(shareUrl);
       alert(`Copied "${shareUrl}" to clipboard.`);
     },
+  },
+  beforeMount() {
+    window.addEventListener("keydown", this.handleKeydown, null);
+  },
+  beforeUnmount() {
+    window.removeEventListener("keydown", this.handleKeydown);
   },
   mounted() {
     const bootstrap = window.bootstrap;
