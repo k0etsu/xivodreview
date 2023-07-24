@@ -1217,9 +1217,9 @@ export default {
       this.cachedFightName = "";
       localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
     },
-    getGoogleAuthToken(googleAuthData: Object) {
+    getGoogleAuthToken() {
       this.googleTokenClient.requestAccessToken();
-      this.googleAuthData = googleAuthData;
+      this.googleAuthData = this.googleAuthToken;
       this.googleAuthData["expires_in"] =
         this.googleAuthData["expires_in"] * 1000;
       this.googleAuthData["created_time"] = Date.now();
