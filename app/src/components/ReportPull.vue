@@ -40,7 +40,11 @@
                 :class="fightEntry.class"
               >
                 {{
-                  `${Number(Math.floor(fightEntry.bossPercentage)).toFixed(0)}%`
+                  `${
+                    fightEntry.bossPercentage != 100
+                      ? Number(fightEntry.bossPercentage).toFixed(1)
+                      : Number(Math.floor(fightEntry.bossPercentage).toFixed(0))
+                  }%`
                 }}
               </span>
               <span
@@ -48,7 +52,7 @@
                 class="fight-grid-cell-percent"
                 :class="fightEntry.class"
                 >{{
-                  `${Number(100 - fightEntry.fightPercentage).toFixed(0)}%`
+                  `${Number(100 - fightEntry.fightPercentage).toFixed(1)}%`
                 }}</span
               >
               <span
@@ -292,6 +296,14 @@ export default {
 
 .legendary-bg {
   background-color: #ff8000 !important;
+}
+
+.astounding {
+  color: #e268a8 !important;
+}
+
+.astounding-bg {
+  background-color: #e268a8 !important;
 }
 
 .kill {

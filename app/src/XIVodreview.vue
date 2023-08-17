@@ -1174,8 +1174,10 @@ export default {
               fightClass = "rare";
             } else if (fightPercentage < 90) {
               fightClass = "epic";
-            } else if (fightPercentage < 100) {
+            } else if (fightPercentage < 99) {
               fightClass = "legendary";
+            } else if (fightPercentage < 100) {
+              fightClass = "astounding";
             }
             fight["class"] = fightClass;
             fightsPerInstance[encounterName].push(fight);
