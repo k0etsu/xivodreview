@@ -266,6 +266,7 @@ app.get("/twitch", (req, res, next) => {
   }).then(data => {
     var timeArr = [];
     for (const resData of JSON.parse(data["body"])["data"]) {
+      console.log(resData);
       timeArr.push({
         videoId: resData.id,
         startTime: new Date(resData["created_at"]).getTime()
