@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import NavigationBar from "./components/NavigationBar.vue";
 import FFlogsReport from "./components/FFlogsReport.vue";
+import SavedFightTable from "./components/SavedFightTable.vue";
 </script>
 
 <template>
@@ -333,12 +334,22 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                     >
                       Share
                     </button>
+                    <button
+                      class="btn btn-outline-info float-end"
+                      type="button"
+                      data-bs-toggle="offcanvas"
+                      data-bs-target="#savedEncountersOffcanvas"
+                      aria-controls="savedEncountersOffcanvas"
+                    >
+                      Saved Encounters
+                    </button>
+
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="accordion-item">
+          <!-- <div class="accordion-item">
             <h2 class="accordion-header" id="headingTwo">
               <button
                 class="accordion-button collapsed"
@@ -405,6 +416,46 @@ import FFlogsReport from "./components/FFlogsReport.vue";
                 </div>
               </div>
             </div>
+          </div> -->
+        </div>
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="savedEncountersOffcanvas" aria-labelledby="savedEncounterOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="savedEncountersOffcanvasLabel">Saved Encounters</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <div class="row align-items-center g-2">
+              <div class="form-group form-floating">
+                <input
+                  class="cachedFightName form-control"
+                  v-model.trim="cachedFightName"
+                  placeholder="Encounter Name"
+                />
+                <label for="cachedFightName">Encounter Name</label>
+              </div>
+            </div>
+            <div class="row align-items-center g-2">
+              <div class="col">
+                <button
+                  class="btn btn-outline-primary me-1"
+                  @click="addCachedFight"
+                >
+                  Save
+                </button>
+                <button
+                  class="btn btn-outline-secondary me-1"
+                  @click="clearCachedFight"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+            <SavedFightTable
+              :key="String(cachedFights)"
+              :cachedFights="cachedFights"
+              @selected-fight="selectFight"
+              @update-cached-fights="updateCachedFights"
+            />
           </div>
         </div>
         <div v-if="fightData && player" style="margin-top: 1.5rem">
@@ -888,7 +939,19 @@ export default {
         this.player.setQuality("chunked");
         this.playerType = "twitch";
       });
-      // this.player.addEventListener(Twitch.Player.PLAY)
+      this.player.addEventListener(Twitch.Player.PLAY, () => {
+        // this.playVod();
+        var playButton = document.getElementById("play-button");
+        var pauseButton = document.getElementById("pause-button");
+        playButton.style.visibility = "hidden";
+        pauseButton.style.visibility = "visible";
+        this.focusPauseButton();
+        setTimeout(() => {
+          this.getPullNumber(
+            this.player.getCurrentTime() + this.timeBeforePull / 1000
+          );
+        }, 2000);
+      });
       this.player.addEventListener(Twitch.Player.PLAYING, () => {
         // this.playVod();
         var playButton = document.getElementById("play-button");
@@ -965,7 +1028,7 @@ export default {
       this.vod_url = "";
       this.fflogs_url = "";
       this.cachedFightName = "";
-      this.cachedFightSelected = "";
+      this.cachedFightSelected = null;
       this.playerType = "";
       this.twitchId = "";
       this.youtubeId = "";
@@ -1209,15 +1272,27 @@ export default {
           vod: this.vod_url,
           fflogs: this.fflogs_url,
           offset: this.timeBeforePull,
+          fightName: this.cachedFightName,
         };
         localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
       }
     },
     removeCachedFight() {
-      this.cachedFightSelected = "";
+      this.cachedFightSelected = null;
       delete this.cachedFights[this.cachedFightName];
       this.cachedFightName = "";
       localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
+    },
+    updateCachedFights(updatedFights) {
+      this.cachedFights = updatedFights;
+      localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
+    },
+    selectFight(selectedFight) {
+      this.cachedFightSelected = selectedFight;
+    },
+    clearCachedFight() {
+      this.cachedFightSelected = null;
+      this.cachedFightName = "";
     },
     getGoogleAuthToken() {
       this.googleTokenClient.requestAccessToken();
@@ -1341,7 +1416,7 @@ export default {
         this.playerType = "yubtub";
       });
       this.player.addEventListener("onStateChange", (value) => {
-        this.player.setPlaybackQuality("highres");
+        // this.player.setPlaybackQuality("highres");
         if (value.data == YT.PlayerState.PLAYING) {
           this.playVod();
           this.getPullNumber(
