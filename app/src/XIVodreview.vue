@@ -343,7 +343,6 @@ import SavedFightTable from "./components/SavedFightTable.vue";
                     >
                       Saved Encounters
                     </button>
-
                   </div>
                 </div>
               </div>
@@ -418,10 +417,22 @@ import SavedFightTable from "./components/SavedFightTable.vue";
             </div>
           </div> -->
         </div>
-        <div class="offcanvas offcanvas-end" tabindex="-1" id="savedEncountersOffcanvas" aria-labelledby="savedEncounterOffcanvasLabel">
+        <div
+          class="offcanvas offcanvas-end"
+          tabindex="-1"
+          id="savedEncountersOffcanvas"
+          aria-labelledby="savedEncounterOffcanvasLabel"
+        >
           <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="savedEncountersOffcanvasLabel">Saved Encounters</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            <h5 class="offcanvas-title" id="savedEncountersOffcanvasLabel">
+              Saved Encounters
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="offcanvas"
+              aria-label="Close"
+            ></button>
           </div>
           <div class="offcanvas-body">
             <div class="row align-items-center g-2">
@@ -1285,6 +1296,8 @@ export default {
     },
     updateCachedFights(updatedFights) {
       this.cachedFights = updatedFights;
+      // TODO: make sure this works when editing a fight name, or just remove edit button
+      this.cachedFightName = "";
       localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
     },
     selectFight(selectedFight) {
