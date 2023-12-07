@@ -21,7 +21,7 @@ import ReportPull from "./ReportPull.vue";
       class="accordion-collapse collapse"
       :aria-labelledby="fightTitle.replace(/[^a-zA-Z0-9]/g, '')"
     >
-      <div class="accordion-body">
+      <div class="accordion-body px-0">
         <div class="row g-0 justify-content-start log-pulls">
           <ReportPull
             v-for="fightEntry in fightEntries"
