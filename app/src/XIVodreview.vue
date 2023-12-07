@@ -717,6 +717,15 @@ export default {
       pauseButton.style.visibility = "hidden";
       this.focusPlayButton();
     },
+    playPause() {
+      var playButton = document.getElementById("play-button");
+      if (playButton.style.visibility === "hidden") {
+        this.pauseVod();
+      }
+      else {
+        this.playVod();
+      }
+    },
     jumpForward() {
       var currTime = this.player.getCurrentTime();
       if (this.playerType == "twitch") {
@@ -734,11 +743,17 @@ export default {
       }
     },
     handleKeydown(e) {
-      switch (e.keyCode) {
-        case 37:
+      if (e.target.tagName.toLowerCase() === "input") {
+        return;
+      }
+      switch (e.key) {
+        case " ":
+          this.playPause();
+          break;
+        case "ArrowLeft":
           this.jumpBackward();
           break;
-        case 39:
+        case "ArrowRight":
           this.jumpForward();
           break;
       }
