@@ -26,6 +26,7 @@ import ReportPull from "./ReportPull.vue";
           <ReportPull
             v-for="fightEntry in fightEntries"
             :key="reportId + fightTitle + fightEntry.id"
+            :selectedId="selectedId"
             :fightEntry="fightEntry"
             :deathData="deathData"
             :reportId="reportId"
@@ -59,6 +60,7 @@ import ReportPull from "./ReportPull.vue";
 <script lang="ts">
 export default {
   props: [
+    "selectedId",
     "fightTitle",
     "fightEntries",
     "deathData",

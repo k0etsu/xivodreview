@@ -3,7 +3,7 @@
 <template>
   <div class="col-md-auto">
     <button class="btn pull-button" @click="goToTimestamp(pullTimeInVod)">
-      <div class="pull-entry wipe">
+      <div class="pull-entry wipe" :class="{selected: selectedId == fightEntry.id}">
         <div class="pull-grid-cell-container">
           <div class="percent-phase">
             <div style="display: block">
@@ -103,6 +103,7 @@ export default {
     };
   },
   props: [
+    "selectedId",
     "fightEntry",
     "deathData",
     "reportId",
@@ -312,5 +313,9 @@ export default {
 
 .table-buttons {
   margin-top: 13px;
+}
+
+.selected {
+  outline: 0.1em solid mediumslateblue;
 }
 </style>

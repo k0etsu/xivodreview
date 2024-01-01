@@ -9,6 +9,7 @@ import DeathTable from "./DeathTable.vue";
     <ReportGrid
       v-for="(fightEntries, fightTitle) in fightData"
       :key="reportId + fightTitle"
+      :selectedId="pullId"
       :fightTitle="fightTitle"
       :fightEntries="fightEntries"
       :deathData="deathData"
