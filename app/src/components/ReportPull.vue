@@ -319,6 +319,6 @@ export default {
 }
 
 .selected {
-  outline: 0.2em solid mediumslateblue;
+  outline: 0.17em solid mediumslateblue;
 }
 </style>
