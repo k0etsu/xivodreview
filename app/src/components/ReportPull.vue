@@ -3,7 +3,10 @@
 <template>
   <div class="col-md-auto">
     <button class="btn pull-button" @click="goToTimestamp(pullTimeInVod)">
-      <div class="pull-entry wipe" :class="{selected: selectedId == fightEntry.id}">
+      <div
+        class="pull-entry wipe"
+        :class="{ selected: selectedId == fightEntry.id }"
+      >
         <div class="pull-grid-cell-container">
           <div class="percent-phase">
             <div style="display: block">

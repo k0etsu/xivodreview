@@ -721,8 +721,7 @@ export default {
       var playButton = document.getElementById("play-button");
       if (playButton.style.visibility === "hidden") {
         this.pauseVod();
-      }
-      else {
+      } else {
         this.playVod();
       }
     },
