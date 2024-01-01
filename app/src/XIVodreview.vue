@@ -1032,6 +1032,7 @@ export default {
       this.twitchId = "";
       this.youtubeId = "";
       this.currentPull = {};
+      this.fightData = {};
       if (this.vod_url.includes("twitch")) {
         this.getTwitchId(this.vod_url);
       } else if (
@@ -1059,6 +1060,7 @@ export default {
       this.twitchId = "";
       this.youtubeId = "";
       this.currentPull = {};
+      this.fightData = {};
       this.showGoogleWarning();
       this.clearScrubTimer();
       window.history.pushState({}, document.title, window.location.origin);
