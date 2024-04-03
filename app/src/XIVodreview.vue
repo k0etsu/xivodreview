@@ -1060,6 +1060,7 @@ export default {
       this.youtubeId = "";
       this.currentPull = {};
       this.fightData = {};
+      this.timeBeforePull = 0;
       this.showGoogleWarning();
       this.clearScrubTimer();
       window.history.pushState({}, document.title, window.location.origin);
