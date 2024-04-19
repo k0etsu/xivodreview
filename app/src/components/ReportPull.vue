@@ -60,7 +60,16 @@
               >
               <span
                 class="fight-grid-cell-phase"
-                v-if="fightEntry.lastPhase != 0 && !fightEntry.kill"
+                v-if="
+                  fightEntry.lastPhase != 0 &&
+                  !fightEntry.kill &&
+                  fightEntry.lastPhaseIsIntermission
+                "
+                >{{ `I${fightEntry.lastPhase}` }}</span
+              >
+              <span
+                class="fight-grid-cell-phase"
+                v-else-if="fightEntry.lastPhase != 0 && !fightEntry.kill"
                 >{{ `P${fightEntry.lastPhase}` }}</span
               >
             </div>
