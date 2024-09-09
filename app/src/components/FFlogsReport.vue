@@ -4,7 +4,7 @@ import DeathTable from "./DeathTable.vue";
 </script>
 
 <template>
-  <h4>Pulls</h4>
+  <h4>Pulls - {{ date }}</h4>
   <div class="accordion accordion-flush">
     <ReportGrid
       v-for="(fightEntries, fightTitle) in fightData"
@@ -42,6 +42,8 @@ export default {
   data() {
     return {
       pullId: 0,
+      pullNum: 0,
+      date: "",
     };
   },
   props: [
@@ -65,6 +67,12 @@ export default {
       this.pullNum = pullNum;
       this.$emit("getPullNum", pullNum);
     },
+  },
+  beforeCreate() {
+    this.date = new Date(this.reportStart).toISOString().slice(0, 10);
+  },
+  updated() {
+    this.date = new Date(this.reportStart).toISOString().slice(0, 10);
   },
 };
 </script>
