@@ -4,7 +4,7 @@ import DeathTable from "./DeathTable.vue";
 </script>
 
 <template>
-  <h4>Pulls - {{ date }}</h4>
+  <h4>Pulls {{ date }}</h4>
   <div class="accordion accordion-flush">
     <ReportGrid
       v-for="(fightEntries, fightTitle) in fightData"
@@ -69,10 +69,10 @@ export default {
     },
   },
   beforeCreate() {
-    this.date = new Date(this.reportStart).toISOString().slice(0, 10);
+    this.date = "(" + new Date(this.reportStart).toISOString().slice(0, 10) + ")";
   },
   updated() {
-    this.date = new Date(this.reportStart).toISOString().slice(0, 10);
+    this.date = "(" + new Date(this.reportStart).toISOString().slice(0, 10) + ")";
   },
 };
 </script>
