@@ -69,10 +69,12 @@ export default {
     },
   },
   beforeCreate() {
-    this.date = "(" + new Date(this.reportStart).toISOString().slice(0, 10) + ")";
+    this.date =
+      "(" + new Date(this.reportStart).toISOString().slice(0, 10) + ")";
   },
   updated() {
-    this.date = "(" + new Date(this.reportStart).toISOString().slice(0, 10) + ")";
+    this.date =
+      "(" + new Date(this.reportStart).toISOString().slice(0, 10) + ")";
   },
 };
 </script>
