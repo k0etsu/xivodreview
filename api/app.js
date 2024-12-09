@@ -161,6 +161,15 @@ app.get("/fflogs", (req, res, next) => {
           subType
         }
       }
+      phases {
+        encounterID
+        separateWipes
+        phases {
+          id
+          name
+          isIntermission
+        }
+      }
       ${deathQuery}
     }
   }
