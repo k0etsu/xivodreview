@@ -163,7 +163,7 @@ app.get("/fflogs", (req, res, next) => {
       }
       phases {
         encounterID
-        separateWipes
+        separatesWipes
         phases {
           id
           name
