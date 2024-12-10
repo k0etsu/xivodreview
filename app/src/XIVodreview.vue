@@ -474,6 +474,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
             :key="reportId"
             :fightData="fightData"
             :deathData="deathData"
+            :phaseMap="phaseMap"
             :reportId="reportId"
             :reportStart="reportStart"
             :vodStartTime="vodStartTime"
@@ -513,6 +514,7 @@ export default {
       npcData: [],
       encounterData: {},
       encounterMap: {},
+      phaseMap: {},
       deathData: {},
       currentPull: {},
       timeBeforePull: 0,
@@ -1235,6 +1237,18 @@ export default {
     getFightData() {
       const fightsPerInstance = {};
       var pullNum = 1;
+      if ("phases" in this.reportData.data.reportData.report){
+        var phaseMap = this.reportData.data.reportData.report.phases;
+        phaseMap.forEach((encounter: Object) => {
+          var encounterID = encounter.encounterID.toString()
+          if (!(encounterID in this.phaseMap)) {
+            this.phaseMap[encounterID] = []
+          }
+          encounter.phases.forEach((phase: Object) => {
+            this.phaseMap[encounterID].push(phase.name)
+          })
+        })
+      }
       if (this.reportData) {
         this.reportData.data.reportData.report.fights.forEach(
           (fight: Object) => {
@@ -1271,6 +1285,10 @@ export default {
               fightClass = "astounding";
             }
             fight["class"] = fightClass;
+            // console.log(fight.encounterID, fight.lastPhaseAsAbsoluteIndex, this.phaseMap, this.phaseMap[fight.encouterID])
+            if (fight.encounterID in this.phaseMap) {
+              fight["phaseName"] = this.phaseMap[fight.encounterID][fight.lastPhaseAsAbsoluteIndex]
+            }
             fightsPerInstance[encounterName].push(fight);
           }
         );

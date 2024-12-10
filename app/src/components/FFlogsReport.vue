@@ -12,6 +12,7 @@ import DeathTable from "./DeathTable.vue";
       :selectedId="pullId"
       :fightTitle="fightTitle"
       :fightEntries="fightEntries"
+      :phaseMap="phaseMap"
       :deathData="deathData"
       :reportId="reportId"
       :reportStart="reportStart"
@@ -49,6 +50,7 @@ export default {
   props: [
     "fightData",
     "deathData",
+    "phaseMap",
     "reportId",
     "reportStart",
     "vodStartTime",

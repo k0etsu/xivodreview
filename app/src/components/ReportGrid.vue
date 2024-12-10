@@ -22,7 +22,7 @@ import ReportPull from "./ReportPull.vue";
       :aria-labelledby="fightTitle.replace(/[^a-zA-Z0-9]/g, '')"
     >
       <div class="accordion-body px-0">
-        <div class="row g-0">
+        <div class="row g-0 phase-check">
           <div class="form-check">
             <input
               class="form-check-input"
@@ -41,6 +41,7 @@ import ReportPull from "./ReportPull.vue";
             v-for="phases in phaseEntries"
             :key="fightTitle + phases"
           >
+            <h5 class="phase-title">{{ phaseMap[phases[0].encounterID][phases[0].lastPhaseAsAbsoluteIndex] }}</h5>
             <ReportPull
               v-for="phaseEntry in phases"
               :key="reportId + fightTitle + phaseEntry.id"
@@ -103,6 +104,7 @@ export default {
     "selectedId",
     "fightTitle",
     "fightEntries",
+    "phaseMap",
     "deathData",
     "reportId",
     "reportStart",
@@ -120,11 +122,13 @@ export default {
     },
     createPhaseData(fightEntries) {
       fightEntries.forEach((fight: Object) => {
-        var phase = fight.lastPhaseAsAbsoluteIndex.toString();
-        if (!(phase in this.phaseEntries)) {
-          this.phaseEntries[phase] = [];
+        if ("phaseName" in fight){
+          var phase = fight.lastPhaseAsAbsoluteIndex.toString();
+          if (!(phase in this.phaseEntries)) {
+            this.phaseEntries[phase] = [];
+          }
+          this.phaseEntries[phase].push(fight);
         }
-        this.phaseEntries[phase].push(fight);
       });
     },
   },
@@ -132,6 +136,7 @@ export default {
     console.log("fight entries", this.fightEntries);
     this.createPhaseData(this.fightEntries);
     console.log("phase entries", this.phaseEntries);
+    console.log("phase map", this.phaseMap)
   },
 };
 </script>
@@ -141,6 +146,9 @@ export default {
   margin-bottom: 1.5em;
 }
 .phase-row {
-  margin-bottom: 0.75em;
+  margin-top: 0.75em;
+}
+.phase-title {
+  font-size: 1em;
 }
 </style>
