@@ -22,7 +22,7 @@ import ReportPull from "./ReportPull.vue";
       :aria-labelledby="fightTitle.replace(/[^a-zA-Z0-9]/g, '')"
     >
       <div class="accordion-body px-0">
-        <div class="row g-0 phase-check">
+        <div v-if="showPhaseCheck" class="row g-0 phase-check">
           <div class="form-check">
             <input
               class="form-check-input"
@@ -98,6 +98,7 @@ export default {
     return {
       phaseMode: false,
       phaseEntries: {},
+      showPhaseCheck: false,
     };
   },
   props: [
@@ -133,10 +134,13 @@ export default {
     },
   },
   created() {
-    console.log("fight entries", this.fightEntries);
+    // console.log("fight entries", this.fightEntries);
     this.createPhaseData(this.fightEntries);
-    console.log("phase entries", this.phaseEntries);
-    console.log("phase map", this.phaseMap)
+    // console.log("phase entries", this.phaseEntries);
+    // console.log("phase map", this.phaseMap)
+    if (this.fightEntries[0].encounterID in this.phaseMap) {
+      this.showPhaseCheck = true;
+    }
   },
 };
 </script>
