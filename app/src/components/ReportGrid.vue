@@ -41,7 +41,13 @@ import ReportPull from "./ReportPull.vue";
             v-for="phases in phaseEntries"
             :key="fightTitle + phases"
           >
-            <h5 class="phase-title">{{ phaseMap[phases[0].encounterID][phases[0].lastPhaseAsAbsoluteIndex] }}</h5>
+            <h5 class="phase-title">
+              {{
+                phaseMap[phases[0].encounterID][
+                  phases[0].lastPhaseAsAbsoluteIndex
+                ]
+              }}
+            </h5>
             <ReportPull
               v-for="phaseEntry in phases"
               :key="reportId + fightTitle + phaseEntry.id"
@@ -123,7 +129,7 @@ export default {
     },
     createPhaseData(fightEntries) {
       fightEntries.forEach((fight: Object) => {
-        if ("phaseName" in fight){
+        if ("phaseName" in fight) {
           var phase = fight.lastPhaseAsAbsoluteIndex.toString();
           if (!(phase in this.phaseEntries)) {
             this.phaseEntries[phase] = [];

@@ -52,7 +52,11 @@ defineProps<{
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link py-2 px-0 px-lg-2" href="https://discord.gg/C7Z7AjnupD" target="_blank">
+            <a
+              class="nav-link py-2 px-0 px-lg-2"
+              href="https://discord.gg/C7Z7AjnupD"
+              target="_blank"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"

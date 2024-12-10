@@ -1237,17 +1237,17 @@ export default {
     getFightData() {
       const fightsPerInstance = {};
       var pullNum = 1;
-      if ("phases" in this.reportData.data.reportData.report){
+      if ("phases" in this.reportData.data.reportData.report) {
         var phaseMap = this.reportData.data.reportData.report.phases;
         phaseMap.forEach((encounter: Object) => {
-          var encounterID = encounter.encounterID.toString()
+          var encounterID = encounter.encounterID.toString();
           if (!(encounterID in this.phaseMap)) {
-            this.phaseMap[encounterID] = []
+            this.phaseMap[encounterID] = [];
           }
           encounter.phases.forEach((phase: Object) => {
-            this.phaseMap[encounterID].push(phase.name)
-          })
-        })
+            this.phaseMap[encounterID].push(phase.name);
+          });
+        });
       }
       if (this.reportData) {
         this.reportData.data.reportData.report.fights.forEach(
@@ -1287,7 +1287,10 @@ export default {
             fight["class"] = fightClass;
             // console.log(fight.encounterID, fight.lastPhaseAsAbsoluteIndex, this.phaseMap, this.phaseMap[fight.encouterID])
             if (fight.encounterID in this.phaseMap) {
-              fight["phaseName"] = this.phaseMap[fight.encounterID][fight.lastPhaseAsAbsoluteIndex]
+              fight["phaseName"] =
+                this.phaseMap[fight.encounterID][
+                  fight.lastPhaseAsAbsoluteIndex
+                ];
             }
             fightsPerInstance[encounterName].push(fight);
           }
