@@ -27,10 +27,19 @@ import ReportPull from "./ReportPull.vue";
             <input
               class="form-check-input"
               type="checkbox"
-              id="flexCheckDefault"
+              :id="`${fightTitle.replace(
+                /[^a-zA-Z0-9]/g,
+                ''
+              )}-flexCheckDefault`"
               v-model="phaseMode"
             />
-            <label class="form-check-label" for="flexCheckDefault">
+            <label
+              class="form-check-label"
+              :for="`${fightTitle.replace(
+                /[^a-zA-Z0-9]/g,
+                ''
+              )}-flexCheckDefault`"
+            >
               Separate pulls by phase
             </label>
           </div>
