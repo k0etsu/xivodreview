@@ -1,6 +1,17 @@
 <template>
   <tr>
-    <th>{{ deathData.player }}</th>
+    <th>
+      <a
+        :href="
+          'https://www.fflogs.com/reports/' + reportId + '/#fight=' + fightId + '&type=deaths&death=' + (index+1)
+        "
+        class="btn btn-outline-info table-buttons"
+        role="button"
+        target="_blank"
+      >
+        {{ deathData.player }}
+      </a>
+    </th>
     <td>{{ deathData.source }}</td>
     <td v-if="deathData.ability == null">null</td>
     <td v-else>{{ deathData.ability }}</td>
@@ -30,6 +41,9 @@ export default {
     "vodStartTime",
     "timeBeforePull",
     "player",
+    "index",
+    "reportId",
+    "fightId"
   ],
   methods: {
     goToTimestamp(pullTimeInVod: Number) {

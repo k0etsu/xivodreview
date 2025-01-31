@@ -46,7 +46,7 @@ import DeathRow from "./DeathRow.vue";
     </thead>
     <tbody class="table-group-divider">
       <DeathRow
-        v-for="death in deathData[fightId]"
+        v-for="(death, index) in deathData[fightId]"
         :key="
           reportId +
           death.player +
@@ -60,6 +60,9 @@ import DeathRow from "./DeathRow.vue";
         :vodStartTime="vodStartTime"
         :timeBeforePull="timeBeforePull"
         :player="player"
+        :index="index"
+        :reportId="reportId"
+        :fightId="fightId"
       />
     </tbody>
   </table>
