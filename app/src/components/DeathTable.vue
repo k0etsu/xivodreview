@@ -42,6 +42,7 @@ import DeathRow from "./DeathRow.vue";
         <th scope="col">Source</th>
         <th scope="col">Ability</th>
         <th scope="col">Timestamp</th>
+        <th scope="col"></th>
       </tr>
     </thead>
     <tbody class="table-group-divider">
