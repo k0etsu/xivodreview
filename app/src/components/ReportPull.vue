@@ -55,7 +55,7 @@
                 class="fight-grid-cell-percent"
                 :class="fightEntry.class"
                 >{{
-                  `${Number(100 - fightEntry.fightPercentage).toFixed(1)}%`
+                  `${Number(fightEntry.fightPercentage).toFixed(1)}%`
                 }}</span
               >
               <span
@@ -97,7 +97,7 @@
             class="wipes-percent-fg"
             :class="`${fightEntry.class}-bg`"
             :style="{
-              width: `${Number(fightEntry.fightPercentage).toFixed(2)}%`,
+              width: `${Number(100 - fightEntry.fightPercentage).toFixed(2)}%`,
             }"
           ></div>
         </div>
