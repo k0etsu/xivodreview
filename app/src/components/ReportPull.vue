@@ -37,7 +37,7 @@
                   </svg>
                 </span>
               </div>
-              <span
+              <!-- <span
                 v-else-if="fightEntry.lastPhase != 0"
                 class="fight-grid-cell-percent"
                 :class="fightEntry.class"
@@ -49,7 +49,7 @@
                       : Number(Math.floor(fightEntry.bossPercentage).toFixed(0))
                   }%`
                 }}
-              </span>
+              </span> -->
               <span
                 v-else
                 class="fight-grid-cell-percent"
