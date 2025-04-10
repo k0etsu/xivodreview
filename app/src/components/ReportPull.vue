@@ -97,7 +97,7 @@
             class="wipes-percent-fg"
             :class="`${fightEntry.class}-bg`"
             :style="{
-              width: `${Number(100 - fightEntry.fightPercentage).toFixed(2)}%`,
+              width: `${Number(fightEntry.fightPercentage).toFixed(2)}%`,
             }"
           ></div>
         </div>
