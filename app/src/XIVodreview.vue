@@ -80,7 +80,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
                 @mouseleave="hideTimestamp"
               >
                 <div id="timeline-indicator"></div>
-                <span id="pull-scrub-span"></span>
+                <span id="pull-scrub-span" :style="{ width: scrubPercent + '%' }"></span>
                 <div class="death-indicators">
                   <div
                     v-for="death in deathData[currentPull.id]"
@@ -112,6 +112,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
               >
                 <button
                   id="play-button"
+                  v-show="!isPlaying"
                   class="btn btn-outline-primary"
                   @click="playVod"
                   ref="focusPlay"
@@ -131,6 +132,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
                 </button>
                 <button
                   id="pause-button"
+                  v-show="isPlaying"
                   class="btn btn-outline-primary"
                   @click="pauseVod"
                   ref="focusPause"
@@ -150,7 +152,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
                 </button>
               </div>
               <div class="col-auto" style="margin-left: 10px">
-                <div id="current-timestamp">00:00 / 00:00</div>
+                <div id="current-timestamp">{{ currentTimestampDisplay }}</div>
               </div>
               <div class="col-auto" style="margin-left: 15px">
                 <button
@@ -529,11 +531,25 @@ export default {
       fflogsAuthState: "",
       fflogsCodeVerifier: "",
       fflogsCodeChallenge: "",
-      fflogsAuthUrl: URL,
+      fflogsAuthUrl: '' as string,
       fflogsAuthCode: "",
       fflogsAuthToken: {},
       fflogsAuthTokenTimer: 0,
+      isPlaying: false,
+      scrubPercent: 0,
+      currentTimestampDisplay: '00:00 / 00:00',
     };
+  },
+  emits: ['getGoogleAuthToken', 'clearGoogleAuthToken', 'getFflogsAuthToken', 'clearFflogsAuthToken'],
+  computed: {
+    pullStartTime(): number {
+      if (!this.currentPull || !this.currentPull.startTime) return 0;
+      return (this.currentPull.startTime + this.reportStart - this.vodStartTime - this.timeBeforePull) / 1000;
+    },
+    pullEndTime(): number {
+      if (!this.currentPull || !this.currentPull.endTime) return 0;
+      return (this.currentPull.endTime + this.reportStart - this.vodStartTime - this.timeBeforePull) / 1000;
+    },
   },
   created() {
     this.getCachedFights();
@@ -593,18 +609,16 @@ export default {
     //     this.fightData = fightsPerInstance;
     //   }
     // },
-    encounterData(newValue) {
+    encounterData(newValue: any) {
       const worldData = newValue.data.worldData;
       this.encounterMap = {};
       for (const encounter in worldData) {
         if (worldData[encounter] !== null) {
-          var difficulties = {};
-          for (const difficulty of worldData[encounter]["zone"][
-            "difficulties"
-          ]) {
+          const difficulties: Record<number, string> = {};
+          for (const difficulty of worldData[encounter]["zone"]["difficulties"]) {
             difficulties[difficulty.id] = difficulty.name;
           }
-          var encounterInfo = {
+          const encounterInfo = {
             name: worldData[encounter]["name"],
             difficulties: difficulties,
           };
@@ -614,7 +628,7 @@ export default {
       console.log("encounterMap", this.encounterMap);
       this.getFightData();
     },
-    cachedFightSelected(encounter) {
+    cachedFightSelected(encounter: any) {
       if (encounter != null) {
         this.cachedFightName = encounter;
         this.vod_url = this.cachedFights[encounter].vod;
@@ -624,13 +638,13 @@ export default {
         this.cachedFightSelected = null;
       }
     },
-    timeBeforePull(newValue) {
+    timeBeforePull(newValue: number) {
       if (this.cachedFights[this.cachedFightName]) {
         this.cachedFights[this.cachedFightName]["offset"] = newValue;
         localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
       }
     },
-    async fflogsAuthCode(code) {
+    async fflogsAuthCode(code: string) {
       const fflogsClientId = "984bcd26-7d4e-4d0a-b8aa-80b24755d685";
       await fetch("https://www.fflogs.com/oauth/token", {
         method: "POST",
@@ -654,15 +668,10 @@ export default {
         );
       });
     },
-    currentPull(newValue) {
+    currentPull(newValue: any) {
       if (Object.keys(newValue).length > 0) {
         console.log("currentPull", newValue);
-        this.pullTimestamp =
-          (this.currentPull.startTime +
-            this.reportStart -
-            this.vodStartTime -
-            this.timeBeforePull) /
-          1000;
+        this.pullTimestamp = this.pullStartTime;
         clearInterval(this.scrubTimer);
         setTimeout(() => {
           this.scrubTimer = 0;
@@ -675,23 +684,9 @@ export default {
         }, 1500);
       }
     },
-    pullTimestamp(newValue) {
-      var pullStartTime =
-        (this.currentPull.startTime +
-          this.reportStart -
-          this.vodStartTime -
-          this.timeBeforePull) /
-        1000;
-      var pullEndTime =
-        (this.currentPull.endTime +
-          this.reportStart -
-          this.vodStartTime -
-          this.timeBeforePull) /
-        1000;
-      var percentage =
-        ((newValue - pullStartTime) / (pullEndTime - pullStartTime)) * 100;
-      var span = document.getElementById("pull-scrub-span");
-      span.style.width = percentage + "%";
+    pullTimestamp(newValue: number) {
+      const range = this.pullEndTime - this.pullStartTime;
+      this.scrubPercent = range > 0 ? ((newValue - this.pullStartTime) / range) * 100 : 0;
     },
   },
   methods: {
@@ -701,10 +696,7 @@ export default {
       } else if (this.playerType == "yubtub") {
         this.player.playVideo();
       }
-      var playButton = document.getElementById("play-button");
-      var pauseButton = document.getElementById("pause-button");
-      playButton.style.visibility = "hidden";
-      pauseButton.style.visibility = "visible";
+      this.isPlaying = true;
       this.focusPauseButton();
     },
     pauseVod() {
@@ -713,22 +705,18 @@ export default {
       } else if (this.playerType == "yubtub") {
         this.player.pauseVideo();
       }
-      var playButton = document.getElementById("play-button");
-      var pauseButton = document.getElementById("pause-button");
-      playButton.style.visibility = "visible";
-      pauseButton.style.visibility = "hidden";
+      this.isPlaying = false;
       this.focusPlayButton();
     },
     playPause() {
-      var playButton = document.getElementById("play-button");
-      if (playButton.style.visibility === "hidden") {
+      if (this.isPlaying) {
         this.pauseVod();
       } else {
         this.playVod();
       }
     },
     jumpForward() {
-      var currTime = this.player.getCurrentTime();
+      const currTime = this.player.getCurrentTime();
       if (this.playerType == "twitch") {
         this.player.seek(currTime + 5);
       } else if (this.playerType == "yubtub") {
@@ -736,14 +724,14 @@ export default {
       }
     },
     jumpBackward() {
-      var currTime = this.player.getCurrentTime();
+      const currTime = this.player.getCurrentTime();
       if (this.playerType == "twitch") {
         this.player.seek(currTime - 5);
       } else if (this.playerType == "yubtub") {
         this.player.seekTo(currTime - 5);
       }
     },
-    handleKeydown(e) {
+    handleKeydown(e: KeyboardEvent) {
       if (e.target.tagName.toLowerCase() === "input") {
         return;
       }
@@ -767,10 +755,13 @@ export default {
       const focusButton = this.$refs.focusPause;
       focusButton.focus();
     },
+    strPadLeft(value: number, pad: string, length: number): string {
+      return (new Array(length + 1).join(pad) + String(value)).slice(-length);
+    },
     updateTimestamp() {
-      var pullLength = this.currentPull.endTime - this.currentPull.startTime;
-      var endTimestamp = new Date(pullLength).toISOString().slice(14, 19);
-      var vodTime =
+      const pullLength = this.currentPull.endTime - this.currentPull.startTime;
+      const endTimestamp = new Date(pullLength).toISOString().slice(14, 19);
+      const vodTime =
         this.player.getCurrentTime() -
         (this.reportStart -
           this.vodStartTime +
@@ -779,20 +770,14 @@ export default {
           1000;
       const minutes = Math.floor(vodTime / 60);
       const seconds = Math.floor(vodTime - minutes * 60);
-      function str_pad_left(string, pad, length) {
-        return (new Array(length + 1).join(pad) + String(string)).slice(
-          -length
-        );
-      }
-      var currentTimestamp =
-        str_pad_left(minutes, "0", 2) + ":" + str_pad_left(seconds, "0", 2);
-      var timestamp = document.getElementById("current-timestamp");
+      let currentTimestamp =
+        this.strPadLeft(minutes, "0", 2) + ":" + this.strPadLeft(seconds, "0", 2);
       if (vodTime > pullLength / 1000) {
         currentTimestamp = endTimestamp;
       } else if (vodTime < 0) {
         currentTimestamp = "00:00";
       }
-      timestamp.innerHTML = currentTimestamp + " / " + endTimestamp;
+      this.currentTimestampDisplay = currentTimestamp + " / " + endTimestamp;
     },
     getPullNum(pullId) {
       console.log("getpullnum", pullId);
@@ -806,50 +791,43 @@ export default {
       this.timeBeforePull = this.timeBeforePull + 500;
     },
     showTimestamp() {
-      var timestamp = document.getElementById("pull-timestamp");
-      var indicator = document.getElementById("timeline-indicator");
+      const timestamp = document.getElementById("pull-timestamp");
+      const indicator = document.getElementById("timeline-indicator");
       if (Object.keys(this.currentPull).length > 0) {
         timestamp.style.visibility = "visible";
         indicator.style.visibility = "visible";
       }
     },
     hideTimestamp() {
-      var timestamp = document.getElementById("pull-timestamp");
-      var indicator = document.getElementById("timeline-indicator");
+      const timestamp = document.getElementById("pull-timestamp");
+      const indicator = document.getElementById("timeline-indicator");
       if (Object.keys(this.currentPull).length > 0) {
         timestamp.style.visibility = "hidden";
         indicator.style.visibility = "hidden";
       }
     },
-    scrubMousePos(e) {
-      let timelineWidth = document.getElementById("pull-scrub").offsetWidth;
+    scrubMousePos(e: MouseEvent) {
+      const scrubEl = document.getElementById("pull-scrub");
+      const timelineWidth = scrubEl.offsetWidth;
       this.x = (e.offsetX / timelineWidth) * 100;
       if (Object.keys(this.currentPull).length > 0) {
-        var pullLength = this.currentPull.endTime - this.currentPull.startTime;
+        const pullLength = this.currentPull.endTime - this.currentPull.startTime;
         this.currentTimestamp = (pullLength * this.x) / 100;
-        var timestamp = document.getElementById("pull-timestamp");
-        var indicator = document.getElementById("timeline-indicator");
+        const timestamp = document.getElementById("pull-timestamp");
+        const indicator = document.getElementById("timeline-indicator");
+        const scrubY = scrubEl.getBoundingClientRect().y;
         timestamp.style.left = e.clientX - 24 + "px";
-        timestamp.style.top =
-          document.getElementById("pull-scrub").getBoundingClientRect().y -
-          30 +
-          "px";
+        timestamp.style.top = scrubY - 30 + "px";
         timestamp.innerHTML = new Date(this.currentTimestamp)
           .toISOString()
           .slice(14, 19);
         indicator.style.left = e.clientX + "px";
-        indicator.style.top =
-          document.getElementById("pull-scrub").getBoundingClientRect().y +
-          "px";
+        indicator.style.top = scrubY + "px";
       }
     },
     scrubClick() {
       this.scrubGotoTime(this.x);
-      const whichButton = document.getElementById("play-button");
-      if (
-        getComputedStyle(whichButton).getPropertyValue("visibility") ==
-        "visible"
-      ) {
+      if (!this.isPlaying) {
         this.focusPlayButton();
       } else {
         this.focusPauseButton();
@@ -872,28 +850,12 @@ export default {
       // var span = document.getElementById("pull-scrub-span");
       // span.style.width = percentage + "%";
     },
-    scrubGotoTime(percentage) {
-      var pullStartTime =
-        (this.currentPull.startTime +
-          this.reportStart -
-          this.vodStartTime -
-          this.timeBeforePull) /
-        1000;
-      var pullEndTime =
-        (this.currentPull.endTime +
-          this.reportStart -
-          this.vodStartTime -
-          this.timeBeforePull) /
-        1000;
-      var newTime =
-        (pullEndTime - pullStartTime) * (percentage / 100) + pullStartTime;
-      // this.pullTimestamp = newTime;
+    scrubGotoTime(percentage: number) {
+      const newTime =
+        (this.pullEndTime - this.pullStartTime) * (percentage / 100) + this.pullStartTime;
       if (this.playerType == "twitch") {
         this.player.seek(newTime);
-        this.player.seek(newTime);
-        this.player.seek(newTime);
-        this.player.seek(newTime);
-        this.player.seek(newTime);
+        setTimeout(() => this.player.seek(newTime), 300);
       } else if (this.playerType == "yubtub") {
         this.player.seekTo(newTime);
       }
@@ -908,16 +870,15 @@ export default {
       // }, 1500);
     },
     clearScrubTimer() {
-      var span = document.getElementById("pull-scrub-span");
-      span.style.width = "0";
+      this.scrubPercent = 0;
       clearInterval(this.scrubTimer);
       this.scrubTimer = 0;
     },
     async getTwitchId(twitchUrl: string) {
       try {
         const url = new URL(twitchUrl);
-        var video = url.pathname.split("/");
-        var videoIndex = video.indexOf("videos");
+        const video = url.pathname.split("/");
+        let videoIndex = video.indexOf("videos");
         if (videoIndex == -1) {
           videoIndex = video.indexOf("video");
         }
@@ -944,7 +905,7 @@ export default {
     },
     async getTwitchPlayer(videoId: string) {
       const Twitch = window.Twitch;
-      var options = {
+      const options = {
         width: "100%",
         height: "100%",
         video: videoId,
@@ -956,7 +917,7 @@ export default {
         this.removePlayer();
       }
       this.player = new Twitch.Player("twitch-player", options);
-      var element = document.getElementById("twitch-player");
+      const element = document.getElementById("twitch-player")!
       element.style.position = "absolute";
       element.style.width = "100%";
       element.style.height = "100%";
@@ -967,11 +928,7 @@ export default {
         this.playerType = "twitch";
       });
       this.player.addEventListener(Twitch.Player.PLAY, () => {
-        // this.playVod();
-        var playButton = document.getElementById("play-button");
-        var pauseButton = document.getElementById("pause-button");
-        playButton.style.visibility = "hidden";
-        pauseButton.style.visibility = "visible";
+        this.isPlaying = true;
         this.focusPauseButton();
         setTimeout(() => {
           this.getPullNumber(
@@ -980,11 +937,7 @@ export default {
         }, 2000);
       });
       this.player.addEventListener(Twitch.Player.PLAYING, () => {
-        // this.playVod();
-        var playButton = document.getElementById("play-button");
-        var pauseButton = document.getElementById("pause-button");
-        playButton.style.visibility = "hidden";
-        pauseButton.style.visibility = "visible";
+        this.isPlaying = true;
         this.focusPauseButton();
         setTimeout(() => {
           this.getPullNumber(
@@ -995,16 +948,10 @@ export default {
       this.player.addEventListener(Twitch.Player.SEEK, () => {
         setTimeout(() => {
           this.pullTimestamp = this.player.getCurrentTime();
-          this.pullTimestamp = this.player.getCurrentTime();
-          this.pullTimestamp = this.player.getCurrentTime();
         }, 200);
       });
       this.player.addEventListener(Twitch.Player.PAUSE, () => {
-        // this.pauseVod();
-        var playButton = document.getElementById("play-button");
-        var pauseButton = document.getElementById("pause-button");
-        playButton.style.visibility = "visible";
-        pauseButton.style.visibility = "hidden";
+        this.isPlaying = false;
         this.focusPlayButton();
         setTimeout(() => {
           this.getPullNumber(
@@ -1013,7 +960,7 @@ export default {
         }, 2000);
       });
     },
-    getPullNumber(timestamp) {
+    getPullNumber(timestamp: number) {
       this.reportData.data.reportData.report.fights.every((fight: Object) => {
         if (
           this.vodStartTime + timestamp * 1000 <=
@@ -1069,11 +1016,11 @@ export default {
       // TODO: Clear logs
     },
     hideGoogleWarning() {
-      var element = document.getElementById("google-homepage-shit");
+      const element = document.getElementById("google-homepage-shit");
       element.style.display = "none";
     },
     showGoogleWarning() {
-      var element = document.getElementById("google-homepage-shit");
+      const element = document.getElementById("google-homepage-shit");
       element.style.display = "";
     },
     removePlayer() {
@@ -1097,8 +1044,8 @@ export default {
     getReportId(fflogsUrl: string) {
       try {
         const url = new URL(fflogsUrl);
-        var report = url.pathname.split("/");
-        var reportIndex = report.indexOf("reports");
+        const report = url.pathname.split("/");
+        const reportIndex = report.indexOf("reports");
         this.reportId = report[reportIndex + 1];
       } catch (error) {
         this.reportId = "Please enter a valid FFLogs report URL";
@@ -1107,7 +1054,7 @@ export default {
       }
     },
     getReportData(reportId: string) {
-      var getUrl = "";
+      let getUrl = "";
       if (Object.keys(this.fflogsAuthToken).length != 0) {
         getUrl = `${this.api_url}/fflogs?reportId=${reportId}&authToken=${this.fflogsAuthToken.access_token}`;
       } else {
@@ -1152,8 +1099,8 @@ export default {
           }
         });
     },
-    getReportDeathData(reportId, startTime, endTime, authToken) {
-      var getUrl = "";
+    getReportDeathData(reportId: string, startTime: number, endTime: number, authToken: string | Record<string, never>) {
+      let getUrl = "";
       if (authToken) {
         getUrl = `${this.api_url}/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}&authToken=${authToken}`;
       } else {
@@ -1172,11 +1119,11 @@ export default {
         });
     },
     getEncounterData() {
-      var getUrl = `${this.api_url}/encounters?`;
-      var encounterIds = [];
+      let getUrl = `${this.api_url}/encounters?`;
+      const encounterIds = new Set<number>();
       this.reportData.data.reportData.report.fights.forEach((fight: Object) => {
-        if (!encounterIds.includes(fight.encounterID)) {
-          encounterIds.push(fight.encounterID);
+        if (!encounterIds.has(fight.encounterID)) {
+          encounterIds.add(fight.encounterID);
           getUrl = getUrl + `id=${fight.encounterID}&`;
           console.log("encounterdata", getUrl);
         }
@@ -1236,11 +1183,11 @@ export default {
     },
     getFightData() {
       const fightsPerInstance = {};
-      var pullNum = 1;
+      let pullNum = 1;
       if ("phases" in this.reportData.data.reportData.report) {
-        var phaseMap = this.reportData.data.reportData.report.phases;
+        const phaseMap = this.reportData.data.reportData.report.phases;
         phaseMap.forEach((encounter: Object) => {
-          var encounterID = encounter.encounterID.toString();
+          const encounterID = encounter.encounterID.toString();
           if (!(encounterID in this.phaseMap)) {
             this.phaseMap[encounterID] = [];
           }
@@ -1252,12 +1199,12 @@ export default {
       if (this.reportData) {
         this.reportData.data.reportData.report.fights.forEach(
           (fight: Object) => {
-            var encounterName = "";
+            let encounterName = "";
             fight["pullNum"] = pullNum++;
             if (this.encounterMap[fight.encounterID]) {
-              var encounter = this.encounterMap[fight.encounterID];
+              const encounter = this.encounterMap[fight.encounterID];
               if (Object.keys(encounter.difficulties).length > 1) {
-                var difficulty =
+                const difficulty =
                   " - " + encounter.difficulties[fight.difficulty];
                 encounterName =
                   this.encounterMap[fight.encounterID].name + difficulty;
@@ -1269,8 +1216,8 @@ export default {
             }
             fightsPerInstance[encounterName] =
               fightsPerInstance[encounterName] || [];
-            var fightPercentage = 100 - fight.fightPercentage;
-            var fightClass = "";
+            const fightPercentage = 100 - fight.fightPercentage;
+            let fightClass = "";
             if (fightPercentage < 25) {
               fightClass = "common";
             } else if (fightPercentage < 50) {
@@ -1332,13 +1279,13 @@ export default {
       this.cachedFightName = "";
       localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
     },
-    updateCachedFights(updatedFights) {
+    updateCachedFights(updatedFights: Record<string, any>) {
       this.cachedFights = updatedFights;
       // TODO: make sure this works when editing a fight name, or just remove edit button
       this.cachedFightName = "";
       localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
     },
-    selectFight(selectedFight) {
+    selectFight(selectedFight: string) {
       this.cachedFightSelected = selectedFight;
     },
     clearCachedFight() {
@@ -1368,7 +1315,7 @@ export default {
           Date.now()
         ) {
           this.googleAuthToken = JSON.parse(cachedGoogleAuthToken);
-          var tokenTimeout =
+          const tokenTimeout =
             this.googleAuthToken["created_time"] +
             this.googleAuthToken["expires_in"] -
             Date.now();
@@ -1394,8 +1341,8 @@ export default {
         const url = new URL(youtubeUrl);
         if (youtubeUrl.includes("youtube.com")) {
           if (youtubeUrl.includes("watch?")) {
-            var video = url.href.split("watch?")[1];
-            var queries = video.split("&");
+            const video = url.href.split("watch?")[1];
+            const queries = video.split("&");
             for (const query of queries) {
               if (query.includes("v=")) {
                 this.youtubeId = query.replace("v=", "");
@@ -1415,8 +1362,8 @@ export default {
       }
     },
     getYoutubeData(videoId: string) {
-      var authToken = "";
-      var getUrl = "";
+      let authToken = "";
+      let getUrl = "";
       if (Object.keys(this.googleAuthToken).length != 0) {
         authToken = this.googleAuthToken.access_token;
         getUrl = `${this.api_url}/youtube?videoId=${videoId}&authToken=${authToken}`;
@@ -1457,7 +1404,7 @@ export default {
         videoId: videoId,
         playerVars: options,
       });
-      var element = document.getElementById("youtube-player");
+      const element = document.getElementById("youtube-player")!
       element.style.position = "absolute";
       element.style.width = "100%";
       element.style.height = "100%";
@@ -1466,40 +1413,42 @@ export default {
         this.player.setPlaybackQuality("highres");
         this.playerType = "yubtub";
       });
-      this.player.addEventListener("onStateChange", (value) => {
-        // this.player.setPlaybackQuality("highres");
+      this.player.addEventListener("onStateChange", (value: any) => {
         if (value.data == YT.PlayerState.PLAYING) {
           this.playVod();
-          this.getPullNumber(
-            this.player.getCurrentTime() + this.timeBeforePull / 1000
-          );
+          setTimeout(() => {
+            this.getPullNumber(
+              this.player.getCurrentTime() + this.timeBeforePull / 1000
+            );
+          }, 2000);
         } else if (value.data == YT.PlayerState.PAUSED) {
           this.pauseVod();
-          this.getPullNumber(
-            this.player.getCurrentTime() + this.timeBeforePull / 1000
-          );
+          setTimeout(() => {
+            this.getPullNumber(
+              this.player.getCurrentTime() + this.timeBeforePull / 1000
+            );
+          }, 2000);
         }
       });
     },
-    dec2hex(dec) {
+    dec2hex(dec: number): string {
       return ("0" + dec.toString(16)).substr(-2);
     },
     generateCodeVerifier() {
-      var array = new Uint32Array(56 / 2);
+      const array = new Uint32Array(56 / 2);
       window.crypto.getRandomValues(array);
       return Array.from(array, this.dec2hex).join("");
     },
-    sha256(plain) {
-      // returns promise ArrayBuffer
+    sha256(plain: string): Promise<ArrayBuffer> {
       const encoder = new TextEncoder();
       const data = encoder.encode(plain);
       return window.crypto.subtle.digest("SHA-256", data);
     },
-    base64urlencode(a) {
-      var str = "";
-      var bytes = new Uint8Array(a);
-      var len = bytes.byteLength;
-      for (var i = 0; i < len; i++) {
+    base64urlencode(a: ArrayBuffer): string {
+      let str = "";
+      const bytes = new Uint8Array(a);
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i++) {
         str += String.fromCharCode(bytes[i]);
       }
       return btoa(str)
@@ -1507,9 +1456,9 @@ export default {
         .replace(/\//g, "_")
         .replace(/=+$/, "");
     },
-    async generateCodeChallengeFromVerifier(v) {
-      var hashed = await this.sha256(v);
-      var base64encoded = this.base64urlencode(hashed);
+    async generateCodeChallengeFromVerifier(v: string): Promise<string> {
+      const hashed = await this.sha256(v);
+      const base64encoded = this.base64urlencode(hashed);
       return base64encoded;
     },
     async createFflogsAuthUrl() {
@@ -1568,7 +1517,7 @@ export default {
           Date.now()
         ) {
           this.fflogsAuthToken = cachedFflogsAuthObj;
-          var tokenTimeout =
+          const tokenTimeout =
             this.fflogsAuthToken["created_time"] +
             this.fflogsAuthToken["expires_in"] -
             Date.now();
@@ -1586,8 +1535,8 @@ export default {
       localStorage.removeItem("cachedFflogsAuthToken");
     },
     shareURLs() {
-      var vodId = "";
-      var vodType = "";
+      let vodId = "";
+      let vodType = "";
       if (this.twitchId != "") {
         vodId = this.twitchId;
         vodType = "twitch";
@@ -1606,12 +1555,15 @@ export default {
   },
   beforeUnmount() {
     window.removeEventListener("keydown", this.handleKeydown);
+    clearInterval(this.scrubTimer);
+    clearTimeout(this.googleAuthTokenTimer);
+    clearTimeout(this.fflogsAuthTokenTimer);
   },
   mounted() {
     const bootstrap = window.bootstrap;
     const queryObj = new URLSearchParams(window.location.search);
     if (window.location.search != "") {
-      var check = { offset: 0 };
+      const check: Record<string, any> = { offset: 0 };
       for (const [key, value] of queryObj) {
         if (key == "twitch") {
           this.vod_url = `https://www.twitch.tv/videos/${value}`;
@@ -1631,10 +1583,10 @@ export default {
         this.submitURLs();
       }
     }
-    var tooltipTriggerList = [].slice.call(
+    const tooltipTriggerList = [].slice.call(
       document.querySelectorAll('[data-bs-toggle="tooltip"]')
     );
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
       return new bootstrap.Tooltip(tooltipTriggerEl);
     });
   },

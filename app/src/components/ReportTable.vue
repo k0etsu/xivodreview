@@ -32,16 +32,16 @@ import ReportRow from "./ReportRow.vue";
 
 <script lang="ts">
 export default {
-  props: [
-    "fightTitle",
-    "fightEntries",
-    "deathData",
-    "reportId",
-    "reportStart",
-    "vodStartTime",
-    "timeBeforePull",
-    "player",
-  ],
+  props: {
+    fightTitle: { type: String, default: '' },
+    fightEntries: { type: Array, default: () => [] },
+    deathData: { type: Object, default: () => ({}) },
+    reportId: { type: String, default: '' },
+    reportStart: { type: Number, default: 0 },
+    vodStartTime: { type: Number, default: 0 },
+    timeBeforePull: { type: Number, default: 0 },
+    player: { type: Object, default: null },
+  },
   components: {
     ReportRow,
   },

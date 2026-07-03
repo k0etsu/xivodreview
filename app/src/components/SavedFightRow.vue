@@ -63,7 +63,9 @@ export default {
   data() {
     return {};
   },
-  props: ["fightName"],
+  props: {
+    fightName: { type: String, default: '' },
+  },
   emits: ["selectedFight", "editFight", "deleteFight"],
   methods: {
     selectedFight(fightName) {

@@ -1,12 +1,9 @@
 import dotenv from "dotenv"
-import https from "https"
 import got from "got"
 import express from "express"
-import axios from "axios"
 import cors from "cors"
 
 import tokenCache from "./tokenCache.js"
-// import { ApolloClient, gql, InMemoryCache, ApolloProvider } from '@apollo/client';
 
 dotenv.config()
 
@@ -50,58 +47,57 @@ const TWITCH_OPTS = {
 console.log(FFLOGS_CLIENT_ID + ":" + FFLOGS_CLIENT_SECRET);
 console.log(TWITCH_CLIENT_ID + ":" + TWITCH_CLIENT_SECRET);
 
-const hostname = '127.0.0.1';
 const port = 3001;
 
-const server = https.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('I did it!');
-});
-
 function getYoutubeDuration(duration) {
-  var totalSeconds = 0;
+  let totalSeconds = 0;
+  let hours, minutes;
   duration = duration.replace("PT", "");
   console.log(duration);
   if (duration.includes('H')) {
-    var hours = duration.split('H')[0];
+    hours = duration.split('H')[0];
     duration = duration.split('H')[1];
     totalSeconds += parseInt(hours) * 3600;
   }
   if (duration.includes('M')) {
-    var minutes = duration.split('M')[0];
+    minutes = duration.split('M')[0];
     duration = duration.split('M')[1];
     totalSeconds += parseInt(minutes) * 60;
   }
-  var seconds = duration.split('S')[0];
-  duration = duration.split('S')[1];
+  const seconds = duration.split('S')[0];
   totalSeconds += parseInt(seconds);
-  console.log(hours, minutes, seconds)
-
-  return totalSeconds * 1000
+  console.log(hours, minutes, seconds);
+  return totalSeconds * 1000;
 }
 
-var fflogsToken = new tokenCache('fflogs', FFLOGS_AUTH, FFLOGS_OPTS);
-var twitchToken = new tokenCache('twitch', TWITCH_AUTH, TWITCH_OPTS);
+const fflogsToken = new tokenCache('fflogs', FFLOGS_AUTH, FFLOGS_OPTS);
+const twitchToken = new tokenCache('twitch', TWITCH_AUTH, TWITCH_OPTS);
 
-var app = express();
+const app = express();
 
-app.use(cors())
+app.use(cors());
 
-// basic get route off fflogs with reportId as query url parameter
-app.get("/fflogs", (req, res, next) => {
-  console.log("fflogs")
-  console.log(req.query) // TODO: remove this eventually
-  // TODO: promise chaining cause can't figure out async/await
-  fflogsToken.getToken().then(token => {
-    // current initial query to fflogs to get report summary information, mainly fights, timestamps and players
-    var deathQuery = '';
-    if (req.query.startTime != undefined && req.query.endTime != undefined) {
+app.get("/fflogs", async (req, res) => {
+  console.log("fflogs");
+  console.log(req.query);
+
+  if (req.query.startTime !== undefined) {
+    const start = parseInt(req.query.startTime, 10);
+    const end = parseInt(req.query.endTime, 10);
+    if (isNaN(start) || isNaN(end)) {
+      return res.status(400).json({ error: 'startTime and endTime must be integers' });
+    }
+  }
+
+  try {
+    let token = await fflogsToken.getToken();
+    let deathQuery = '';
+    if (req.query.startTime !== undefined && req.query.endTime !== undefined) {
       deathQuery = `
       events(
         dataType: Deaths
-        startTime: ${req.query.startTime}
-        endTime: ${req.query.endTime}
+        startTime: ${parseInt(req.query.startTime, 10)}
+        endTime: ${parseInt(req.query.endTime, 10)}
         limit: 10000
       ) {
         data
@@ -174,36 +170,33 @@ app.get("/fflogs", (req, res, next) => {
     }
   }
 }`;
-    // setup options to pass to got()
-    var url = '';
-    if (req.query.authToken != undefined) {
+    let url;
+    if (req.query.authToken !== undefined) {
       token = req.query.authToken;
       url = FFLOGS_USER_API;
     } else {
       url = FFLOGS_CLIENT_API;
-    };
+    }
     const options = {
       method: "GET",
-      searchParams: { query: query },
+      searchParams: { query },
       headers: {
         "Authorization": `Bearer ${token}`
       }
     };
-    return got(url, options)
-    // TODO: promise chaining cause can't figure out async/await
-  }).then(data => {
-    res.json(JSON.parse(data["body"]))
-  }).catch(err => {
-    console.log(err)
-    res.send(err)
-  });
+    const data = await got(url, options);
+    res.json(JSON.parse(data.body));
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.get("/encounters", (req, res, next) => {
-  var encounters = "";
+app.get("/encounters", async (req, res) => {
+  let encounters = "";
   if (Array.isArray(req.query.id)) {
     req.query.id.forEach((id) => {
-      encounters = encounters + `
+      encounters += `
     id${id}: encounter(id: ${id}) {
       id
       name
@@ -216,8 +209,8 @@ app.get("/encounters", (req, res, next) => {
           sizes
         }
       }
-    }`
-    })
+    }`;
+    });
   } else {
     encounters = `
     encounter(id: ${req.query.id}) {
@@ -232,36 +225,34 @@ app.get("/encounters", (req, res, next) => {
           sizes
         }
       }
-    }`
+    }`;
   }
-  fflogsToken.getToken().then(token => {
-      var query = `{
+  try {
+    const token = await fflogsToken.getToken();
+    const query = `{
   worldData {${encounters}
   }
-}`
-    var url = FFLOGS_CLIENT_API;
+}`;
     const options = {
       method: "GET",
-      searchParams: { query: query },
+      searchParams: { query },
       headers: {
         "Authorization": `Bearer ${token}`
       }
     };
-    return got(url, options)
-  }).then(data => {
-    res.json(JSON.parse(data["body"]))
-  }).catch(err => {
-    console.log(err)
-    res.send(err)
-  });
+    const data = await got(FFLOGS_CLIENT_API, options);
+    res.json(JSON.parse(data.body));
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.get("/twitch", (req, res, next) => {
-  console.log("twitch")
-  console.log(req.query) // TODO: remove this eventually
-  // TODO: promise chaining cause can't figure out async/await
-  twitchToken.getToken().then(token => {
-    // setup options to pass to got()
+app.get("/twitch", async (req, res) => {
+  console.log("twitch");
+  console.log(req.query);
+  try {
+    const token = await twitchToken.getToken();
     const options = {
       method: "GET",
       searchParams: { id: req.query.videoId },
@@ -270,34 +261,32 @@ app.get("/twitch", (req, res, next) => {
         "Client-Id": TWITCH_CLIENT_ID
       }
     };
-    return got(TWITCH_API, options)
-    // TODO: promise chaining cause can't figure out async/await
-  }).then(data => {
-    var timeArr = [];
-    for (const resData of JSON.parse(data["body"])["data"]) {
+    const data = await got(TWITCH_API, options);
+    const timeArr = [];
+    for (const resData of JSON.parse(data.body).data) {
       console.log(resData);
       timeArr.push({
         videoId: resData.id,
-        startTime: new Date(resData["created_at"]).getTime()
+        startTime: new Date(resData.created_at).getTime()
       });
-    };
-    console.log(timeArr)
+    }
+    console.log(timeArr);
     res.json({
-      res: JSON.parse(data["body"]),
-      timeArr: timeArr
+      res: JSON.parse(data.body),
+      timeArr
     });
-  }).catch(err => {
-    var videoId = req.query.videoId
-    console.log(err)
-    res.json({
+  } catch (err) {
+    const videoId = req.query.videoId;
+    console.log(err);
+    res.status(404).json({
       error: "Not Found",
       status: 404,
       message: `vods [${videoId}] not found`
     });
-  });
+  }
 });
 
-app.get("/youtube", (req, res, next) => {
+app.get("/youtube", async (req, res) => {
   console.log("youtube");
   console.log(req.query);
   const options = {
@@ -312,26 +301,26 @@ app.get("/youtube", (req, res, next) => {
     }
   };
   if (req.query.authToken) {
-    options.headers.Authorization = `Bearer ${req.query.authToken}`
+    options.headers.Authorization = `Bearer ${req.query.authToken}`;
   }
-  got(YOUTUBE_API, options).then(data => {
-    var timeArr = [];
-    for (const resData of JSON.parse(data.body)["items"]) {
+  try {
+    const data = await got(YOUTUBE_API, options);
+    const timeArr = [];
+    for (const resData of JSON.parse(data.body).items) {
       console.log(resData);
       timeArr.push({
         videoId: resData.id,
         startTime: new Date(resData.liveStreamingDetails.actualStartTime).getTime(),
-        // duration: getYoutubeDuration(resData.contentDetails.duration)
       });
-    };
+    }
     res.json({
       res: JSON.parse(data.body),
-      timeArr: timeArr,
+      timeArr,
     });
-  }).catch(err => {
+  } catch (err) {
     console.log(err);
-    res.send(err);
-  });
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.listen(port, () => {

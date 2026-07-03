@@ -32,7 +32,12 @@ export default {
       updatedCachedFights: this.cachedFights,
     };
   },
-  props: ["cachedFights", "vodLink", "fflogsLink", "offset"],
+  props: {
+    cachedFights: { type: Object, default: () => ({}) },
+    vodLink: { type: String, default: '' },
+    fflogsLink: { type: String, default: '' },
+    offset: { type: Number, default: 0 },
+  },
   emits: ["selectedFight", "updateCachedFights"],
   methods: {
     selectedFight(fightName) {

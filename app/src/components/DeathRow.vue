@@ -55,17 +55,17 @@ export default {
       timestamp: "",
     };
   },
-  props: [
-    "fightStart",
-    "deathData",
-    "reportStart",
-    "vodStartTime",
-    "timeBeforePull",
-    "player",
-    "index",
-    "reportId",
-    "fightId",
-  ],
+  props: {
+    fightStart: { type: Number, default: 0 },
+    deathData: { type: Object, default: () => ({}) },
+    reportStart: { type: Number, default: 0 },
+    vodStartTime: { type: Number, default: 0 },
+    timeBeforePull: { type: Number, default: 0 },
+    player: { type: Object, default: null },
+    index: { type: Number, default: 0 },
+    reportId: { type: String, default: '' },
+    fightId: { type: Number, default: 0 },
+  },
   methods: {
     goToTimestamp(pullTimeInVod: Number) {
       if (typeof this.player.seek === "function") {

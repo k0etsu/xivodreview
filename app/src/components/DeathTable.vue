@@ -108,17 +108,17 @@ export default {
       fightStart: 0,
     };
   },
-  props: [
-    "fightId",
-    "fightData",
-    "pullNum",
-    "deathData",
-    "reportId",
-    "reportStart",
-    "vodStartTime",
-    "timeBeforePull",
-    "player",
-  ],
+  props: {
+    fightId: { type: Number, default: 0 },
+    fightData: { type: Object, default: () => ({}) },
+    pullNum: { type: Number, default: 0 },
+    deathData: { type: Object, default: () => ({}) },
+    reportId: { type: String, default: '' },
+    reportStart: { type: Number, default: 0 },
+    vodStartTime: { type: Number, default: 0 },
+    timeBeforePull: { type: Number, default: 0 },
+    player: { type: Object, default: null },
+  },
   components: {
     DeathRow,
   },

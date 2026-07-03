@@ -288,7 +288,7 @@ export default {
     },
   },
   methods: {
-    callback(response) {
+    callback(response: any) {
       this.googleAuthResponse = response;
     },
     getColorTheme() {
