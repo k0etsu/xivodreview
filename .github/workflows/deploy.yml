@@ -1,0 +1,54 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+
+            # Determine which branch was pushed
+            BRANCH="${{ github.ref_name }}"
+
+            if [ "$BRANCH" = "master" ]; then
+              DEPLOY_DIR="${{ secrets.DEPLOY_DIR_MASTER }}"
+            elif [ "$BRANCH" = "dev" ]; then
+              DEPLOY_DIR="${{ secrets.DEPLOY_DIR_DEV }}"
+            else
+              echo "Unknown branch: $BRANCH — skipping deploy"
+              exit 0
+            fi
+
+            echo "Deploying $BRANCH to $DEPLOY_DIR"
+
+            cd "$DEPLOY_DIR"
+
+            # Pull latest
+            git pull origin "$BRANCH"
+
+            # Rebuild frontend
+            cd app
+            npm ci
+            npm run build-only
+            cd ..
+
+            # Restart API with pm2 (reload keeps zero downtime)
+            cd api
+            npm ci --omit=dev
+            pm2 reload xivodreview-api-$BRANCH --update-env || pm2 start app.js --name xivodreview-api-$BRANCH
+            cd ..
+
+            echo "Deploy of $BRANCH complete"
