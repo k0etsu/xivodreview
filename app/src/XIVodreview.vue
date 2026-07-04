@@ -494,7 +494,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
 export default {
   data() {
     return {
-      api_url: "https://api.yamanote.co",
+      api_url: import.meta.env.VITE_API_URL ?? "https://api.yamanote.co",
       vod_url: "",
       twitchId: "",
       twitchData: null,
