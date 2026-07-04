@@ -25,8 +25,10 @@ jobs:
 
             if [ "$BRANCH" = "master" ]; then
               DEPLOY_DIR="${{ secrets.DEPLOY_DIR_MASTER }}"
+              PORT=3001
             elif [ "$BRANCH" = "dev" ]; then
               DEPLOY_DIR="${{ secrets.DEPLOY_DIR_DEV }}"
+              PORT=3002
             else
               echo "Unknown branch: $BRANCH — skipping deploy"
               exit 0
@@ -48,7 +50,7 @@ jobs:
             # Restart API with pm2 (reload keeps zero downtime)
             cd api
             npm ci --omit=dev
-            pm2 reload xivodreview-api-$BRANCH --update-env || pm2 start app.js --name xivodreview-api-$BRANCH
+            pm2 reload xivodreview-api-$BRANCH --update-env || pm2 start app.js --name xivodreview-api-$BRANCH -- --port=$PORT
             cd ..
 
             echo "Deploy of $BRANCH complete"

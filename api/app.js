@@ -47,7 +47,8 @@ const TWITCH_OPTS = {
 console.log(FFLOGS_CLIENT_ID + ":" + FFLOGS_CLIENT_SECRET);
 console.log(TWITCH_CLIENT_ID + ":" + TWITCH_CLIENT_SECRET);
 
-const port = 3001;
+const portArg = process.argv.find(arg => arg.startsWith('--port='));
+const port = portArg ? parseInt(portArg.split('=')[1], 10) : 3001;
 
 function getYoutubeDuration(duration) {
   let totalSeconds = 0;
