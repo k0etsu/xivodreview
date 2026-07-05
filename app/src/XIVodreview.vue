@@ -873,10 +873,14 @@ export default {
       const onPlay = () => {
         if (this.player.isPaused()) return;
         this.isPlaying = true;
-        this.playerTimeRef = this.player.getCurrentTime();
         this.playerTimeWallClock = Date.now();
         this.$nextTick(() => this.focusPauseButton());
-        this.getPullNumber(this.playerTimeRef + this.timeBeforePull / 1000);
+        setTimeout(() => {
+          if (!this.isPlaying) return;
+          this.playerTimeRef = this.player.getCurrentTime();
+          this.playerTimeWallClock = Date.now();
+          this.getPullNumber(this.playerTimeRef + this.timeBeforePull / 1000);
+        }, 500);
       };
 
       this.player.addEventListener(Twitch.Player.READY, () => {
