@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useGoogleLogin } from 'vue3-google-login';
+import { googleSdkLoaded } from 'vue3-google-login';
 
 defineProps<{
   googleAuthToken: Record<string, any>;
@@ -13,11 +13,17 @@ const emit = defineEmits<{
   clearFflogsAuthToken: [];
 }>();
 
-const googleLogin = useGoogleLogin({
-  scope: 'https://www.googleapis.com/auth/youtube.readonly',
-  onSuccess: (response) => emit('googleAuthSuccess', response),
-  onError: (error) => console.error('Google login failed:', error),
-});
+const googleLogin = () => {
+  googleSdkLoaded((google) => {
+    google.accounts.oauth2.initTokenClient({
+      client_id: '613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com',
+      scope: 'https://www.googleapis.com/auth/youtube.readonly',
+      callback: (response: Record<string, any>) => {
+        if (response.access_token) emit('googleAuthSuccess', response);
+      },
+    }).requestAccessToken();
+  });
+};
 </script>
 
 <template>
