@@ -651,7 +651,9 @@ export default {
     },
     currentPull(newValue: any) {
       if (Object.keys(newValue).length > 0) {
-        this.pullTimestamp = this.pullStartTime;
+        if (this.pullTimestamp < this.pullStartTime || this.pullTimestamp > this.pullEndTime) {
+          this.pullTimestamp = this.pullStartTime;
+        }
         clearInterval(this.scrubTimer);
         this.scrubTimer = setInterval(() => {
           this.updateScrubTime();
@@ -801,6 +803,12 @@ export default {
     updateScrubTime() {
       if (this.player == null) return;
       if (this.playerType === "twitch" && this.isPlaying && this.playerTimeWallClock > 0) {
+        const interpolated = this.playerTimeRef + (Date.now() - this.playerTimeWallClock) / 1000;
+        const actual = this.player.getCurrentTime();
+        if (actual > 0 && Math.abs(actual - interpolated) < 2) {
+          this.playerTimeRef = actual;
+          this.playerTimeWallClock = Date.now();
+        }
         this.pullTimestamp = this.playerTimeRef + (Date.now() - this.playerTimeWallClock) / 1000;
       } else {
         this.pullTimestamp = this.player.getCurrentTime();
@@ -875,9 +883,7 @@ export default {
         this.$nextTick(() => this.focusPauseButton());
         setTimeout(() => {
           if (!this.isPlaying) return;
-          this.playerTimeRef = this.player.getCurrentTime();
-          this.playerTimeWallClock = Date.now();
-          this.getPullNumber(this.playerTimeRef + this.timeBeforePull / 1000);
+          this.getPullNumber(this.player.getCurrentTime() + this.timeBeforePull / 1000);
         }, 500);
       };
 
