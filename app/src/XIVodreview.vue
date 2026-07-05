@@ -869,6 +869,7 @@ export default {
       element.style.top = "0";
 
       const onPlay = () => {
+        if (this.player.isPaused()) return;
         this.isPlaying = true;
         this.playerTimeWallClock = Date.now();
         this.$nextTick(() => this.focusPauseButton());
