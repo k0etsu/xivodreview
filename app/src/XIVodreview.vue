@@ -959,13 +959,6 @@ export default {
       this.showWelcome = true;
     },
     removePlayer() {
-      if (this.player && this.playerType === "twitch") {
-        const Twitch = window.Twitch;
-        this.player.removeEventListener(Twitch.Player.READY);
-        this.player.removeEventListener(Twitch.Player.PLAY);
-        this.player.removeEventListener(Twitch.Player.PLAYING);
-        this.player.removeEventListener(Twitch.Player.PAUSE);
-      }
       const twitchPlayer = document.getElementById("twitch-player");
       twitchPlayer.innerHTML = "";
       const youtubePlayer = document.getElementById("youtube-player-wrapper");
