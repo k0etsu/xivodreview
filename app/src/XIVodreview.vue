@@ -868,36 +868,30 @@ export default {
       element.style.height = "100%";
       element.style.top = "0";
 
+      const onPlay = () => {
+        this.isPlaying = true;
+        this.playerTimeWallClock = Date.now();
+        this.$nextTick(() => this.focusPauseButton());
+        setTimeout(() => {
+          if (!this.isPlaying) return;
+          this.playerTimeRef = this.player.getCurrentTime();
+          this.playerTimeWallClock = Date.now();
+          this.getPullNumber(this.playerTimeRef + this.timeBeforePull / 1000);
+        }, 500);
+      };
+
       this.player.addEventListener(Twitch.Player.READY, () => {
         this.player.setQuality("chunked");
         this.playerType = "twitch";
       });
-      this.player.addEventListener(Twitch.Player.PLAY, () => {
-        this.isPlaying = true;
-        this.focusPauseButton();
-        setTimeout(() => {
-          this.getPullNumber(
-            this.player.getCurrentTime() + this.timeBeforePull / 1000
-          );
-        }, 2000);
-      });
-      this.player.addEventListener(Twitch.Player.PLAYING, () => {
-        this.isPlaying = true;
-        this.focusPauseButton();
-        setTimeout(() => {
-          this.getPullNumber(
-            this.player.getCurrentTime() + this.timeBeforePull / 1000
-          );
-        }, 2000);
-      });
+      this.player.addEventListener(Twitch.Player.PLAY, onPlay);
+      this.player.addEventListener(Twitch.Player.PLAYING, onPlay);
       this.player.addEventListener(Twitch.Player.PAUSE, () => {
         this.isPlaying = false;
-        this.focusPlayButton();
-        setTimeout(() => {
-          this.getPullNumber(
-            this.player.getCurrentTime() + this.timeBeforePull / 1000
-          );
-        }, 2000);
+        this.playerTimeRef = this.player.getCurrentTime();
+        this.playerTimeWallClock = 0;
+        this.$nextTick(() => this.focusPlayButton());
+        this.getPullNumber(this.playerTimeRef + this.timeBeforePull / 1000);
       });
     },
     getPullNumber(timestamp: number) {
