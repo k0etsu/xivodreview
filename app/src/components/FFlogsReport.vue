@@ -47,23 +47,23 @@ export default {
       date: "",
     };
   },
-  props: {
-    fightData: { type: Object, default: () => ({}) },
-    deathData: { type: Object, default: () => ({}) },
-    phaseMap: { type: Object, default: () => ({}) },
-    reportId: { type: String, default: '' },
-    reportStart: { type: Number, default: 0 },
-    vodStartTime: { type: Number, default: 0 },
-    timeBeforePull: { type: Number, default: 0 },
-    player: { type: Object, default: null },
-  },
+  props: [
+    "fightData",
+    "deathData",
+    "phaseMap",
+    "reportId",
+    "reportStart",
+    "vodStartTime",
+    "timeBeforePull",
+    "player",
+  ],
   emits: ["getPullNum"],
   components: {
     ReportGrid,
     DeathTable,
   },
   methods: {
-    getPullDeaths(pullId: number, pullNum: number) {
+    getPullDeaths(pullId: any, pullNum: any) {
       console.log("getpulldeaths", pullId, pullNum);
       this.pullId = pullId;
       this.pullNum = pullNum;

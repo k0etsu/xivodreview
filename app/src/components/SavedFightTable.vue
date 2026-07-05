@@ -32,25 +32,20 @@ export default {
       updatedCachedFights: this.cachedFights,
     };
   },
-  props: {
-    cachedFights: { type: Object, default: () => ({}) },
-    vodLink: { type: String, default: '' },
-    fflogsLink: { type: String, default: '' },
-    offset: { type: Number, default: 0 },
-  },
+  props: ["cachedFights", "vodLink", "fflogsLink", "offset"],
   emits: ["selectedFight", "updateCachedFights"],
   methods: {
-    selectedFight(fightName) {
+    selectedFight(fightName: any) {
       this.$emit("selectedFight", fightName);
     },
-    editFight(fightName, newFightName) {
+    editFight(fightName: any, newFightName: any) {
       console.log("editFight", fightName, newFightName);
     },
-    deleteFight(fightName) {
+    deleteFight(fightName: any) {
       delete this.updatedCachedFights[fightName];
       this.updateFights(this.updatedCachedFights);
     },
-    updateFights(updatedFights) {
+    updateFights(updatedFights: any) {
       this.$emit("updateCachedFights", updatedFights);
     },
   },

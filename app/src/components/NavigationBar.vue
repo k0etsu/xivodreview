@@ -1,29 +1,11 @@
 <script setup lang="ts">
-import { googleSdkLoaded } from 'vue3-google-login';
-
-defineProps<{
-  googleAuthToken: Record<string, any>;
-  fflogsAuthToken: Record<string, any>;
-}>();
-
-const emit = defineEmits<{
-  googleAuthSuccess: [response: Record<string, any>];
-  clearGoogleAuthToken: [];
-  getFflogsAuthToken: [];
-  clearFflogsAuthToken: [];
-}>();
-
-const googleLogin = () => {
-  googleSdkLoaded((google) => {
-    google.accounts.oauth2.initTokenClient({
-      client_id: '613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com',
-      scope: 'https://www.googleapis.com/auth/youtube.readonly',
-      callback: (response: Record<string, any>) => {
-        if (response.access_token) emit('googleAuthSuccess', response);
-      },
-    }).requestAccessToken();
-  });
-};
+withDefaults(defineProps<{
+  googleAuthToken?: Record<string, any>;
+  fflogsAuthToken?: Record<string, any>;
+}>(), {
+  googleAuthToken: () => ({}),
+  fflogsAuthToken: () => ({}),
+});
 </script>
 
 <template>
@@ -134,35 +116,34 @@ const googleLogin = () => {
             </button>
           </li>
           <li
-            v-if="googleAuthToken.created_time + googleAuthToken.expires_in > Date.now()"
+            v-if="
+              googleAuthToken.created_time + googleAuthToken.expires_in >
+              Date.now()
+            "
             class="nav-item py-1 px-0 px-lg-2"
           >
             <button
               type="button"
-              class="btn btn-outline-secondary text-nowrap"
+              class="btn btn-outline-danger text-nowrap"
               @click="$emit('clearGoogleAuthToken')"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" height="1.3em" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 4px">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-              </svg>
+              <img
+                src="https://www.youtube.com/s/desktop/82a4cf4f/img/favicon_144x144.png"
+                style="height: 1.5em"
+              />
               Logout
             </button>
           </li>
           <li v-else class="nav-item py-1 px-0 px-lg-2">
             <button
               type="button"
-              class="btn btn-outline-secondary text-nowrap"
-              @click="googleLogin"
+              class="btn btn-outline-danger text-nowrap"
+              @click="$emit('getGoogleAuthToken')"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" height="1.3em" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 4px">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-              </svg>
+              <img
+                src="https://www.youtube.com/s/desktop/82a4cf4f/img/favicon_144x144.png"
+                style="height: 1.5em"
+              />
               Login
             </button>
           </li>
@@ -275,6 +256,13 @@ const googleLogin = () => {
               </li>
             </ul>
           </li>
+          <li class="nav-item">
+            <GoogleLogin
+              id="google-auth-button"
+              data-theme="filled_blue"
+              :callback="callback"
+            />
+          </li>
         </ul>
       </div>
     </nav>
@@ -285,11 +273,27 @@ const googleLogin = () => {
 export default {
   data() {
     return {
+      googleAuthResponse: {},
       colorTheme: "",
       tooltipList: null,
     };
   },
+  emits: [
+    "googleAuth",
+    "clearGoogleAuthToken",
+    "getGoogleAuthToken",
+    "getFflogsAuthToken",
+    "clearFflogsAuthToken",
+  ],
+  watch: {
+    googleAuthResponse(newValue) {
+      this.$emit("googleAuth", newValue);
+    },
+  },
   methods: {
+    callback(response: any) {
+      this.googleAuthResponse = response;
+    },
     getColorTheme() {
       if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
         this.colorTheme = "dark";
@@ -305,7 +309,7 @@ export default {
     },
   },
   created() {
-    this.colorTheme = localStorage.getItem("theme");
+    this.colorTheme = localStorage.getItem("theme") ?? "";
     if (this.colorTheme == "auto") {
       if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
         this.colorTheme = "dark";
@@ -336,6 +340,10 @@ export default {
 }
 
 #bd-theme {
+  margin-left: 1em;
+}
+
+#google-auth-button {
   margin-left: 1em;
 }
 </style>

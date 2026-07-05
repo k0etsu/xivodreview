@@ -104,21 +104,21 @@ import DeathRow from "./DeathRow.vue";
 export default {
   data() {
     return {
-      fightEntry: {},
+      fightEntry: {} as Record<string, any>,
       fightStart: 0,
     };
   },
-  props: {
-    fightId: { type: Number, default: 0 },
-    fightData: { type: Object, default: () => ({}) },
-    pullNum: { type: Number, default: 0 },
-    deathData: { type: Object, default: () => ({}) },
-    reportId: { type: String, default: '' },
-    reportStart: { type: Number, default: 0 },
-    vodStartTime: { type: Number, default: 0 },
-    timeBeforePull: { type: Number, default: 0 },
-    player: { type: Object, default: null },
-  },
+  props: [
+    "fightId",
+    "fightData",
+    "pullNum",
+    "deathData",
+    "reportId",
+    "reportStart",
+    "vodStartTime",
+    "timeBeforePull",
+    "player",
+  ],
   components: {
     DeathRow,
   },

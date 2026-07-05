@@ -34,7 +34,7 @@ import ReportRow from "./ReportRow.vue";
 export default {
   props: {
     fightTitle: { type: String, default: '' },
-    fightEntries: { type: Array, default: () => [] },
+    fightEntries: { type: Array as () => Record<string, any>[], default: () => [] },
     deathData: { type: Object, default: () => ({}) },
     reportId: { type: String, default: '' },
     reportStart: { type: Number, default: 0 },

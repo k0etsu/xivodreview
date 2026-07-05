@@ -497,11 +497,11 @@ export default {
       api_url: import.meta.env.VITE_API_URL ?? "https://api.yamanote.co",
       vod_url: "",
       twitchId: "",
-      twitchData: null,
+      twitchData: null as any,
       youtubeId: "",
-      youtubeData: null,
+      youtubeData: null as any,
       vodStartTime: 0,
-      player: null,
+      player: null as any,
       playerType: "",
       scrubTimer: 0,
       pullTimestamp: 0,
@@ -509,31 +509,32 @@ export default {
       hoverTimestampMs: 0,
       fflogs_url: "",
       reportId: "",
-      reportData: null,
+      reportData: null as any,
       reportStart: 0,
       reportEnd: 0,
-      fightData: {},
-      playerData: [],
-      abilityData: [],
-      npcData: [],
-      encounterData: {},
-      encounterMap: {},
-      phaseMap: {},
-      deathData: {},
-      currentPull: {},
+      fightData: {} as Record<string, any>,
+      playerData: [] as any[],
+      abilityData: [] as any[],
+      npcData: [] as any[],
+      encounterData: {} as Record<string, any>,
+      encounterMap: {} as Record<string, any>,
+      phaseMap: {} as Record<string, any>,
+      deathData: {} as Record<string, any>,
+      currentPull: {} as Record<string, any>,
       timeBeforePull: 0,
-      cachedFights: {},
+      cachedFights: {} as Record<string, any>,
       cachedFightName: "",
-      cachedFightSelected: null,
-      googleAuthToken: {},
+      cachedFightSelected: null as (string | null),
+      googleAuthToken: {} as Record<string, any>,
       googleAuthTokenTimer: 0,
       fflogsAuthState: "",
       fflogsCodeVerifier: "",
       fflogsCodeChallenge: "",
-      fflogsAuthUrl: null as (URL | null),
+      fflogsAuthUrl: null as any,
       fflogsAuthCode: "",
-      fflogsAuthToken: {},
+      fflogsAuthToken: {} as Record<string, any>,
       fflogsAuthTokenTimer: 0,
+      googleTokenClient: {} as Record<string, any>,
       isPlaying: false,
       scrubPercent: 0,
       currentTimestampDisplay: '00:00 / 00:00',
@@ -704,7 +705,7 @@ export default {
       }
     },
     handleKeydown(e: KeyboardEvent) {
-      if (e.target.tagName.toLowerCase() === "input") {
+      if ((e.target as HTMLElement | null)?.tagName.toLowerCase() === "input") {
         return;
       }
       switch (e.key) {
@@ -720,12 +721,10 @@ export default {
       }
     },
     focusPlayButton() {
-      const focusButton = this.$refs.focusPlay;
-      focusButton.focus();
+      (this.$refs.focusPlay as HTMLElement).focus();
     },
     focusPauseButton() {
-      const focusButton = this.$refs.focusPause;
-      focusButton.focus();
+      (this.$refs.focusPause as HTMLElement).focus();
     },
     strPadLeft(value: number, pad: string, length: number): string {
       return (new Array(length + 1).join(pad) + String(value)).slice(-length);
@@ -770,14 +769,14 @@ export default {
       this.showHoverTimestamp = false;
     },
     scrubMousePos(e: MouseEvent) {
-      const scrubEl = document.getElementById("pull-scrub");
+      const scrubEl = document.getElementById("pull-scrub")!;
       const timelineWidth = scrubEl.offsetWidth;
       this.scrubX = (e.offsetX / timelineWidth) * 100;
       if (Object.keys(this.currentPull).length > 0) {
         const pullLength = this.currentPull.endTime - this.currentPull.startTime;
         this.hoverTimestampMs = (pullLength * this.scrubX) / 100;
-        const timestamp = document.getElementById("pull-timestamp");
-        const indicator = document.getElementById("timeline-indicator");
+        const timestamp = document.getElementById("pull-timestamp")!;
+        const indicator = document.getElementById("timeline-indicator")!;
         const scrubY = scrubEl.getBoundingClientRect().y;
         timestamp.style.left = e.clientX - 24 + "px";
         timestamp.style.top = scrubY - 30 + "px";
@@ -883,7 +882,7 @@ export default {
       });
     },
     getPullNumber(timestamp: number) {
-      this.reportData.data.reportData.report.fights.every((fight: Object) => {
+      this.reportData.data.reportData.report.fights.every((fight: any) => {
         if (
           this.vodStartTime + timestamp * 1000 <=
           this.reportStart + fight.endTime
@@ -944,9 +943,9 @@ export default {
       this.showWelcome = true;
     },
     removePlayer() {
-      const twitchPlayer = document.getElementById("twitch-player");
+      const twitchPlayer = document.getElementById("twitch-player")!;
       twitchPlayer.innerHTML = "";
-      const youtubePlayer = document.getElementById("youtube-player-wrapper");
+      const youtubePlayer = document.getElementById("youtube-player-wrapper")!;
       youtubePlayer.innerHTML = "";
       const div = document.createElement("div");
       div.id = "youtube-player";
@@ -1038,7 +1037,7 @@ export default {
     getEncounterData() {
       let getUrl = `${this.api_url}/encounters?`;
       const encounterIds = new Set<number>();
-      this.reportData.data.reportData.report.fights.forEach((fight: Object) => {
+      this.reportData.data.reportData.report.fights.forEach((fight: any) => {
         if (!encounterIds.has(fight.encounterID)) {
           encounterIds.add(fight.encounterID);
           getUrl = getUrl + `id=${fight.encounterID}&`;
@@ -1088,7 +1087,7 @@ export default {
           this.deathData[death].killerID
         );
       }
-      const finalDeathData = {};
+      const finalDeathData: Record<string, any> = {};
       for (const death in this.deathData) {
         finalDeathData[this.deathData[death].fight] =
           finalDeathData[this.deathData[death].fight] || [];
@@ -1097,23 +1096,23 @@ export default {
       this.deathData = finalDeathData;
     },
     getFightData() {
-      const fightsPerInstance = {};
+      const fightsPerInstance: Record<string, any> = {};
       let pullNum = 1;
       if ("phases" in this.reportData.data.reportData.report) {
         const phaseMap = this.reportData.data.reportData.report.phases;
-        phaseMap.forEach((encounter: Object) => {
+        phaseMap.forEach((encounter: any) => {
           const encounterID = encounter.encounterID.toString();
           if (!(encounterID in this.phaseMap)) {
             this.phaseMap[encounterID] = [];
           }
-          encounter.phases.forEach((phase: Object) => {
+          encounter.phases.forEach((phase: any) => {
             this.phaseMap[encounterID].push(phase.name);
           });
         });
       }
       if (this.reportData) {
         this.reportData.data.reportData.report.fights.forEach(
-          (fight: Object) => {
+          (fight: any) => {
             let encounterName = "";
             fight["pullNum"] = pullNum++;
             if (this.encounterMap[fight.encounterID]) {
@@ -1392,14 +1391,14 @@ export default {
         );
         const checkPopup = setInterval(() => {
           try {
-            const href = fflogsPopup.window.location.href;
+            const href = fflogsPopup!.window.location.href;
             if (href.includes("oauth-callback.html")) {
               const url = new URL(href);
               const state = url.searchParams.get("state");
               clearInterval(checkPopup);
-              fflogsPopup.close();
+              fflogsPopup!.close();
               if (state === this.fflogsAuthState) {
-                this.fflogsAuthCode = url.searchParams.get("code");
+                this.fflogsAuthCode = url.searchParams.get("code") ?? "";
               } else {
                 console.error("FFLogs auth state mismatch");
               }
@@ -1407,7 +1406,7 @@ export default {
           } catch {
             // Popup is still on fflogs.com (cross-origin) — keep polling
           }
-          if (fflogsPopup.closed) clearInterval(checkPopup);
+          if (fflogsPopup!.closed) clearInterval(checkPopup);
         }, 500);
       });
     },
@@ -1456,7 +1455,7 @@ export default {
     },
   },
   beforeMount() {
-    window.addEventListener("keydown", this.handleKeydown, null);
+    window.addEventListener("keydown", this.handleKeydown);
   },
   beforeUnmount() {
     window.removeEventListener("keydown", this.handleKeydown);

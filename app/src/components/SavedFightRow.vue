@@ -63,18 +63,16 @@ export default {
   data() {
     return {};
   },
-  props: {
-    fightName: { type: String, default: '' },
-  },
+  props: ["fightName"],
   emits: ["selectedFight", "editFight", "deleteFight"],
   methods: {
-    selectedFight(fightName) {
+    selectedFight(fightName: any) {
       this.$emit("selectedFight", fightName);
     },
-    editFight(fightName, newFightName = "") {
+    editFight(fightName: any, newFightName: any = "") {
       this.$emit("editFight", fightName, newFightName);
     },
-    deleteFight(fightName) {
+    deleteFight(fightName: any) {
       this.$emit("deleteFight", fightName);
     },
   },

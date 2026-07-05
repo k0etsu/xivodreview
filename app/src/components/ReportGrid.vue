@@ -112,34 +112,34 @@ export default {
   data() {
     return {
       phaseMode: false,
-      phaseEntries: {},
+      phaseEntries: {} as Record<string, any>,
       showPhaseCheck: false,
     };
   },
-  props: {
-    selectedId: { type: Number, default: 0 },
-    fightTitle: { type: String, default: '' },
-    fightEntries: { type: Array, default: () => [] },
-    phaseMap: { type: Object, default: () => ({}) },
-    deathData: { type: Object, default: () => ({}) },
-    reportId: { type: String, default: '' },
-    reportStart: { type: Number, default: 0 },
-    vodStartTime: { type: Number, default: 0 },
-    timeBeforePull: { type: Number, default: 0 },
-    player: { type: Object, default: null },
-  },
+  props: [
+    "selectedId",
+    "fightTitle",
+    "fightEntries",
+    "phaseMap",
+    "deathData",
+    "reportId",
+    "reportStart",
+    "vodStartTime",
+    "timeBeforePull",
+    "player",
+  ],
   emits: ["getPullDeaths"],
   components: {
     ReportPull,
   },
   methods: {
-    getPullDeaths(pullId, pullNum) {
+    getPullDeaths(pullId: any, pullNum: any) {
       this.$emit("getPullDeaths", pullId, pullNum);
     },
-    createPhaseData(fightEntries) {
-      fightEntries.forEach((fight: Object) => {
+    createPhaseData(fightEntries: any) {
+      fightEntries.forEach((fight: any) => {
         if ("phaseName" in fight) {
-          const phase = fight.lastPhaseAsAbsoluteIndex.toString();
+          var phase = fight.lastPhaseAsAbsoluteIndex.toString();
           if (!(phase in this.phaseEntries)) {
             this.phaseEntries[phase] = [];
           }
