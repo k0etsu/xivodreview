@@ -28,6 +28,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
               <div
                 id="google-homepage-shit"
                 class="row align-items-center justify-content-center"
+                v-show="showWelcome"
               >
                 <div data-bs-theme="dark" class="col-10 offset-md-1 text-body">
                   <h5>Usage</h5>
@@ -79,7 +80,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
                 @mouseenter="showTimestamp"
                 @mouseleave="hideTimestamp"
               >
-                <div id="timeline-indicator"></div>
+                <div id="timeline-indicator" v-show="showHoverTimestamp"></div>
                 <span id="pull-scrub-span" :style="{ width: scrubPercent + '%' }"></span>
                 <div class="death-indicators">
                   <div
@@ -104,7 +105,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
                 </div>
               </div>
             </div>
-            <div id="pull-timestamp">00:00</div>
+            <div id="pull-timestamp" v-show="showHoverTimestamp">00:00</div>
             <div class="row align-items-center g-0" style="margin-top: 4px">
               <div
                 class="col-auto"
@@ -531,13 +532,15 @@ export default {
       fflogsAuthState: "",
       fflogsCodeVerifier: "",
       fflogsCodeChallenge: "",
-      fflogsAuthUrl: '' as string,
+      fflogsAuthUrl: null as (URL | null),
       fflogsAuthCode: "",
       fflogsAuthToken: {},
       fflogsAuthTokenTimer: 0,
       isPlaying: false,
       scrubPercent: 0,
       currentTimestampDisplay: '00:00 / 00:00',
+      showHoverTimestamp: false,
+      showWelcome: true,
     };
   },
   emits: ['getGoogleAuthToken', 'clearGoogleAuthToken', 'getFflogsAuthToken', 'clearFflogsAuthToken'],
@@ -779,7 +782,7 @@ export default {
       }
       this.currentTimestampDisplay = currentTimestamp + " / " + endTimestamp;
     },
-    getPullNum(pullId) {
+    getPullNum(pullId: number) {
       console.log("getpullnum", pullId);
       this.currentPull =
         this.reportData.data.reportData.report.fights[pullId - 1];
@@ -791,20 +794,12 @@ export default {
       this.timeBeforePull = this.timeBeforePull + 500;
     },
     showTimestamp() {
-      const timestamp = document.getElementById("pull-timestamp");
-      const indicator = document.getElementById("timeline-indicator");
       if (Object.keys(this.currentPull).length > 0) {
-        timestamp.style.visibility = "visible";
-        indicator.style.visibility = "visible";
+        this.showHoverTimestamp = true;
       }
     },
     hideTimestamp() {
-      const timestamp = document.getElementById("pull-timestamp");
-      const indicator = document.getElementById("timeline-indicator");
-      if (Object.keys(this.currentPull).length > 0) {
-        timestamp.style.visibility = "hidden";
-        indicator.style.visibility = "hidden";
-      }
+      this.showHoverTimestamp = false;
     },
     scrubMousePos(e: MouseEvent) {
       const scrubEl = document.getElementById("pull-scrub");
@@ -1016,12 +1011,10 @@ export default {
       // TODO: Clear logs
     },
     hideGoogleWarning() {
-      const element = document.getElementById("google-homepage-shit");
-      element.style.display = "none";
+      this.showWelcome = false;
     },
     showGoogleWarning() {
-      const element = document.getElementById("google-homepage-shit");
-      element.style.display = "";
+      this.showWelcome = true;
     },
     removePlayer() {
       // var iframes = document.querySelectorAll("iframe");
@@ -1652,7 +1645,6 @@ export default {
   height: 30px;
   width: 48px;
   position: absolute;
-  visibility: hidden;
   backface-visibility: hidden;
   z-index: 9999999;
   cursor: pointer;
@@ -1666,7 +1658,6 @@ export default {
   width: 1px;
   background: black;
   position: absolute;
-  visibility: hidden;
   backface-visibility: hidden;
   z-index: 9999999;
   cursor: pointer;
