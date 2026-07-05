@@ -949,7 +949,7 @@ export default {
       this.timeBeforePull = 0;
       this.showGoogleWarning();
       this.clearScrubTimer();
-      window.history.pushState({}, document.title, `${window.location.origin}/oauth-callback.html`);
+      window.history.pushState({}, document.title, window.location.origin);
       // TODO: Clear logs
     },
     hideGoogleWarning() {
@@ -1475,7 +1475,7 @@ export default {
         vodId = this.youtubeId;
         vodType = "youtube";
       }
-      const shareUrl = `${`${window.location.origin}/oauth-callback.html`}?${vodType}=${vodId}&fflogs=${this.reportId}&offset=${this.timeBeforePull}`;
+      const shareUrl = `${window.location.origin}?${vodType}=${vodId}&fflogs=${this.reportId}&offset=${this.timeBeforePull}`;
       navigator.clipboard.writeText(shareUrl);
       alert(`Copied "${shareUrl}" to clipboard.`);
     },
