@@ -38,8 +38,9 @@ jobs:
 
             cd "$DEPLOY_DIR"
 
-            # Pull latest
-            git pull origin "$BRANCH"
+            # Fetch and reset (handles force-pushed branches)
+            git fetch origin "$BRANCH"
+            git reset --hard origin/"$BRANCH"
 
             # Rebuild frontend
             cd app
