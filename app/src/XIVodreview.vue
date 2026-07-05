@@ -503,8 +503,12 @@ export default {
       vodStartTime: 0,
       player: null,
       playerType: "",
-      scrubTimer: 0, // not sure if these timers need to be null tbh
+      scrubTimer: 0,
       pullTimestamp: 0,
+      playerTimeRef: 0,
+      playerTimeWallClock: 0,
+      scrubX: 0,
+      hoverTimestampMs: 0,
       fflogs_url: "",
       reportId: "",
       reportData: null,
@@ -520,7 +524,6 @@ export default {
       deathData: {},
       currentPull: {},
       timeBeforePull: 0,
-      vodButtons: [],
       cachedFights: {},
       cachedFightName: "",
       cachedFightSelected: null,
@@ -603,7 +606,6 @@ export default {
           this.encounterMap[worldData[encounter]["id"]] = encounterInfo;
         }
       }
-      console.log("encounterMap", this.encounterMap);
       this.getFightData();
     },
     cachedFightSelected(encounter: any) {
@@ -649,18 +651,12 @@ export default {
     },
     currentPull(newValue: any) {
       if (Object.keys(newValue).length > 0) {
-        console.log("currentPull", newValue);
         this.pullTimestamp = this.pullStartTime;
         clearInterval(this.scrubTimer);
-        setTimeout(() => {
-          this.scrubTimer = 0;
-          if (this.scrubTimer == 0) {
-            this.scrubTimer = setInterval(() => {
-              this.updateScrubTime();
-              this.updateTimestamp();
-            }, 200);
-          }
-        }, 1500);
+        this.scrubTimer = setInterval(() => {
+          this.updateScrubTime();
+          this.updateTimestamp();
+        }, 200);
       }
     },
     pullTimestamp(newValue: number) {
@@ -759,7 +755,6 @@ export default {
       this.currentTimestampDisplay = currentTimestamp + " / " + endTimestamp;
     },
     getPullNum(pullId: number) {
-      console.log("getpullnum", pullId);
       this.currentPull =
         this.reportData.data.reportData.report.fights[pullId - 1];
     },
@@ -780,16 +775,16 @@ export default {
     scrubMousePos(e: MouseEvent) {
       const scrubEl = document.getElementById("pull-scrub");
       const timelineWidth = scrubEl.offsetWidth;
-      this.x = (e.offsetX / timelineWidth) * 100;
+      this.scrubX = (e.offsetX / timelineWidth) * 100;
       if (Object.keys(this.currentPull).length > 0) {
         const pullLength = this.currentPull.endTime - this.currentPull.startTime;
-        this.currentTimestamp = (pullLength * this.x) / 100;
+        this.hoverTimestampMs = (pullLength * this.scrubX) / 100;
         const timestamp = document.getElementById("pull-timestamp");
         const indicator = document.getElementById("timeline-indicator");
         const scrubY = scrubEl.getBoundingClientRect().y;
         timestamp.style.left = e.clientX - 24 + "px";
         timestamp.style.top = scrubY - 30 + "px";
-        timestamp.innerHTML = new Date(this.currentTimestamp)
+        timestamp.innerHTML = new Date(this.hoverTimestampMs)
           .toISOString()
           .slice(14, 19);
         indicator.style.left = e.clientX + "px";
@@ -797,48 +792,31 @@ export default {
       }
     },
     scrubClick() {
-      this.scrubGotoTime(this.x);
-      if (!this.isPlaying) {
-        this.focusPlayButton();
-      } else {
-        this.focusPauseButton();
-      }
+      this.scrubGotoTime(this.scrubX);
+      this.$nextTick(() => {
+        if (!this.isPlaying) {
+          this.focusPlayButton();
+        } else {
+          this.focusPauseButton();
+        }
+      });
     },
     updateScrubTime() {
-      if (this.player == null) {
-        return;
+      if (this.player == null) return;
+      if (this.playerType === "twitch" && this.isPlaying && this.playerTimeWallClock > 0) {
+        this.pullTimestamp = this.playerTimeRef + (Date.now() - this.playerTimeWallClock) / 1000;
+      } else {
+        this.pullTimestamp = this.player.getCurrentTime();
       }
-      // 2023-03-19 TODO: this might be easier to purely animate since twitch player is ass and doesn't like to update current time
-      this.pullTimestamp = this.player.getCurrentTime();
-      // var pullStartTime =
-      //   (this.currentPull.startTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
-      //   1000;
-      // var pullEndTime =
-      //   (this.currentPull.endTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
-      //   1000;
-      // var percentage =
-      //   ((this.pullTimestamp - pullStartTime) / (pullEndTime - pullStartTime)) * 100;
-      // var span = document.getElementById("pull-scrub-span");
-      // span.style.width = percentage + "%";
     },
     scrubGotoTime(percentage: number) {
       const newTime =
         (this.pullEndTime - this.pullStartTime) * (percentage / 100) + this.pullStartTime;
-      if (this.playerType == "twitch") {
+      if (this.playerType === "twitch") {
         this.player.seek(newTime);
-        setTimeout(() => this.player.seek(newTime), 300);
-      } else if (this.playerType == "yubtub") {
+      } else if (this.playerType === "yubtub") {
         this.player.seekTo(newTime);
       }
-      // clearInterval(this.scrubTimer);
-      // setTimeout(() => {
-      //   this.scrubTimer = 0;
-      //   if (this.scrubTimer == 0) {
-      //     this.scrubTimer = setInterval(() => {
-      //       this.updateScrubTime();
-      //     }, 200);
-      //   }
-      // }, 1500);
     },
     clearScrubTimer() {
       this.scrubPercent = 0;
@@ -855,24 +833,21 @@ export default {
         }
         this.twitchId = video[videoIndex + 1];
       } catch (error) {
-        console.log(error);
+        console.error(error);
         this.twitchId = "Please enter a valid Twitch VOD URL";
       } finally {
         this.getTwitchData(this.twitchId);
       }
     },
-    getTwitchData(videoId: string) {
-      fetch(`${this.api_url}/twitch?videoId=${videoId}`)
-        .then(async (response) => {
-          this.twitchData = await response.json();
-        })
-        .catch((error) => {
-          console.error("there was an error fetching twitch data: ", error);
-        })
-        .finally(() => {
-          this.vodStartTime = parseInt(this.twitchData.timeArr[0].startTime);
-          this.getTwitchPlayer(this.twitchId);
-        });
+    async getTwitchData(videoId: string) {
+      try {
+        const response = await fetch(`${this.api_url}/twitch?videoId=${videoId}`);
+        this.twitchData = await response.json();
+        this.vodStartTime = parseInt(this.twitchData.timeArr[0].startTime);
+        this.getTwitchPlayer(this.twitchId);
+      } catch (error) {
+        console.error("there was an error fetching twitch data: ", error);
+      }
     },
     async getTwitchPlayer(videoId: string) {
       const Twitch = window.Twitch;
@@ -880,55 +855,43 @@ export default {
         width: "100%",
         height: "100%",
         video: videoId,
-        // only needed if your site is also embedded on embed.example.com and othersite.example.com
-        // parent: ["embed.example.com"]
         autoplay: false,
       };
       if (this.player) {
         this.removePlayer();
       }
       this.player = new Twitch.Player("twitch-player", options);
-      const element = document.getElementById("twitch-player")!
+      const element = document.getElementById("twitch-player")!;
       element.style.position = "absolute";
       element.style.width = "100%";
       element.style.height = "100%";
       element.style.top = "0";
-      // player.setVolume(0.5);
+
+      const onPlay = () => {
+        this.isPlaying = true;
+        this.playerTimeRef = this.player.getCurrentTime();
+        this.playerTimeWallClock = Date.now();
+        this.$nextTick(() => this.focusPauseButton());
+        this.getPullNumber(this.playerTimeRef + this.timeBeforePull / 1000);
+      };
+
       this.player.addEventListener(Twitch.Player.READY, () => {
         this.player.setQuality("chunked");
         this.playerType = "twitch";
       });
-      this.player.addEventListener(Twitch.Player.PLAY, () => {
-        this.isPlaying = true;
-        this.focusPauseButton();
-        setTimeout(() => {
-          this.getPullNumber(
-            this.player.getCurrentTime() + this.timeBeforePull / 1000
-          );
-        }, 2000);
-      });
-      this.player.addEventListener(Twitch.Player.PLAYING, () => {
-        this.isPlaying = true;
-        this.focusPauseButton();
-        setTimeout(() => {
-          this.getPullNumber(
-            this.player.getCurrentTime() + this.timeBeforePull / 1000
-          );
-        }, 2000);
-      });
+      this.player.addEventListener(Twitch.Player.PLAY, onPlay);
+      this.player.addEventListener(Twitch.Player.PLAYING, onPlay);
       this.player.addEventListener(Twitch.Player.SEEK, () => {
-        setTimeout(() => {
-          this.pullTimestamp = this.player.getCurrentTime();
-        }, 200);
+        this.playerTimeRef = this.player.getCurrentTime();
+        this.playerTimeWallClock = Date.now();
+        this.pullTimestamp = this.playerTimeRef;
       });
       this.player.addEventListener(Twitch.Player.PAUSE, () => {
         this.isPlaying = false;
-        this.focusPlayButton();
-        setTimeout(() => {
-          this.getPullNumber(
-            this.player.getCurrentTime() + this.timeBeforePull / 1000
-          );
-        }, 2000);
+        this.playerTimeRef = this.player.getCurrentTime();
+        this.playerTimeWallClock = Date.now();
+        this.$nextTick(() => this.focusPlayButton());
+        this.getPullNumber(this.playerTimeRef + this.timeBeforePull / 1000);
       });
     },
     getPullNumber(timestamp: number) {
@@ -993,18 +956,23 @@ export default {
       this.showWelcome = true;
     },
     removePlayer() {
-      // var iframes = document.querySelectorAll("iframe");
-      // for (var i = 0; i < iframes.length; i++) {
-      //   iframes[i].parentNode.removeChild(iframes[i]);
-      // }
+      if (this.player && this.playerType === "twitch") {
+        const Twitch = window.Twitch;
+        this.player.removeEventListener(Twitch.Player.READY);
+        this.player.removeEventListener(Twitch.Player.PLAY);
+        this.player.removeEventListener(Twitch.Player.PLAYING);
+        this.player.removeEventListener(Twitch.Player.SEEK);
+        this.player.removeEventListener(Twitch.Player.PAUSE);
+      }
       const twitchPlayer = document.getElementById("twitch-player");
       twitchPlayer.innerHTML = "";
       const youtubePlayer = document.getElementById("youtube-player-wrapper");
       youtubePlayer.innerHTML = "";
-      let div = document.createElement("div");
+      const div = document.createElement("div");
       div.id = "youtube-player";
       youtubePlayer.append(div);
       this.player = null;
+      this.playerType = "";
     },
     goToTimestamp(timestamp: string) {
       const vodTime = parseInt(timestamp);
@@ -1094,7 +1062,6 @@ export default {
         if (!encounterIds.has(fight.encounterID)) {
           encounterIds.add(fight.encounterID);
           getUrl = getUrl + `id=${fight.encounterID}&`;
-          console.log("encounterdata", getUrl);
         }
       });
       fetch(getUrl)
@@ -1148,7 +1115,6 @@ export default {
         finalDeathData[this.deathData[death].fight].push(this.deathData[death]);
       }
       this.deathData = finalDeathData;
-      console.log(this.deathData);
     },
     getFightData() {
       const fightsPerInstance = {};
@@ -1201,7 +1167,6 @@ export default {
               fightClass = "astounding";
             }
             fight["class"] = fightClass;
-            // console.log(fight.encounterID, fight.lastPhaseAsAbsoluteIndex, this.phaseMap, this.phaseMap[fight.encouterID])
             if (fight.encounterID in this.phaseMap) {
               fight["phaseName"] =
                 this.phaseMap[fight.encounterID][
@@ -1321,7 +1286,7 @@ export default {
           this.youtubeId = url.pathname.split("/")[1];
         }
       } catch (error) {
-        console.log(error);
+        console.error(error);
         this.youtubeId = "Please enter a valid YouTube VOD URL";
       } finally {
         this.getYoutubeData(this.youtubeId);
@@ -1516,7 +1481,6 @@ export default {
         vodType = "youtube";
       }
       const shareUrl = `${`${window.location.origin}/oauth-callback.html`}?${vodType}=${vodId}&fflogs=${this.reportId}&offset=${this.timeBeforePull}`;
-      console.log(shareUrl);
       navigator.clipboard.writeText(shareUrl);
       alert(`Copied "${shareUrl}" to clipboard.`);
     },
