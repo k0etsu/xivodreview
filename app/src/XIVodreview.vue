@@ -639,6 +639,7 @@ export default {
         }),
       }).then(async (res) => {
         this.fflogsAuthToken = await res.json();
+        this.fflogsAuthToken["expires_in"] = this.fflogsAuthToken["expires_in"] * 1000;
         this.fflogsAuthToken["created_time"] = Date.now();
         localStorage.setItem(
           "cachedFflogsAuthToken",
