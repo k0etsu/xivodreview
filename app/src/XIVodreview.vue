@@ -1738,14 +1738,12 @@ export default {
   top: 0px;
   left: 0px;
   padding: 4px 6px 4px 7px;
-  visibility: visible;
 }
 #pause-button {
   position: absolute;
   top: 0px;
   left: 0px;
   padding: 4px 6px 4px 7px;
-  visibility: hidden;
 }
 #jump-forward {
   padding: 3px 6px 4px 7px;
