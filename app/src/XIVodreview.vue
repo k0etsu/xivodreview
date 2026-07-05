@@ -504,6 +504,7 @@ export default {
       player: null,
       playerType: "",
       scrubTimer: 0,
+      seekPollTimer: 0,
       pullTimestamp: 0,
       playerTimeRef: 0,
       playerTimeWallClock: 0,
@@ -820,9 +821,27 @@ export default {
         this.playerTimeWallClock = this.isPlaying ? Date.now() : 0;
         this.pullTimestamp = newTime;
         this.player.seek(newTime);
+        if (this.isPlaying) this.startSeekPoll(newTime);
       } else if (this.playerType === "yubtub") {
         this.player.seekTo(newTime);
       }
+    },
+    startSeekPoll(target: number) {
+      clearInterval(this.seekPollTimer);
+      let attempts = 0;
+      this.seekPollTimer = setInterval(() => {
+        attempts++;
+        if (!this.player) { clearInterval(this.seekPollTimer); return; }
+        const actual = this.player.getCurrentTime();
+        if (Math.abs(actual - target) < 2 || attempts >= 30) {
+          clearInterval(this.seekPollTimer);
+          this.seekPollTimer = 0;
+          if (Math.abs(actual - target) < 2 && this.isPlaying) {
+            this.playerTimeRef = actual;
+            this.playerTimeWallClock = Date.now();
+          }
+        }
+      }, 100);
     },
     clearScrubTimer() {
       this.scrubPercent = 0;
@@ -967,6 +986,8 @@ export default {
       this.showWelcome = true;
     },
     removePlayer() {
+      clearInterval(this.seekPollTimer);
+      this.seekPollTimer = 0;
       const twitchPlayer = document.getElementById("twitch-player");
       twitchPlayer.innerHTML = "";
       const youtubePlayer = document.getElementById("youtube-player-wrapper");
@@ -1494,6 +1515,7 @@ export default {
   beforeUnmount() {
     window.removeEventListener("keydown", this.handleKeydown);
     clearInterval(this.scrubTimer);
+    clearInterval(this.seekPollTimer);
     clearTimeout(this.googleAuthTokenTimer);
     clearTimeout(this.fflogsAuthTokenTimer);
   },
