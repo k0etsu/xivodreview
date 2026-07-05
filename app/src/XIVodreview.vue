@@ -813,6 +813,9 @@ export default {
       const newTime =
         (this.pullEndTime - this.pullStartTime) * (percentage / 100) + this.pullStartTime;
       if (this.playerType === "twitch") {
+        this.playerTimeRef = newTime;
+        this.playerTimeWallClock = this.isPlaying ? Date.now() : 0;
+        this.pullTimestamp = newTime;
         this.player.seek(newTime);
       } else if (this.playerType === "yubtub") {
         this.player.seekTo(newTime);
@@ -881,11 +884,6 @@ export default {
       });
       this.player.addEventListener(Twitch.Player.PLAY, onPlay);
       this.player.addEventListener(Twitch.Player.PLAYING, onPlay);
-      this.player.addEventListener(Twitch.Player.SEEK, () => {
-        this.playerTimeRef = this.player.getCurrentTime();
-        this.playerTimeWallClock = Date.now();
-        this.pullTimestamp = this.playerTimeRef;
-      });
       this.player.addEventListener(Twitch.Player.PAUSE, () => {
         this.isPlaying = false;
         this.playerTimeRef = this.player.getCurrentTime();
@@ -961,7 +959,6 @@ export default {
         this.player.removeEventListener(Twitch.Player.READY);
         this.player.removeEventListener(Twitch.Player.PLAY);
         this.player.removeEventListener(Twitch.Player.PLAYING);
-        this.player.removeEventListener(Twitch.Player.SEEK);
         this.player.removeEventListener(Twitch.Player.PAUSE);
       }
       const twitchPlayer = document.getElementById("twitch-player");
