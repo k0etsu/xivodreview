@@ -672,7 +672,7 @@ export default {
         this.player.playVideo();
       }
       this.isPlaying = true;
-      this.focusPauseButton();
+      this.$nextTick(() => this.focusPauseButton());
     },
     pauseVod() {
       if (this.playerType == "twitch") {
@@ -681,7 +681,7 @@ export default {
         this.player.pauseVideo();
       }
       this.isPlaying = false;
-      this.focusPlayButton();
+      this.$nextTick(() => this.focusPlayButton());
     },
     playPause() {
       if (this.isPlaying) {
@@ -871,6 +871,7 @@ export default {
       element.style.top = "0";
 
       const onPlay = () => {
+        if (this.player.isPaused()) return;
         this.isPlaying = true;
         this.playerTimeRef = this.player.getCurrentTime();
         this.playerTimeWallClock = Date.now();
