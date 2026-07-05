@@ -633,7 +633,7 @@ export default {
         body: JSON.stringify({
           client_id: fflogsClientId,
           code_verifier: this.fflogsCodeVerifier,
-          redirect_uri: "https://xivodreview.com",
+          redirect_uri: `${window.location.origin}/oauth-callback.html`,
           grant_type: "authorization_code",
           code: code,
         }),
@@ -982,7 +982,7 @@ export default {
       this.timeBeforePull = 0;
       this.showGoogleWarning();
       this.clearScrubTimer();
-      window.history.pushState({}, document.title, window.location.origin);
+      window.history.pushState({}, document.title, `${window.location.origin}/oauth-callback.html`);
       // TODO: Clear logs
     },
     hideGoogleWarning() {
@@ -1443,7 +1443,7 @@ export default {
       this.fflogsAuthUrl.searchParams.set("state", this.fflogsAuthState);
       this.fflogsAuthUrl.searchParams.set(
         "redirect_uri",
-        "https://xivodreview.com"
+        `${window.location.origin}/oauth-callback.html`
       );
       this.fflogsAuthUrl.searchParams.set("response_type", "code");
     },
@@ -1455,7 +1455,7 @@ export default {
           "popup=true,width=500, height=500"
         );
         const checkPopup = setInterval(() => {
-          if (fflogsPopup.window.location.href.includes("xivodreview.com")) {
+          if (fflogsPopup.window.location.href.includes(`${window.location.origin}/oauth-callback.html`)) {
             fflogsPopup.close();
           }
           if (!fflogsPopup || !fflogsPopup.closed) return;
@@ -1509,7 +1509,7 @@ export default {
         vodId = this.youtubeId;
         vodType = "youtube";
       }
-      const shareUrl = `${window.location.origin}?${vodType}=${vodId}&fflogs=${this.reportId}&offset=${this.timeBeforePull}`;
+      const shareUrl = `${`${window.location.origin}/oauth-callback.html`}?${vodType}=${vodId}&fflogs=${this.reportId}&offset=${this.timeBeforePull}`;
       console.log(shareUrl);
       navigator.clipboard.writeText(shareUrl);
       alert(`Copied "${shareUrl}" to clipboard.`);
