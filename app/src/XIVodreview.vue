@@ -802,14 +802,12 @@ export default {
     },
     updateScrubTime() {
       if (this.player == null) return;
-      if (this.playerType === "twitch" && this.isPlaying && this.playerTimeWallClock > 0) {
-        const interpolated = this.playerTimeRef + (Date.now() - this.playerTimeWallClock) / 1000;
-        const actual = this.player.getCurrentTime();
-        if (actual > 0 && Math.abs(actual - interpolated) < 2) {
-          this.playerTimeRef = actual;
-          this.playerTimeWallClock = Date.now();
+      if (this.playerType === "twitch") {
+        if (this.isPlaying && this.playerTimeWallClock > 0) {
+          this.pullTimestamp = this.playerTimeRef + (Date.now() - this.playerTimeWallClock) / 1000;
+        } else {
+          this.pullTimestamp = this.playerTimeRef;
         }
-        this.pullTimestamp = this.playerTimeRef + (Date.now() - this.playerTimeWallClock) / 1000;
       } else {
         this.pullTimestamp = this.player.getCurrentTime();
       }
