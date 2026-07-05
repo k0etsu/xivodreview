@@ -9,8 +9,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
     class="navHeader"
     :googleAuthToken="googleAuthToken"
     :fflogsAuthToken="fflogsAuthToken"
-    @google-auth="getGoogleAuthToken"
-    @get-google-auth-token="getGoogleAuthToken"
+    @google-auth-success="storeGoogleAuthToken"
     @clear-google-auth-token="clearGoogleAuthToken"
     @get-fflogs-auth-token="getFflogsAuthToken"
     @clear-fflogs-auth-token="clearFflogsAuthToken"
@@ -525,8 +524,6 @@ export default {
       cachedFights: {},
       cachedFightName: "",
       cachedFightSelected: null,
-      googleAuthData: {},
-      googleTokenClient: {},
       googleAuthToken: {},
       googleAuthTokenTimer: 0,
       fflogsAuthState: "",
@@ -543,7 +540,7 @@ export default {
       showWelcome: true,
     };
   },
-  emits: ['getGoogleAuthToken', 'clearGoogleAuthToken', 'getFflogsAuthToken', 'clearFflogsAuthToken'],
+  emits: ['clearGoogleAuthToken', 'getFflogsAuthToken', 'clearFflogsAuthToken'],
   computed: {
     pullStartTime(): number {
       if (!this.currentPull || !this.currentPull.startTime) return 0;
@@ -558,28 +555,6 @@ export default {
     this.getCachedFights();
     this.getCachedGoogleToken();
     this.getCachedFflogsAuthToken();
-    const google = window.google;
-    this.googleTokenClient = google.accounts.oauth2.initTokenClient({
-      client_id:
-        "613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com",
-      scope: "https://www.googleapis.com/auth/youtube.readonly",
-      callback: (tokenResponse) => {
-        this.googleAuthToken = tokenResponse;
-        this.googleAuthToken["expires_in"] =
-          this.googleAuthToken["expires_in"] * 1000;
-        this.googleAuthToken["created_time"] = Date.now();
-        localStorage.setItem(
-          "cachedGoogleAuthToken",
-          JSON.stringify(this.googleAuthToken)
-        );
-        clearTimeout(this.googleAuthTokenTimer);
-        const tokenTimeout = this.googleAuthToken["expires_in"];
-        this.googleAuthTokenTimer = setTimeout(
-          this.clearGoogleAuthToken,
-          tokenTimeout
-        );
-      },
-    });
   },
   watch: {
     // reportData(newValue) {
@@ -1285,16 +1260,13 @@ export default {
       this.cachedFightSelected = null;
       this.cachedFightName = "";
     },
-    getGoogleAuthToken() {
-      this.googleTokenClient.requestAccessToken();
-      this.googleAuthData = this.googleAuthToken;
-      this.googleAuthData["expires_in"] =
-        this.googleAuthData["expires_in"] * 1000;
-      this.googleAuthData["created_time"] = Date.now();
-      localStorage.setItem(
-        "cachedGoogleAuth",
-        JSON.stringify(this.googleAuthData)
-      );
+    storeGoogleAuthToken(tokenResponse: Record<string, any>) {
+      this.googleAuthToken = tokenResponse;
+      this.googleAuthToken["expires_in"] = this.googleAuthToken["expires_in"] * 1000;
+      this.googleAuthToken["created_time"] = Date.now();
+      localStorage.setItem("cachedGoogleAuthToken", JSON.stringify(this.googleAuthToken));
+      clearTimeout(this.googleAuthTokenTimer);
+      this.googleAuthTokenTimer = setTimeout(this.clearGoogleAuthToken, this.googleAuthToken["expires_in"]);
     },
     getCachedGoogleToken() {
       const cachedGoogleAuthToken = localStorage.getItem(
