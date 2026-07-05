@@ -1455,18 +1455,23 @@ export default {
           "popup=true,width=500, height=500"
         );
         const checkPopup = setInterval(() => {
-          if (fflogsPopup.window.location.href.includes(`${window.location.origin}/oauth-callback.html`)) {
-            fflogsPopup.close();
+          try {
+            const href = fflogsPopup.window.location.href;
+            if (href.includes("oauth-callback.html")) {
+              const url = new URL(href);
+              const state = url.searchParams.get("state");
+              clearInterval(checkPopup);
+              fflogsPopup.close();
+              if (state === this.fflogsAuthState) {
+                this.fflogsAuthCode = url.searchParams.get("code");
+              } else {
+                console.error("FFLogs auth state mismatch");
+              }
+            }
+          } catch {
+            // Popup is still on fflogs.com (cross-origin) — keep polling
           }
-          if (!fflogsPopup || !fflogsPopup.closed) return;
-          clearInterval(checkPopup);
-          const url = new URL(fflogsPopup.location.href);
-          const state = url.searchParams.get("state");
-          if (state === this.fflogsAuthState) {
-            this.fflogsAuthCode = url.searchParams.get("code");
-          } else {
-            console.error("state does not match - abort or something");
-          }
+          if (fflogsPopup.closed) clearInterval(checkPopup);
         }, 500);
       });
     },
