@@ -970,6 +970,7 @@ export default {
       div.id = "youtube-player";
       youtubePlayer.append(div);
       this.player = null;
+      this.playerType = "";
     },
     goToTimestamp(timestamp: string) {
       const vodTime = parseInt(timestamp);
