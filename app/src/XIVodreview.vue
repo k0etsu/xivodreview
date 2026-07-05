@@ -899,14 +899,13 @@ export default {
         this.playerTimeWallClock = Date.now();
         this.$nextTick(() => this.focusPauseButton());
         setTimeout(() => {
-          if (!this.isPlaying) return;
+          if (!this.isPlaying || this.seekPollTimer !== 0) return;
           const actual = this.player.getCurrentTime();
           const interpolated = this.playerTimeRef + (Date.now() - this.playerTimeWallClock) / 1000;
           if (this.playerTimeRef === 0 || Math.abs(actual - interpolated) < 2) {
             this.playerTimeRef = actual;
             this.playerTimeWallClock = Date.now();
           }
-          this.getPullNumber(actual + this.timeBeforePull / 1000);
         }, 500);
       };
 
@@ -918,10 +917,11 @@ export default {
       this.player.addEventListener(Twitch.Player.PLAYING, onPlay);
       this.player.addEventListener(Twitch.Player.PAUSE, () => {
         this.isPlaying = false;
-        this.playerTimeRef = this.player.getCurrentTime();
         this.playerTimeWallClock = 0;
+        if (this.seekPollTimer === 0) {
+          this.playerTimeRef = this.player.getCurrentTime();
+        }
         this.$nextTick(() => this.focusPlayButton());
-        this.getPullNumber(this.playerTimeRef + this.timeBeforePull / 1000);
       });
     },
     getPullNumber(timestamp: number) {
@@ -1371,18 +1371,8 @@ export default {
       this.player.addEventListener("onStateChange", (value: any) => {
         if (value.data == YT.PlayerState.PLAYING) {
           this.playVod();
-          setTimeout(() => {
-            this.getPullNumber(
-              this.player.getCurrentTime() + this.timeBeforePull / 1000
-            );
-          }, 2000);
         } else if (value.data == YT.PlayerState.PAUSED) {
           this.pauseVod();
-          setTimeout(() => {
-            this.getPullNumber(
-              this.player.getCurrentTime() + this.timeBeforePull / 1000
-            );
-          }, 2000);
         }
       });
     },
