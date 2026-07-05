@@ -881,7 +881,13 @@ export default {
         this.$nextTick(() => this.focusPauseButton());
         setTimeout(() => {
           if (!this.isPlaying) return;
-          this.getPullNumber(this.player.getCurrentTime() + this.timeBeforePull / 1000);
+          const actual = this.player.getCurrentTime();
+          const interpolated = this.playerTimeRef + (Date.now() - this.playerTimeWallClock) / 1000;
+          if (this.playerTimeRef === 0 || Math.abs(actual - interpolated) < 2) {
+            this.playerTimeRef = actual;
+            this.playerTimeWallClock = Date.now();
+          }
+          this.getPullNumber(actual + this.timeBeforePull / 1000);
         }, 500);
       };
 
