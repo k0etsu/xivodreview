@@ -504,10 +504,7 @@ export default {
       player: null,
       playerType: "",
       scrubTimer: 0,
-      seekPollTimer: 0,
       pullTimestamp: 0,
-      playerTimeRef: 0,
-      playerTimeWallClock: 0,
       scrubX: 0,
       hoverTimestampMs: 0,
       fflogs_url: "",
@@ -803,45 +800,16 @@ export default {
     },
     updateScrubTime() {
       if (this.player == null) return;
-      if (this.playerType === "twitch") {
-        if (this.isPlaying && this.playerTimeWallClock > 0) {
-          this.pullTimestamp = this.playerTimeRef + (Date.now() - this.playerTimeWallClock) / 1000;
-        } else {
-          this.pullTimestamp = this.playerTimeRef;
-        }
-      } else {
-        this.pullTimestamp = this.player.getCurrentTime();
-      }
+      this.pullTimestamp = this.player.getCurrentTime();
     },
     scrubGotoTime(percentage: number) {
       const newTime =
         (this.pullEndTime - this.pullStartTime) * (percentage / 100) + this.pullStartTime;
       if (this.playerType === "twitch") {
-        this.playerTimeRef = newTime;
-        this.playerTimeWallClock = this.isPlaying ? Date.now() : 0;
-        this.pullTimestamp = newTime;
         this.player.seek(newTime);
-        if (this.isPlaying) this.startSeekPoll(newTime);
       } else if (this.playerType === "yubtub") {
         this.player.seekTo(newTime);
       }
-    },
-    startSeekPoll(target: number) {
-      clearInterval(this.seekPollTimer);
-      let attempts = 0;
-      this.seekPollTimer = setInterval(() => {
-        attempts++;
-        if (!this.player) { clearInterval(this.seekPollTimer); return; }
-        const actual = this.player.getCurrentTime();
-        if (Math.abs(actual - target) < 2 || attempts >= 30) {
-          clearInterval(this.seekPollTimer);
-          this.seekPollTimer = 0;
-          if (Math.abs(actual - target) < 2 && this.isPlaying) {
-            this.playerTimeRef = actual;
-            this.playerTimeWallClock = Date.now();
-          }
-        }
-      }, 100);
     },
     clearScrubTimer() {
       this.scrubPercent = 0;
@@ -896,17 +864,7 @@ export default {
       const onPlay = () => {
         if (this.player.isPaused()) return;
         this.isPlaying = true;
-        this.playerTimeWallClock = Date.now();
         this.$nextTick(() => this.focusPauseButton());
-        setTimeout(() => {
-          if (!this.isPlaying || this.seekPollTimer !== 0) return;
-          const actual = this.player.getCurrentTime();
-          const interpolated = this.playerTimeRef + (Date.now() - this.playerTimeWallClock) / 1000;
-          if (this.playerTimeRef === 0 || Math.abs(actual - interpolated) < 2) {
-            this.playerTimeRef = actual;
-            this.playerTimeWallClock = Date.now();
-          }
-        }, 500);
       };
 
       this.player.addEventListener(Twitch.Player.READY, () => {
@@ -915,12 +873,13 @@ export default {
       });
       this.player.addEventListener(Twitch.Player.PLAY, onPlay);
       this.player.addEventListener(Twitch.Player.PLAYING, onPlay);
+      this.player.addEventListener(Twitch.Player.SEEK, () => {
+        setTimeout(() => {
+          this.pullTimestamp = this.player.getCurrentTime();
+        }, 200);
+      });
       this.player.addEventListener(Twitch.Player.PAUSE, () => {
         this.isPlaying = false;
-        this.playerTimeWallClock = 0;
-        if (this.seekPollTimer === 0) {
-          this.playerTimeRef = this.player.getCurrentTime();
-        }
         this.$nextTick(() => this.focusPlayButton());
       });
     },
@@ -986,8 +945,6 @@ export default {
       this.showWelcome = true;
     },
     removePlayer() {
-      clearInterval(this.seekPollTimer);
-      this.seekPollTimer = 0;
       const twitchPlayer = document.getElementById("twitch-player");
       twitchPlayer.innerHTML = "";
       const youtubePlayer = document.getElementById("youtube-player-wrapper");
@@ -1505,7 +1462,6 @@ export default {
   beforeUnmount() {
     window.removeEventListener("keydown", this.handleKeydown);
     clearInterval(this.scrubTimer);
-    clearInterval(this.seekPollTimer);
     clearTimeout(this.googleAuthTokenTimer);
     clearTimeout(this.fflogsAuthTokenTimer);
   },
