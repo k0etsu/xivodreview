@@ -672,7 +672,7 @@ export default {
         this.player.playVideo();
       }
       this.isPlaying = true;
-      this.$nextTick(() => this.focusPauseButton());
+      this.focusPauseButton();
     },
     pauseVod() {
       if (this.playerType == "twitch") {
@@ -681,7 +681,7 @@ export default {
         this.player.pauseVideo();
       }
       this.isPlaying = false;
-      this.$nextTick(() => this.focusPlayButton());
+      this.focusPlayButton();
     },
     playPause() {
       if (this.isPlaying) {
