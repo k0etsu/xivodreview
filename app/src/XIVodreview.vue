@@ -675,9 +675,11 @@ export default {
       this.focusPauseButton();
     },
     pauseVod() {
-      alert(`pauseVod called. playerType="${this.playerType}" player=${this.player != null}`);
       if (this.playerType == "twitch") {
         this.player.pause();
+        setTimeout(() => {
+          alert(`after pause: isPaused=${this.player.isPaused()} getCurrentTime=${this.player.getCurrentTime()}`);
+        }, 300);
       } else if (this.playerType == "yubtub") {
         this.player.pauseVideo();
       }
