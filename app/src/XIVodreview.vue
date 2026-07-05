@@ -890,10 +890,12 @@ export default {
       this.player.addEventListener(Twitch.Player.PLAYING, onPlay);
       this.player.addEventListener(Twitch.Player.PAUSE, () => {
         this.isPlaying = false;
-        this.playerTimeRef = this.player.getCurrentTime();
-        this.playerTimeWallClock = Date.now();
-        this.$nextTick(() => this.focusPlayButton());
-        this.getPullNumber(this.playerTimeRef + this.timeBeforePull / 1000);
+        this.focusPlayButton();
+        setTimeout(() => {
+          this.getPullNumber(
+            this.player.getCurrentTime() + this.timeBeforePull / 1000
+          );
+        }, 2000);
       });
     },
     getPullNumber(timestamp: number) {
