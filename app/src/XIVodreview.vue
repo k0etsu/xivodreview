@@ -675,14 +675,8 @@ export default {
       this.focusPauseButton();
     },
     pauseVod() {
-      if (this.playerType == "twitch") {
-        this.player.pause();
-        setTimeout(() => {
-          alert(`after pause: isPaused=${this.player.isPaused()} getCurrentTime=${this.player.getCurrentTime()}`);
-        }, 300);
-      } else if (this.playerType == "yubtub") {
-        this.player.pauseVideo();
-      }
+      if (this.playerType == "twitch") this.player.pause();
+      else if (this.playerType == "yubtub") this.player.pauseVideo();
       this.isPlaying = false;
       this.focusPlayButton();
     },
@@ -862,6 +856,7 @@ export default {
         height: "100%",
         video: videoId,
         autoplay: false,
+        parent: [window.location.hostname],
       };
       if (this.player) {
         this.removePlayer();
