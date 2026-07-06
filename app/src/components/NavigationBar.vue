@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { googleSdkLoaded } from 'vue3-google-login';
 
+declare const __APP_VERSION__: string;
+const appVersion = __APP_VERSION__;
+
 withDefaults(defineProps<{
   googleAuthToken?: Record<string, any>;
   fflogsAuthToken?: Record<string, any>;
@@ -36,6 +39,7 @@ const googleLogin = () => {
       aria-label="Main navigation"
     >
       <a class="navbar-brand" href="/">xivodreview</a>
+      <span class="text-muted small ms-1 me-2" style="font-size: 0.7rem; opacity: 0.6">v{{ appVersion }}</span>
       <button
         class="navbar-toggler"
         type="button"
