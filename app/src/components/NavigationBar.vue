@@ -38,8 +38,7 @@ const googleLogin = () => {
       class="container-fluid bd-gutter flex-wrap flex-lg-nowrap"
       aria-label="Main navigation"
     >
-      <a class="navbar-brand" href="/">xivodreview</a>
-      <span class="text-muted small ms-1 me-2" style="font-size: 0.7rem; opacity: 0.6; align-self: flex-end; padding-bottom: 2px">v{{ appVersion }}</span>
+      <a class="navbar-brand" href="/">xivodreview <span class="text-muted" style="font-size: 0.7rem; opacity: 0.6; vertical-align: bottom">v{{ appVersion }}</span></a>
       <button
         class="navbar-toggler"
         type="button"
