@@ -104,7 +104,7 @@ import DeathRow from "./DeathRow.vue";
 export default {
   data() {
     return {
-      fightEntry: {},
+      fightEntry: {} as Record<string, any>,
       fightStart: 0,
     };
   },

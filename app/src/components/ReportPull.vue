@@ -114,16 +114,16 @@ export default {
       timestamp: "",
     };
   },
-  props: [
-    "selectedId",
-    "fightEntry",
-    "deathData",
-    "reportId",
-    "reportStart",
-    "vodStartTime",
-    "timeBeforePull",
-    "player",
-  ],
+  props: {
+    selectedId: { type: Number, default: 0 },
+    fightEntry: { type: Object, default: () => ({}) },
+    deathData: { type: Object, default: () => ({}) },
+    reportId: { type: String, default: '' },
+    reportStart: { type: Number, default: 0 },
+    vodStartTime: { type: Number, default: 0 },
+    timeBeforePull: { type: Number, default: 0 },
+    player: { type: Object, default: null },
+  },
   emits: ["getPullDeaths"],
   components: {},
   methods: {

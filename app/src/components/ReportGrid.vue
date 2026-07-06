@@ -112,7 +112,7 @@ export default {
   data() {
     return {
       phaseMode: false,
-      phaseEntries: {},
+      phaseEntries: {} as Record<string, any>,
       showPhaseCheck: false,
     };
   },
@@ -133,11 +133,11 @@ export default {
     ReportPull,
   },
   methods: {
-    getPullDeaths(pullId, pullNum) {
+    getPullDeaths(pullId: any, pullNum: any) {
       this.$emit("getPullDeaths", pullId, pullNum);
     },
-    createPhaseData(fightEntries) {
-      fightEntries.forEach((fight: Object) => {
+    createPhaseData(fightEntries: any) {
+      fightEntries.forEach((fight: any) => {
         if ("phaseName" in fight) {
           var phase = fight.lastPhaseAsAbsoluteIndex.toString();
           if (!(phase in this.phaseEntries)) {

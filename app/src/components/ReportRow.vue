@@ -112,23 +112,27 @@ import DeathTable from "./DeathTable.vue";
 
 <script lang="ts">
 export default {
-  data() {
-    return {
-      pullTimeInVod: 0,
-      timestamp: "",
-    };
+  props: {
+    fightEntry: { type: Object, default: () => ({}) },
+    deathData: { type: Object, default: () => ({}) },
+    reportId: { type: String, default: '' },
+    reportStart: { type: Number, default: 0 },
+    vodStartTime: { type: Number, default: 0 },
+    timeBeforePull: { type: Number, default: 0 },
+    player: { type: Object, default: null },
   },
-  props: [
-    "fightEntry",
-    "deathData",
-    "reportId",
-    "reportStart",
-    "vodStartTime",
-    "timeBeforePull",
-    "player",
-  ],
   components: {
     DeathTable,
+  },
+  computed: {
+    pullTimeInVod(): number {
+      return (
+        (this.reportStart - this.vodStartTime + this.fightEntry.startTime - this.timeBeforePull) / 1000
+      );
+    },
+    timestamp(): string {
+      return new Date(this.pullTimeInVod * 1000).toISOString().slice(11, 19);
+    },
   },
   methods: {
     goToTimestamp(pullTimeInVod: Number) {
@@ -142,28 +146,6 @@ export default {
         this.player.seekTo(pullTimeInVod);
       }
     },
-  },
-  created() {
-    this.pullTimeInVod =
-      (this.reportStart -
-        this.vodStartTime +
-        this.fightEntry.startTime -
-        this.timeBeforePull) /
-      1000;
-    this.timestamp = new Date(this.pullTimeInVod * 1000)
-      .toISOString()
-      .slice(11, 19);
-  },
-  updated() {
-    this.pullTimeInVod =
-      (this.reportStart -
-        this.vodStartTime +
-        this.fightEntry.startTime -
-        this.timeBeforePull) /
-      1000;
-    this.timestamp = new Date(this.pullTimeInVod * 1000)
-      .toISOString()
-      .slice(11, 19);
   },
 };
 </script>

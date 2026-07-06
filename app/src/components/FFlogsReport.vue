@@ -63,7 +63,7 @@ export default {
     DeathTable,
   },
   methods: {
-    getPullDeaths(pullId, pullNum) {
+    getPullDeaths(pullId: any, pullNum: any) {
       console.log("getpulldeaths", pullId, pullNum);
       this.pullId = pullId;
       this.pullNum = pullNum;

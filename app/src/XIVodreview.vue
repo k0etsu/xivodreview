@@ -1,7 +1,383 @@
 <script setup lang="ts">
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from "vue";
 import NavigationBar from "./components/NavigationBar.vue";
 import FFlogsReport from "./components/FFlogsReport.vue";
 import SavedFightTable from "./components/SavedFightTable.vue";
+import { useAuth } from "./composables/useAuth";
+import { usePlayer } from "./composables/usePlayer";
+import { useFFLogs } from "./composables/useFFLogs";
+
+const {
+  googleAuthToken,
+  fflogsAuthToken,
+  storeGoogleAuthToken,
+  clearGoogleAuthToken,
+  getFflogsAuthToken,
+  clearFflogsAuthToken,
+} = useAuth();
+
+const {
+  player,
+  playerType,
+  isPlaying,
+  vodStartTime,
+  showWelcome,
+  twitchId,
+  youtubeId,
+  seekTime,
+  focusPlay,
+  focusPause,
+  getTwitchId,
+  getYoutubeId,
+  playVod,
+  pauseVod,
+  jumpForward,
+  jumpBackward,
+  removePlayer,
+  hideGoogleWarning,
+  showGoogleWarning,
+} = usePlayer(googleAuthToken);
+
+const {
+  fflogs_url,
+  reportId,
+  reportStart,
+  fightData,
+  phaseMap,
+  deathData,
+  currentPull,
+  timeBeforePull,
+  getReportId,
+  getPullNum,
+} = useFFLogs(fflogsAuthToken, vodStartTime);
+
+// VOD URL input (orchestrated across composables)
+const vod_url = ref("");
+
+// Cached fights management
+const cachedFights = ref<Record<string, any>>({});
+const cachedFightName = ref("");
+const cachedFightSelected = ref<string | null>(null);
+
+function getCachedFights() {
+  const stored = localStorage.getItem("cachedFights");
+  if (stored) {
+    const cachedFightsObj = JSON.parse(stored);
+    Object.keys(cachedFightsObj).forEach((fightName) => {
+      if (!("vod" in cachedFightsObj[fightName])) {
+        cachedFightsObj[fightName]["vod"] = cachedFightsObj[fightName]["twitch"];
+      }
+      if (!("offset" in cachedFightsObj[fightName])) {
+        cachedFightsObj[fightName]["offset"] = 0;
+      }
+      cachedFights.value[fightName] = cachedFightsObj[fightName];
+    });
+    localStorage.setItem("cachedFights", JSON.stringify(cachedFights.value));
+  }
+}
+
+function addCachedFight() {
+  if (cachedFightName.value != "") {
+    cachedFights.value[cachedFightName.value] = {
+      vod: vod_url.value,
+      fflogs: fflogs_url.value,
+      offset: timeBeforePull.value,
+      fightName: cachedFightName.value,
+    };
+    localStorage.setItem("cachedFights", JSON.stringify(cachedFights.value));
+  }
+}
+
+function removeCachedFight() {
+  cachedFightSelected.value = null;
+  delete cachedFights.value[cachedFightName.value];
+  cachedFightName.value = "";
+  localStorage.setItem("cachedFights", JSON.stringify(cachedFights.value));
+}
+
+function updateCachedFights(updatedFights: Record<string, any>) {
+  cachedFights.value = updatedFights;
+  cachedFightName.value = "";
+  localStorage.setItem("cachedFights", JSON.stringify(cachedFights.value));
+}
+
+function selectFight(selectedFight: string) {
+  cachedFightSelected.value = selectedFight;
+}
+
+function clearCachedFight() {
+  cachedFightSelected.value = null;
+  cachedFightName.value = "";
+}
+
+// Scrubber state (to be extracted into a TimelineScrubber component later)
+const scrubTimer = ref(0);
+const pullTimestamp = ref(0);
+const scrubX = ref(0);
+const hoverTimestampMs = ref(0);
+const scrubPercent = ref(0);
+const currentTimestampDisplay = ref("00:00 / 00:00");
+const showHoverTimestamp = ref(false);
+
+const pullStartTime = computed((): number => {
+  if (!currentPull.value || !currentPull.value.startTime) return 0;
+  return (
+    (currentPull.value.startTime +
+      reportStart.value -
+      vodStartTime.value -
+      timeBeforePull.value) /
+    1000
+  );
+});
+
+const pullEndTime = computed((): number => {
+  if (!currentPull.value || !currentPull.value.endTime) return 0;
+  return (
+    (currentPull.value.endTime +
+      reportStart.value -
+      vodStartTime.value -
+      timeBeforePull.value) /
+    1000
+  );
+});
+
+function strPadLeft(value: number, pad: string, length: number): string {
+  return (new Array(length + 1).join(pad) + String(value)).slice(-length);
+}
+
+function updateTimestamp() {
+  const pullLength = currentPull.value.endTime - currentPull.value.startTime;
+  const endTimestamp = new Date(pullLength).toISOString().slice(14, 19);
+  const vodTime =
+    player.value.getCurrentTime() -
+    (reportStart.value -
+      vodStartTime.value +
+      currentPull.value.startTime -
+      timeBeforePull.value) /
+      1000;
+  const minutes = Math.floor(vodTime / 60);
+  const seconds = Math.floor(vodTime - minutes * 60);
+  let currentTimestamp =
+    strPadLeft(minutes, "0", 2) + ":" + strPadLeft(seconds, "0", 2);
+  if (vodTime > pullLength / 1000) {
+    currentTimestamp = endTimestamp;
+  } else if (vodTime < 0) {
+    currentTimestamp = "00:00";
+  }
+  currentTimestampDisplay.value = currentTimestamp + " / " + endTimestamp;
+}
+
+function decreaseOffset() {
+  timeBeforePull.value = timeBeforePull.value - 500;
+}
+
+function increaseOffset() {
+  timeBeforePull.value = timeBeforePull.value + 500;
+}
+
+function showTimestamp() {
+  if (Object.keys(currentPull.value).length > 0) {
+    showHoverTimestamp.value = true;
+  }
+}
+
+function hideTimestamp() {
+  showHoverTimestamp.value = false;
+}
+
+function scrubMousePos(e: MouseEvent) {
+  const scrubEl = document.getElementById("pull-scrub")!;
+  const timelineWidth = scrubEl.offsetWidth;
+  scrubX.value = (e.offsetX / timelineWidth) * 100;
+  if (Object.keys(currentPull.value).length > 0) {
+    const pullLength = currentPull.value.endTime - currentPull.value.startTime;
+    hoverTimestampMs.value = (pullLength * scrubX.value) / 100;
+    const timestamp = document.getElementById("pull-timestamp")!;
+    const indicator = document.getElementById("timeline-indicator")!;
+    const scrubY = scrubEl.getBoundingClientRect().y;
+    timestamp.style.left = e.clientX - 24 + "px";
+    timestamp.style.top = scrubY - 30 + "px";
+    timestamp.innerHTML = new Date(hoverTimestampMs.value)
+      .toISOString()
+      .slice(14, 19);
+    indicator.style.left = e.clientX + "px";
+    indicator.style.top = scrubY + "px";
+  }
+}
+
+function scrubGotoTime(percentage: number) {
+  const newTime =
+    (pullEndTime.value - pullStartTime.value) * (percentage / 100) +
+    pullStartTime.value;
+  if (playerType.value === "twitch") {
+    player.value.seek(newTime);
+  } else if (playerType.value === "yubtub") {
+    player.value.seekTo(newTime);
+  }
+}
+
+function scrubClick() {
+  scrubGotoTime(scrubX.value);
+  nextTick(() => {
+    if (!isPlaying.value) {
+      focusPlay.value?.focus();
+    } else {
+      focusPause.value?.focus();
+    }
+  });
+}
+
+function updateScrubTime() {
+  if (player.value == null) return;
+  pullTimestamp.value = player.value.getCurrentTime();
+}
+
+function clearScrubTimer() {
+  scrubPercent.value = 0;
+  clearInterval(scrubTimer.value);
+  scrubTimer.value = 0;
+}
+
+// Orchestration across composables
+function submitURLs() {
+  hideGoogleWarning();
+  clearScrubTimer();
+  removePlayer();
+  twitchId.value = "";
+  youtubeId.value = "";
+  currentPull.value = {};
+  fightData.value = {};
+  if (vod_url.value.includes("twitch")) {
+    getTwitchId(vod_url.value);
+  } else if (
+    vod_url.value.includes("youtube") ||
+    vod_url.value.includes("youtu.be")
+  ) {
+    getYoutubeId(vod_url.value);
+  }
+  getReportId(fflogs_url.value);
+  if (
+    cachedFightName.value != "" &&
+    (cachedFights.value[cachedFightName.value]["vod"] != vod_url.value ||
+      cachedFights.value[cachedFightName.value]["fflogs"] != fflogs_url.value)
+  ) {
+    cachedFightName.value = "";
+  }
+}
+
+function resetURLs() {
+  removePlayer();
+  vod_url.value = "";
+  fflogs_url.value = "";
+  cachedFightName.value = "";
+  cachedFightSelected.value = null;
+  playerType.value = "";
+  twitchId.value = "";
+  youtubeId.value = "";
+  currentPull.value = {};
+  fightData.value = {};
+  timeBeforePull.value = 0;
+  showGoogleWarning();
+  clearScrubTimer();
+  window.history.pushState({}, document.title, window.location.origin);
+}
+
+function shareURLs() {
+  let vodId = "";
+  let vodType = "";
+  if (twitchId.value != "") {
+    vodId = twitchId.value;
+    vodType = "twitch";
+  } else if (youtubeId.value != "") {
+    vodId = youtubeId.value;
+    vodType = "youtube";
+  }
+  const shareUrl = `${window.location.origin}?${vodType}=${vodId}&fflogs=${reportId.value}&offset=${timeBeforePull.value}`;
+  navigator.clipboard.writeText(shareUrl);
+  alert(`Copied "${shareUrl}" to clipboard.`);
+}
+
+watch(cachedFightSelected, (encounter) => {
+  if (encounter != null) {
+    cachedFightName.value = encounter;
+    vod_url.value = cachedFights.value[encounter].vod;
+    fflogs_url.value = cachedFights.value[encounter].fflogs;
+    timeBeforePull.value = cachedFights.value[encounter].offset || 0;
+    submitURLs();
+    cachedFightSelected.value = null;
+  }
+});
+
+watch(timeBeforePull, (newValue: number) => {
+  if (cachedFights.value[cachedFightName.value]) {
+    cachedFights.value[cachedFightName.value]["offset"] = newValue;
+    localStorage.setItem("cachedFights", JSON.stringify(cachedFights.value));
+  }
+});
+
+watch(currentPull, (newValue: any) => {
+  if (Object.keys(newValue).length > 0) {
+    if (
+      pullTimestamp.value < pullStartTime.value ||
+      pullTimestamp.value > pullEndTime.value
+    ) {
+      pullTimestamp.value = pullStartTime.value;
+    }
+    clearInterval(scrubTimer.value);
+    scrubTimer.value = setInterval(() => {
+      updateScrubTime();
+      updateTimestamp();
+    }, 200);
+  }
+});
+
+watch(pullTimestamp, (newValue: number) => {
+  const range = pullEndTime.value - pullStartTime.value;
+  scrubPercent.value =
+    range > 0 ? ((newValue - pullStartTime.value) / range) * 100 : 0;
+});
+
+watch(seekTime, (time: number) => {
+  pullTimestamp.value = time;
+});
+
+getCachedFights();
+
+onMounted(() => {
+  const bootstrap = window.bootstrap;
+  const queryObj = new URLSearchParams(window.location.search);
+  if (window.location.search != "") {
+    const check: Record<string, any> = { offset: 0 };
+    for (const [key, value] of queryObj) {
+      if (key == "twitch") {
+        vod_url.value = `https://www.twitch.tv/videos/${value}`;
+        check["vod"] = "twitch";
+      } else if (key == "youtube") {
+        vod_url.value = `https://www.youtube.com/watch?v=${value}`;
+        check["vod"] = "youtube";
+      } else if (key == "fflogs") {
+        fflogs_url.value = `https://www.fflogs.com/reports/${value}`;
+        check["fflogs"] = value;
+      } else if (key == "offset") {
+        timeBeforePull.value = Number(value);
+        check["offset"] = Number(value);
+      }
+    }
+    if ("vod" in check && "fflogs" in check) {
+      submitURLs();
+    }
+  }
+  const tooltipTriggerList = [].slice.call(
+    document.querySelectorAll('[data-bs-toggle="tooltip"]')
+  );
+  tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+});
+
+onBeforeUnmount(() => {
+  clearInterval(scrubTimer.value);
+});
 </script>
 
 <template>
@@ -9,8 +385,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
     class="navHeader"
     :googleAuthToken="googleAuthToken"
     :fflogsAuthToken="fflogsAuthToken"
-    @google-auth="getGoogleAuthToken"
-    @get-google-auth-token="getGoogleAuthToken"
+    @google-auth-success="storeGoogleAuthToken"
     @clear-google-auth-token="clearGoogleAuthToken"
     @get-fflogs-auth-token="getFflogsAuthToken"
     @clear-fflogs-auth-token="clearFflogsAuthToken"
@@ -28,6 +403,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
               <div
                 id="google-homepage-shit"
                 class="row align-items-center justify-content-center"
+                v-show="showWelcome"
               >
                 <div data-bs-theme="dark" class="col-10 offset-md-1 text-body">
                   <h5>Usage</h5>
@@ -79,8 +455,8 @@ import SavedFightTable from "./components/SavedFightTable.vue";
                 @mouseenter="showTimestamp"
                 @mouseleave="hideTimestamp"
               >
-                <div id="timeline-indicator"></div>
-                <span id="pull-scrub-span"></span>
+                <div id="timeline-indicator" v-show="showHoverTimestamp"></div>
+                <span id="pull-scrub-span" :style="{ width: scrubPercent + '%' }"></span>
                 <div class="death-indicators">
                   <div
                     v-for="death in deathData[currentPull.id]"
@@ -104,7 +480,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
                 </div>
               </div>
             </div>
-            <div id="pull-timestamp">00:00</div>
+            <div id="pull-timestamp" v-show="showHoverTimestamp">00:00</div>
             <div class="row align-items-center g-0" style="margin-top: 4px">
               <div
                 class="col-auto"
@@ -112,6 +488,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
               >
                 <button
                   id="play-button"
+                  v-show="!isPlaying"
                   class="btn btn-outline-primary"
                   @click="playVod"
                   ref="focusPlay"
@@ -131,6 +508,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
                 </button>
                 <button
                   id="pause-button"
+                  v-show="isPlaying"
                   class="btn btn-outline-primary"
                   @click="pauseVod"
                   ref="focusPause"
@@ -150,7 +528,7 @@ import SavedFightTable from "./components/SavedFightTable.vue";
                 </button>
               </div>
               <div class="col-auto" style="margin-left: 10px">
-                <div id="current-timestamp">00:00 / 00:00</div>
+                <div id="current-timestamp">{{ currentTimestampDisplay }}</div>
               </div>
               <div class="col-auto" style="margin-left: 15px">
                 <button
@@ -488,1159 +866,6 @@ import SavedFightTable from "./components/SavedFightTable.vue";
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  data() {
-    return {
-      api_url: "https://api.yamanote.co",
-      vod_url: "",
-      twitchId: "",
-      twitchData: null,
-      youtubeId: "",
-      youtubeData: null,
-      vodStartTime: 0,
-      player: null,
-      playerType: "",
-      scrubTimer: 0, // not sure if these timers need to be null tbh
-      pullTimestamp: 0,
-      fflogs_url: "",
-      reportId: "",
-      reportData: null,
-      reportStart: 0,
-      reportEnd: 0,
-      fightData: {},
-      playerData: [],
-      abilityData: [],
-      npcData: [],
-      encounterData: {},
-      encounterMap: {},
-      phaseMap: {},
-      deathData: {},
-      currentPull: {},
-      timeBeforePull: 0,
-      vodButtons: [],
-      cachedFights: {},
-      cachedFightName: "",
-      cachedFightSelected: null,
-      googleAuthData: {},
-      googleTokenClient: {},
-      googleAuthToken: {},
-      googleAuthTokenTimer: 0,
-      fflogsAuthState: "",
-      fflogsCodeVerifier: "",
-      fflogsCodeChallenge: "",
-      fflogsAuthUrl: URL,
-      fflogsAuthCode: "",
-      fflogsAuthToken: {},
-      fflogsAuthTokenTimer: 0,
-    };
-  },
-  created() {
-    this.getCachedFights();
-    this.getCachedGoogleToken();
-    this.getCachedFflogsAuthToken();
-    const google = window.google;
-    this.googleTokenClient = google.accounts.oauth2.initTokenClient({
-      client_id:
-        "613134000150-vledb3pl871faha1bj3q1vfsbjfemnss.apps.googleusercontent.com",
-      scope: "https://www.googleapis.com/auth/youtube.readonly",
-      callback: (tokenResponse) => {
-        this.googleAuthToken = tokenResponse;
-        this.googleAuthToken["expires_in"] =
-          this.googleAuthToken["expires_in"] * 1000;
-        this.googleAuthToken["created_time"] = Date.now();
-        localStorage.setItem(
-          "cachedGoogleAuthToken",
-          JSON.stringify(this.googleAuthToken)
-        );
-        clearTimeout(this.googleAuthTokenTimer);
-        const tokenTimeout = this.googleAuthToken["expires_in"];
-        this.googleAuthTokenTimer = setTimeout(
-          this.clearGoogleAuthToken,
-          tokenTimeout
-        );
-      },
-    });
-  },
-  watch: {
-    // reportData(newValue) {
-    //   const fightsPerInstance = {};
-    //   if (newValue) {
-    //     newValue.data.reportData.report.fights.forEach((fight: Object) => {
-    //       var encounterName = "";
-    //       if (this.encounterMap.get(fight.encounterID)) {
-    //         encounterName = this.encounterMap.get(fight.encounterID);
-    //       } else {
-    //         encounterName = fight.name;
-    //       }
-    //       fightsPerInstance[encounterName] = fightsPerInstance[encounterName] || [];
-    //       var fightPercentage = 100 - fight.fightPercentage;
-    //       var fightClass = "";
-    //       if (fightPercentage < 25) {
-    //         fightClass = "common";
-    //       } else if (fightPercentage < 50) {
-    //         fightClass = "uncommon";
-    //       } else if (fightPercentage < 75) {
-    //         fightClass = "rare";
-    //       } else if (fightPercentage < 90) {
-    //         fightClass = "epic";
-    //       } else if (fightPercentage < 100) {
-    //         fightClass = "legendary";
-    //       }
-    //       fight["class"] = fightClass;
-    //       fightsPerInstance[encounterName].push(fight);
-    //     });
-    //     this.fightData = fightsPerInstance;
-    //   }
-    // },
-    encounterData(newValue) {
-      const worldData = newValue.data.worldData;
-      this.encounterMap = {};
-      for (const encounter in worldData) {
-        if (worldData[encounter] !== null) {
-          var difficulties = {};
-          for (const difficulty of worldData[encounter]["zone"][
-            "difficulties"
-          ]) {
-            difficulties[difficulty.id] = difficulty.name;
-          }
-          var encounterInfo = {
-            name: worldData[encounter]["name"],
-            difficulties: difficulties,
-          };
-          this.encounterMap[worldData[encounter]["id"]] = encounterInfo;
-        }
-      }
-      console.log("encounterMap", this.encounterMap);
-      this.getFightData();
-    },
-    cachedFightSelected(encounter) {
-      if (encounter != null) {
-        this.cachedFightName = encounter;
-        this.vod_url = this.cachedFights[encounter].vod;
-        this.fflogs_url = this.cachedFights[encounter].fflogs;
-        this.timeBeforePull = this.cachedFights[encounter].offset || 0;
-        this.submitURLs();
-        this.cachedFightSelected = null;
-      }
-    },
-    timeBeforePull(newValue) {
-      if (this.cachedFights[this.cachedFightName]) {
-        this.cachedFights[this.cachedFightName]["offset"] = newValue;
-        localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
-      }
-    },
-    async fflogsAuthCode(code) {
-      const fflogsClientId = "984bcd26-7d4e-4d0a-b8aa-80b24755d685";
-      await fetch("https://www.fflogs.com/oauth/token", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          client_id: fflogsClientId,
-          code_verifier: this.fflogsCodeVerifier,
-          redirect_uri: "https://xivodreview.com",
-          grant_type: "authorization_code",
-          code: code,
-        }),
-      }).then(async (res) => {
-        this.fflogsAuthToken = await res.json();
-        this.fflogsAuthToken["created_time"] = Date.now();
-        localStorage.setItem(
-          "cachedFflogsAuthToken",
-          JSON.stringify(this.fflogsAuthToken)
-        );
-      });
-    },
-    currentPull(newValue) {
-      if (Object.keys(newValue).length > 0) {
-        console.log("currentPull", newValue);
-        this.pullTimestamp =
-          (this.currentPull.startTime +
-            this.reportStart -
-            this.vodStartTime -
-            this.timeBeforePull) /
-          1000;
-        clearInterval(this.scrubTimer);
-        setTimeout(() => {
-          this.scrubTimer = 0;
-          if (this.scrubTimer == 0) {
-            this.scrubTimer = setInterval(() => {
-              this.updateScrubTime();
-              this.updateTimestamp();
-            }, 200);
-          }
-        }, 1500);
-      }
-    },
-    pullTimestamp(newValue) {
-      var pullStartTime =
-        (this.currentPull.startTime +
-          this.reportStart -
-          this.vodStartTime -
-          this.timeBeforePull) /
-        1000;
-      var pullEndTime =
-        (this.currentPull.endTime +
-          this.reportStart -
-          this.vodStartTime -
-          this.timeBeforePull) /
-        1000;
-      var percentage =
-        ((newValue - pullStartTime) / (pullEndTime - pullStartTime)) * 100;
-      var span = document.getElementById("pull-scrub-span");
-      span.style.width = percentage + "%";
-    },
-  },
-  methods: {
-    playVod() {
-      if (this.playerType == "twitch") {
-        this.player.play();
-      } else if (this.playerType == "yubtub") {
-        this.player.playVideo();
-      }
-      var playButton = document.getElementById("play-button");
-      var pauseButton = document.getElementById("pause-button");
-      playButton.style.visibility = "hidden";
-      pauseButton.style.visibility = "visible";
-      this.focusPauseButton();
-    },
-    pauseVod() {
-      if (this.playerType == "twitch") {
-        this.player.pause();
-      } else if (this.playerType == "yubtub") {
-        this.player.pauseVideo();
-      }
-      var playButton = document.getElementById("play-button");
-      var pauseButton = document.getElementById("pause-button");
-      playButton.style.visibility = "visible";
-      pauseButton.style.visibility = "hidden";
-      this.focusPlayButton();
-    },
-    playPause() {
-      var playButton = document.getElementById("play-button");
-      if (playButton.style.visibility === "hidden") {
-        this.pauseVod();
-      } else {
-        this.playVod();
-      }
-    },
-    jumpForward() {
-      var currTime = this.player.getCurrentTime();
-      if (this.playerType == "twitch") {
-        this.player.seek(currTime + 5);
-      } else if (this.playerType == "yubtub") {
-        this.player.seekTo(currTime + 5);
-      }
-    },
-    jumpBackward() {
-      var currTime = this.player.getCurrentTime();
-      if (this.playerType == "twitch") {
-        this.player.seek(currTime - 5);
-      } else if (this.playerType == "yubtub") {
-        this.player.seekTo(currTime - 5);
-      }
-    },
-    handleKeydown(e) {
-      if (e.target.tagName.toLowerCase() === "input") {
-        return;
-      }
-      switch (e.key) {
-        case " ":
-          this.playPause();
-          break;
-        case "ArrowLeft":
-          this.jumpBackward();
-          break;
-        case "ArrowRight":
-          this.jumpForward();
-          break;
-      }
-    },
-    focusPlayButton() {
-      const focusButton = this.$refs.focusPlay;
-      focusButton.focus();
-    },
-    focusPauseButton() {
-      const focusButton = this.$refs.focusPause;
-      focusButton.focus();
-    },
-    updateTimestamp() {
-      var pullLength = this.currentPull.endTime - this.currentPull.startTime;
-      var endTimestamp = new Date(pullLength).toISOString().slice(14, 19);
-      var vodTime =
-        this.player.getCurrentTime() -
-        (this.reportStart -
-          this.vodStartTime +
-          this.currentPull.startTime -
-          this.timeBeforePull) /
-          1000;
-      const minutes = Math.floor(vodTime / 60);
-      const seconds = Math.floor(vodTime - minutes * 60);
-      function str_pad_left(string, pad, length) {
-        return (new Array(length + 1).join(pad) + String(string)).slice(
-          -length
-        );
-      }
-      var currentTimestamp =
-        str_pad_left(minutes, "0", 2) + ":" + str_pad_left(seconds, "0", 2);
-      var timestamp = document.getElementById("current-timestamp");
-      if (vodTime > pullLength / 1000) {
-        currentTimestamp = endTimestamp;
-      } else if (vodTime < 0) {
-        currentTimestamp = "00:00";
-      }
-      timestamp.innerHTML = currentTimestamp + " / " + endTimestamp;
-    },
-    getPullNum(pullId) {
-      console.log("getpullnum", pullId);
-      this.currentPull =
-        this.reportData.data.reportData.report.fights[pullId - 1];
-    },
-    decreaseOffset() {
-      this.timeBeforePull = this.timeBeforePull - 500;
-    },
-    increaseOffset() {
-      this.timeBeforePull = this.timeBeforePull + 500;
-    },
-    showTimestamp() {
-      var timestamp = document.getElementById("pull-timestamp");
-      var indicator = document.getElementById("timeline-indicator");
-      if (Object.keys(this.currentPull).length > 0) {
-        timestamp.style.visibility = "visible";
-        indicator.style.visibility = "visible";
-      }
-    },
-    hideTimestamp() {
-      var timestamp = document.getElementById("pull-timestamp");
-      var indicator = document.getElementById("timeline-indicator");
-      if (Object.keys(this.currentPull).length > 0) {
-        timestamp.style.visibility = "hidden";
-        indicator.style.visibility = "hidden";
-      }
-    },
-    scrubMousePos(e) {
-      let timelineWidth = document.getElementById("pull-scrub").offsetWidth;
-      this.x = (e.offsetX / timelineWidth) * 100;
-      if (Object.keys(this.currentPull).length > 0) {
-        var pullLength = this.currentPull.endTime - this.currentPull.startTime;
-        this.currentTimestamp = (pullLength * this.x) / 100;
-        var timestamp = document.getElementById("pull-timestamp");
-        var indicator = document.getElementById("timeline-indicator");
-        timestamp.style.left = e.clientX - 24 + "px";
-        timestamp.style.top =
-          document.getElementById("pull-scrub").getBoundingClientRect().y -
-          30 +
-          "px";
-        timestamp.innerHTML = new Date(this.currentTimestamp)
-          .toISOString()
-          .slice(14, 19);
-        indicator.style.left = e.clientX + "px";
-        indicator.style.top =
-          document.getElementById("pull-scrub").getBoundingClientRect().y +
-          "px";
-      }
-    },
-    scrubClick() {
-      this.scrubGotoTime(this.x);
-      const whichButton = document.getElementById("play-button");
-      if (
-        getComputedStyle(whichButton).getPropertyValue("visibility") ==
-        "visible"
-      ) {
-        this.focusPlayButton();
-      } else {
-        this.focusPauseButton();
-      }
-    },
-    updateScrubTime() {
-      if (this.player == null) {
-        return;
-      }
-      // 2023-03-19 TODO: this might be easier to purely animate since twitch player is ass and doesn't like to update current time
-      this.pullTimestamp = this.player.getCurrentTime();
-      // var pullStartTime =
-      //   (this.currentPull.startTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
-      //   1000;
-      // var pullEndTime =
-      //   (this.currentPull.endTime + this.reportStart - this.vodStartTime - this.timeBeforePull) /
-      //   1000;
-      // var percentage =
-      //   ((this.pullTimestamp - pullStartTime) / (pullEndTime - pullStartTime)) * 100;
-      // var span = document.getElementById("pull-scrub-span");
-      // span.style.width = percentage + "%";
-    },
-    scrubGotoTime(percentage) {
-      var pullStartTime =
-        (this.currentPull.startTime +
-          this.reportStart -
-          this.vodStartTime -
-          this.timeBeforePull) /
-        1000;
-      var pullEndTime =
-        (this.currentPull.endTime +
-          this.reportStart -
-          this.vodStartTime -
-          this.timeBeforePull) /
-        1000;
-      var newTime =
-        (pullEndTime - pullStartTime) * (percentage / 100) + pullStartTime;
-      // this.pullTimestamp = newTime;
-      if (this.playerType == "twitch") {
-        this.player.seek(newTime);
-        this.player.seek(newTime);
-        this.player.seek(newTime);
-        this.player.seek(newTime);
-        this.player.seek(newTime);
-      } else if (this.playerType == "yubtub") {
-        this.player.seekTo(newTime);
-      }
-      // clearInterval(this.scrubTimer);
-      // setTimeout(() => {
-      //   this.scrubTimer = 0;
-      //   if (this.scrubTimer == 0) {
-      //     this.scrubTimer = setInterval(() => {
-      //       this.updateScrubTime();
-      //     }, 200);
-      //   }
-      // }, 1500);
-    },
-    clearScrubTimer() {
-      var span = document.getElementById("pull-scrub-span");
-      span.style.width = "0";
-      clearInterval(this.scrubTimer);
-      this.scrubTimer = 0;
-    },
-    async getTwitchId(twitchUrl: string) {
-      try {
-        const url = new URL(twitchUrl);
-        var video = url.pathname.split("/");
-        var videoIndex = video.indexOf("videos");
-        if (videoIndex == -1) {
-          videoIndex = video.indexOf("video");
-        }
-        this.twitchId = video[videoIndex + 1];
-      } catch (error) {
-        console.log(error);
-        this.twitchId = "Please enter a valid Twitch VOD URL";
-      } finally {
-        this.getTwitchData(this.twitchId);
-      }
-    },
-    getTwitchData(videoId: string) {
-      fetch(`${this.api_url}/twitch?videoId=${videoId}`)
-        .then(async (response) => {
-          this.twitchData = await response.json();
-        })
-        .catch((error) => {
-          console.error("there was an error fetching twitch data: ", error);
-        })
-        .finally(() => {
-          this.vodStartTime = parseInt(this.twitchData.timeArr[0].startTime);
-          this.getTwitchPlayer(this.twitchId);
-        });
-    },
-    async getTwitchPlayer(videoId: string) {
-      const Twitch = window.Twitch;
-      var options = {
-        width: "100%",
-        height: "100%",
-        video: videoId,
-        // only needed if your site is also embedded on embed.example.com and othersite.example.com
-        // parent: ["embed.example.com"]
-        autoplay: false,
-      };
-      if (this.player) {
-        this.removePlayer();
-      }
-      this.player = new Twitch.Player("twitch-player", options);
-      var element = document.getElementById("twitch-player");
-      element.style.position = "absolute";
-      element.style.width = "100%";
-      element.style.height = "100%";
-      element.style.top = "0";
-      // player.setVolume(0.5);
-      this.player.addEventListener(Twitch.Player.READY, () => {
-        this.player.setQuality("chunked");
-        this.playerType = "twitch";
-      });
-      this.player.addEventListener(Twitch.Player.PLAY, () => {
-        // this.playVod();
-        var playButton = document.getElementById("play-button");
-        var pauseButton = document.getElementById("pause-button");
-        playButton.style.visibility = "hidden";
-        pauseButton.style.visibility = "visible";
-        this.focusPauseButton();
-        setTimeout(() => {
-          this.getPullNumber(
-            this.player.getCurrentTime() + this.timeBeforePull / 1000
-          );
-        }, 2000);
-      });
-      this.player.addEventListener(Twitch.Player.PLAYING, () => {
-        // this.playVod();
-        var playButton = document.getElementById("play-button");
-        var pauseButton = document.getElementById("pause-button");
-        playButton.style.visibility = "hidden";
-        pauseButton.style.visibility = "visible";
-        this.focusPauseButton();
-        setTimeout(() => {
-          this.getPullNumber(
-            this.player.getCurrentTime() + this.timeBeforePull / 1000
-          );
-        }, 2000);
-      });
-      this.player.addEventListener(Twitch.Player.SEEK, () => {
-        setTimeout(() => {
-          this.pullTimestamp = this.player.getCurrentTime();
-          this.pullTimestamp = this.player.getCurrentTime();
-          this.pullTimestamp = this.player.getCurrentTime();
-        }, 200);
-      });
-      this.player.addEventListener(Twitch.Player.PAUSE, () => {
-        // this.pauseVod();
-        var playButton = document.getElementById("play-button");
-        var pauseButton = document.getElementById("pause-button");
-        playButton.style.visibility = "visible";
-        pauseButton.style.visibility = "hidden";
-        this.focusPlayButton();
-        setTimeout(() => {
-          this.getPullNumber(
-            this.player.getCurrentTime() + this.timeBeforePull / 1000
-          );
-        }, 2000);
-      });
-    },
-    getPullNumber(timestamp) {
-      this.reportData.data.reportData.report.fights.every((fight: Object) => {
-        if (
-          this.vodStartTime + timestamp * 1000 <=
-          this.reportStart + fight.endTime
-        ) {
-          this.currentPull = fight;
-          return false;
-        }
-        return true;
-      });
-    },
-    submitURLs() {
-      // this.resetURLs();
-      this.hideGoogleWarning();
-      this.clearScrubTimer();
-      this.removePlayer();
-      this.twitchId = "";
-      this.youtubeId = "";
-      this.currentPull = {};
-      this.fightData = {};
-      if (this.vod_url.includes("twitch")) {
-        this.getTwitchId(this.vod_url);
-      } else if (
-        this.vod_url.includes("youtube") ||
-        this.vod_url.includes("youtu.be")
-      ) {
-        this.getYoutubeId(this.vod_url);
-      }
-      this.getReportId(this.fflogs_url);
-      if (
-        this.cachedFightName != "" &&
-        (this.cachedFights[this.cachedFightName]["vod"] != this.vod_url ||
-          this.cachedFights[this.cachedFightName]["fflogs"] != this.fflogs_url)
-      ) {
-        this.cachedFightName = "";
-      }
-    },
-    resetURLs() {
-      this.removePlayer();
-      this.vod_url = "";
-      this.fflogs_url = "";
-      this.cachedFightName = "";
-      this.cachedFightSelected = null;
-      this.playerType = "";
-      this.twitchId = "";
-      this.youtubeId = "";
-      this.currentPull = {};
-      this.fightData = {};
-      this.timeBeforePull = 0;
-      this.showGoogleWarning();
-      this.clearScrubTimer();
-      window.history.pushState({}, document.title, window.location.origin);
-      // TODO: Clear logs
-    },
-    hideGoogleWarning() {
-      var element = document.getElementById("google-homepage-shit");
-      element.style.display = "none";
-    },
-    showGoogleWarning() {
-      var element = document.getElementById("google-homepage-shit");
-      element.style.display = "";
-    },
-    removePlayer() {
-      // var iframes = document.querySelectorAll("iframe");
-      // for (var i = 0; i < iframes.length; i++) {
-      //   iframes[i].parentNode.removeChild(iframes[i]);
-      // }
-      const twitchPlayer = document.getElementById("twitch-player");
-      twitchPlayer.innerHTML = "";
-      const youtubePlayer = document.getElementById("youtube-player-wrapper");
-      youtubePlayer.innerHTML = "";
-      let div = document.createElement("div");
-      div.id = "youtube-player";
-      youtubePlayer.append(div);
-      this.player = null;
-    },
-    goToTimestamp(timestamp: string) {
-      const vodTime = parseInt(timestamp);
-      this.player.seek(vodTime);
-    },
-    getReportId(fflogsUrl: string) {
-      try {
-        const url = new URL(fflogsUrl);
-        var report = url.pathname.split("/");
-        var reportIndex = report.indexOf("reports");
-        this.reportId = report[reportIndex + 1];
-      } catch (error) {
-        this.reportId = "Please enter a valid FFLogs report URL";
-      } finally {
-        this.getReportData(this.reportId);
-      }
-    },
-    getReportData(reportId: string) {
-      var getUrl = "";
-      if (Object.keys(this.fflogsAuthToken).length != 0) {
-        getUrl = `${this.api_url}/fflogs?reportId=${reportId}&authToken=${this.fflogsAuthToken.access_token}`;
-      } else {
-        getUrl = `${this.api_url}/fflogs?reportId=${reportId}`;
-      }
-      fetch(getUrl)
-        .then(async (response) => {
-          this.reportData = await response.json();
-          await this.getEncounterData();
-        })
-        .catch((error) => {
-          console.error("there was an error fetching fflogs data: ", error);
-        })
-        .finally(() => {
-          if (this.reportData.errors) {
-            alert(
-              this.reportData.errors[0].message +
-                "\n\nTry authenticating with FF Logs if this report is private."
-            );
-          } else {
-            this.reportStart = parseInt(
-              this.reportData.data.reportData.report.startTime
-            );
-            this.reportEnd = parseInt(
-              this.reportData.data.reportData.report.endTime
-            );
-            if (this.fflogsAuthToken) {
-              this.getReportDeathData(
-                this.reportId,
-                0,
-                this.reportEnd - this.reportStart,
-                this.fflogsAuthToken.access_token
-              );
-            } else {
-              this.getReportDeathData(
-                this.reportId,
-                0,
-                this.reportEnd - this.reportStart,
-                {}
-              );
-            }
-          }
-        });
-    },
-    getReportDeathData(reportId, startTime, endTime, authToken) {
-      var getUrl = "";
-      if (authToken) {
-        getUrl = `${this.api_url}/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}&authToken=${authToken}`;
-      } else {
-        getUrl = `${this.api_url}/fflogs?reportId=${reportId}&startTime=${startTime}&endTime=${endTime}`;
-      }
-      fetch(getUrl)
-        .then(async (response) => {
-          this.reportData = await response.json();
-          this.getExtraReportData();
-        })
-        .catch((error) => {
-          console.error(
-            "there was an error fetching fflogs data w/ deaths: ",
-            error
-          );
-        });
-    },
-    getEncounterData() {
-      var getUrl = `${this.api_url}/encounters?`;
-      var encounterIds = [];
-      this.reportData.data.reportData.report.fights.forEach((fight: Object) => {
-        if (!encounterIds.includes(fight.encounterID)) {
-          encounterIds.push(fight.encounterID);
-          getUrl = getUrl + `id=${fight.encounterID}&`;
-          console.log("encounterdata", getUrl);
-        }
-      });
-      fetch(getUrl)
-        .then(async (response) => {
-          this.encounterData = await response.json();
-        })
-        .catch((error) => {
-          console.error(
-            "there was an error fetching fflogs encounter data: ",
-            error
-          );
-        });
-    },
-    getExtraReportData() {
-      this.playerData =
-        this.reportData.data.reportData.report.masterData.players;
-      this.abilityData =
-        this.reportData.data.reportData.report.masterData.abilities;
-      this.npcData = this.reportData.data.reportData.report.masterData.npcs;
-      this.deathData = this.reportData.data.reportData.report.events.data;
-      const playerMap = new Map();
-      const abilityMap = new Map();
-      const npcMap = new Map();
-      for (const player of this.playerData) {
-        playerMap.set(player.id, player.name);
-      }
-      for (const ability of this.abilityData) {
-        abilityMap.set(ability.gameID, ability.name);
-      }
-      for (const npc of this.npcData) {
-        npcMap.set(npc.id, npc.name);
-      }
-      for (const death in this.deathData) {
-        this.deathData[death]["player"] = playerMap.get(
-          this.deathData[death].targetID
-        );
-        this.deathData[death]["ability"] = abilityMap.get(
-          this.deathData[death].killingAbilityGameID
-        );
-        this.deathData[death]["source"] = npcMap.get(
-          this.deathData[death].sourceID
-        );
-        this.deathData[death]["killer"] = npcMap.get(
-          this.deathData[death].killerID
-        );
-      }
-      const finalDeathData = {};
-      for (const death in this.deathData) {
-        finalDeathData[this.deathData[death].fight] =
-          finalDeathData[this.deathData[death].fight] || [];
-        finalDeathData[this.deathData[death].fight].push(this.deathData[death]);
-      }
-      this.deathData = finalDeathData;
-      console.log(this.deathData);
-    },
-    getFightData() {
-      const fightsPerInstance = {};
-      var pullNum = 1;
-      if ("phases" in this.reportData.data.reportData.report) {
-        var phaseMap = this.reportData.data.reportData.report.phases;
-        phaseMap.forEach((encounter: Object) => {
-          var encounterID = encounter.encounterID.toString();
-          if (!(encounterID in this.phaseMap)) {
-            this.phaseMap[encounterID] = [];
-          }
-          encounter.phases.forEach((phase: Object) => {
-            this.phaseMap[encounterID].push(phase.name);
-          });
-        });
-      }
-      if (this.reportData) {
-        this.reportData.data.reportData.report.fights.forEach(
-          (fight: Object) => {
-            var encounterName = "";
-            fight["pullNum"] = pullNum++;
-            if (this.encounterMap[fight.encounterID]) {
-              var encounter = this.encounterMap[fight.encounterID];
-              if (Object.keys(encounter.difficulties).length > 1) {
-                var difficulty =
-                  " - " + encounter.difficulties[fight.difficulty];
-                encounterName =
-                  this.encounterMap[fight.encounterID].name + difficulty;
-              } else {
-                encounterName = this.encounterMap[fight.encounterID].name;
-              }
-            } else {
-              encounterName = fight.name;
-            }
-            fightsPerInstance[encounterName] =
-              fightsPerInstance[encounterName] || [];
-            var fightPercentage = 100 - fight.fightPercentage;
-            var fightClass = "";
-            if (fightPercentage < 25) {
-              fightClass = "common";
-            } else if (fightPercentage < 50) {
-              fightClass = "uncommon";
-            } else if (fightPercentage < 75) {
-              fightClass = "rare";
-            } else if (fightPercentage < 90) {
-              fightClass = "epic";
-            } else if (fightPercentage < 99) {
-              fightClass = "legendary";
-            } else if (fightPercentage < 100) {
-              fightClass = "astounding";
-            }
-            fight["class"] = fightClass;
-            // console.log(fight.encounterID, fight.lastPhaseAsAbsoluteIndex, this.phaseMap, this.phaseMap[fight.encouterID])
-            if (fight.encounterID in this.phaseMap) {
-              fight["phaseName"] =
-                this.phaseMap[fight.encounterID][
-                  fight.lastPhaseAsAbsoluteIndex
-                ];
-            }
-            fightsPerInstance[encounterName].push(fight);
-          }
-        );
-        this.fightData = fightsPerInstance;
-      }
-    },
-    getCachedFights() {
-      const cachedFights = localStorage.getItem("cachedFights");
-      if (cachedFights) {
-        const cachedFightsObj = JSON.parse(cachedFights);
-        Object.keys(cachedFightsObj).forEach((fightName) => {
-          if (!("vod" in cachedFightsObj[fightName])) {
-            cachedFightsObj[fightName]["vod"] =
-              cachedFightsObj[fightName]["twitch"];
-          }
-          if (!("offset" in cachedFightsObj[fightName])) {
-            cachedFightsObj[fightName]["offset"] = 0;
-          }
-          this.cachedFights[fightName] = cachedFightsObj[fightName];
-        });
-        localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
-      }
-    },
-    addCachedFight() {
-      if (this.cachedFightName != "") {
-        this.cachedFights[this.cachedFightName] = {
-          vod: this.vod_url,
-          fflogs: this.fflogs_url,
-          offset: this.timeBeforePull,
-          fightName: this.cachedFightName,
-        };
-        localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
-      }
-    },
-    removeCachedFight() {
-      this.cachedFightSelected = null;
-      delete this.cachedFights[this.cachedFightName];
-      this.cachedFightName = "";
-      localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
-    },
-    updateCachedFights(updatedFights) {
-      this.cachedFights = updatedFights;
-      // TODO: make sure this works when editing a fight name, or just remove edit button
-      this.cachedFightName = "";
-      localStorage.setItem("cachedFights", JSON.stringify(this.cachedFights));
-    },
-    selectFight(selectedFight) {
-      this.cachedFightSelected = selectedFight;
-    },
-    clearCachedFight() {
-      this.cachedFightSelected = null;
-      this.cachedFightName = "";
-    },
-    getGoogleAuthToken() {
-      this.googleTokenClient.requestAccessToken();
-      this.googleAuthData = this.googleAuthToken;
-      this.googleAuthData["expires_in"] =
-        this.googleAuthData["expires_in"] * 1000;
-      this.googleAuthData["created_time"] = Date.now();
-      localStorage.setItem(
-        "cachedGoogleAuth",
-        JSON.stringify(this.googleAuthData)
-      );
-    },
-    getCachedGoogleToken() {
-      const cachedGoogleAuthToken = localStorage.getItem(
-        "cachedGoogleAuthToken"
-      );
-      if (cachedGoogleAuthToken) {
-        const cachedGoogleAuthObj = JSON.parse(cachedGoogleAuthToken);
-        if (
-          cachedGoogleAuthObj["created_time"] +
-            cachedGoogleAuthObj["expires_in"] >
-          Date.now()
-        ) {
-          this.googleAuthToken = JSON.parse(cachedGoogleAuthToken);
-          var tokenTimeout =
-            this.googleAuthToken["created_time"] +
-            this.googleAuthToken["expires_in"] -
-            Date.now();
-          this.googleAuthTokenTimer = setTimeout(
-            this.clearGoogleAuthToken,
-            tokenTimeout
-          );
-        } else {
-          localStorage.removeItem("cachedGoogleAuthToken");
-        }
-      }
-    },
-    clearGoogleAuthToken() {
-      if (this.googleAuthTokenTimer) {
-        clearTimeout(this.googleAuthTokenTimer);
-      }
-      this.googleAuthToken = {};
-      this.googleAuthTokenTimer = 0;
-      localStorage.removeItem("cachedGoogleAuthToken");
-    },
-    async getYoutubeId(youtubeUrl: string) {
-      try {
-        const url = new URL(youtubeUrl);
-        if (youtubeUrl.includes("youtube.com")) {
-          if (youtubeUrl.includes("watch?")) {
-            var video = url.href.split("watch?")[1];
-            var queries = video.split("&");
-            for (const query of queries) {
-              if (query.includes("v=")) {
-                this.youtubeId = query.replace("v=", "");
-              }
-            }
-          } else if (youtubeUrl.includes("/live/")) {
-            this.youtubeId = url.href.split("/live/")[1].split("?")[0];
-          }
-        } else if (youtubeUrl.includes("youtu.be")) {
-          this.youtubeId = url.pathname.split("/")[1];
-        }
-      } catch (error) {
-        console.log(error);
-        this.youtubeId = "Please enter a valid YouTube VOD URL";
-      } finally {
-        this.getYoutubeData(this.youtubeId);
-      }
-    },
-    getYoutubeData(videoId: string) {
-      var authToken = "";
-      var getUrl = "";
-      if (Object.keys(this.googleAuthToken).length != 0) {
-        authToken = this.googleAuthToken.access_token;
-        getUrl = `${this.api_url}/youtube?videoId=${videoId}&authToken=${authToken}`;
-      } else {
-        getUrl = `${this.api_url}/youtube?videoId=${videoId}`;
-      }
-      fetch(getUrl)
-        .then(async (response) => {
-          this.youtubeData = await response.json();
-        })
-        .catch((error) => {
-          console.error("there was an error fetching youtube data: ", error);
-        })
-        .finally(() => {
-          if (this.youtubeData.res.pageInfo.totalResults > 0) {
-            this.vodStartTime = parseInt(this.youtubeData.timeArr[0].startTime);
-            this.getYoutubePlayer(this.youtubeId);
-          } else {
-            alert(
-              "You might be trying to use a private YoutTube VOD or URL is incorrect. Please double check YouTube URL or authenticate with the correct account."
-            );
-            this.googleTokenClient.requestAccessToken();
-            this.showGoogleWarning();
-          }
-        });
-    },
-    getYoutubePlayer(videoId: string) {
-      const YT = window.YT;
-      const options = {
-        iv_load_policy: 3,
-        modestbranding: 1,
-        playsinline: 1,
-        rel: 0,
-      };
-      this.player = new YT.Player("youtube-player", {
-        height: "390",
-        width: "640",
-        videoId: videoId,
-        playerVars: options,
-      });
-      var element = document.getElementById("youtube-player");
-      element.style.position = "absolute";
-      element.style.width = "100%";
-      element.style.height = "100%";
-      element.style.top = "0";
-      this.player.addEventListener("onReady", () => {
-        this.player.setPlaybackQuality("highres");
-        this.playerType = "yubtub";
-      });
-      this.player.addEventListener("onStateChange", (value) => {
-        // this.player.setPlaybackQuality("highres");
-        if (value.data == YT.PlayerState.PLAYING) {
-          this.playVod();
-          this.getPullNumber(
-            this.player.getCurrentTime() + this.timeBeforePull / 1000
-          );
-        } else if (value.data == YT.PlayerState.PAUSED) {
-          this.pauseVod();
-          this.getPullNumber(
-            this.player.getCurrentTime() + this.timeBeforePull / 1000
-          );
-        }
-      });
-    },
-    dec2hex(dec) {
-      return ("0" + dec.toString(16)).substr(-2);
-    },
-    generateCodeVerifier() {
-      var array = new Uint32Array(56 / 2);
-      window.crypto.getRandomValues(array);
-      return Array.from(array, this.dec2hex).join("");
-    },
-    sha256(plain) {
-      // returns promise ArrayBuffer
-      const encoder = new TextEncoder();
-      const data = encoder.encode(plain);
-      return window.crypto.subtle.digest("SHA-256", data);
-    },
-    base64urlencode(a) {
-      var str = "";
-      var bytes = new Uint8Array(a);
-      var len = bytes.byteLength;
-      for (var i = 0; i < len; i++) {
-        str += String.fromCharCode(bytes[i]);
-      }
-      return btoa(str)
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_")
-        .replace(/=+$/, "");
-    },
-    async generateCodeChallengeFromVerifier(v) {
-      var hashed = await this.sha256(v);
-      var base64encoded = this.base64urlencode(hashed);
-      return base64encoded;
-    },
-    async createFflogsAuthUrl() {
-      const fflogsClientId = "984bcd26-7d4e-4d0a-b8aa-80b24755d685";
-      this.fflogsAuthState = this.generateCodeVerifier();
-      this.fflogsAuthUrl = new URL("https://www.fflogs.com/oauth/authorize");
-      this.fflogsAuthUrl.searchParams.set("client_id", fflogsClientId);
-      this.fflogsCodeVerifier = this.generateCodeVerifier();
-      this.fflogsCodeChallenge = await this.generateCodeChallengeFromVerifier(
-        this.fflogsCodeVerifier
-      );
-      this.fflogsAuthUrl.searchParams.set(
-        "code_challenge",
-        this.fflogsCodeChallenge
-      );
-      this.fflogsAuthUrl.searchParams.set("code_challenge_method", "S256");
-      this.fflogsAuthUrl.searchParams.set("state", this.fflogsAuthState);
-      this.fflogsAuthUrl.searchParams.set(
-        "redirect_uri",
-        "https://xivodreview.com"
-      );
-      this.fflogsAuthUrl.searchParams.set("response_type", "code");
-    },
-    async getFflogsAuthToken() {
-      this.createFflogsAuthUrl().then(async () => {
-        const fflogsPopup = window.open(
-          this.fflogsAuthUrl.href,
-          "fflogsAuth",
-          "popup=true,width=500, height=500"
-        );
-        const checkPopup = setInterval(() => {
-          if (fflogsPopup.window.location.href.includes("xivodreview.com")) {
-            fflogsPopup.close();
-          }
-          if (!fflogsPopup || !fflogsPopup.closed) return;
-          clearInterval(checkPopup);
-          const url = new URL(fflogsPopup.location.href);
-          const state = url.searchParams.get("state");
-          if (state === this.fflogsAuthState) {
-            this.fflogsAuthCode = url.searchParams.get("code");
-          } else {
-            console.error("state does not match - abort or something");
-          }
-        }, 500);
-      });
-    },
-    getCachedFflogsAuthToken() {
-      const cachedfflogsAuthToken = localStorage.getItem(
-        "cachedFflogsAuthToken"
-      );
-      if (cachedfflogsAuthToken) {
-        const cachedFflogsAuthObj = JSON.parse(cachedfflogsAuthToken);
-        if (
-          cachedFflogsAuthObj["created_time"] +
-            cachedFflogsAuthObj["expires_in"] >
-          Date.now()
-        ) {
-          this.fflogsAuthToken = cachedFflogsAuthObj;
-          var tokenTimeout =
-            this.fflogsAuthToken["created_time"] +
-            this.fflogsAuthToken["expires_in"] -
-            Date.now();
-          this.fflogsAuthTokenTimer = setTimeout(
-            this.clearFflogsAuthToken,
-            tokenTimeout
-          );
-        } else {
-          localStorage.removeItem("cachedFflogsAuthToken");
-        }
-      }
-    },
-    clearFflogsAuthToken() {
-      this.fflogsAuthToken = {};
-      localStorage.removeItem("cachedFflogsAuthToken");
-    },
-    shareURLs() {
-      var vodId = "";
-      var vodType = "";
-      if (this.twitchId != "") {
-        vodId = this.twitchId;
-        vodType = "twitch";
-      } else if (this.youtubeId != "") {
-        vodId = this.youtubeId;
-        vodType = "youtube";
-      }
-      const shareUrl = `${window.location.origin}?${vodType}=${vodId}&fflogs=${this.reportId}&offset=${this.timeBeforePull}`;
-      console.log(shareUrl);
-      navigator.clipboard.writeText(shareUrl);
-      alert(`Copied "${shareUrl}" to clipboard.`);
-    },
-  },
-  beforeMount() {
-    window.addEventListener("keydown", this.handleKeydown, null);
-  },
-  beforeUnmount() {
-    window.removeEventListener("keydown", this.handleKeydown);
-  },
-  mounted() {
-    const bootstrap = window.bootstrap;
-    const queryObj = new URLSearchParams(window.location.search);
-    if (window.location.search != "") {
-      var check = { offset: 0 };
-      for (const [key, value] of queryObj) {
-        if (key == "twitch") {
-          this.vod_url = `https://www.twitch.tv/videos/${value}`;
-          check["vod"] = "twitch";
-        } else if (key == "youtube") {
-          this.vod_url = `https://www.youtube.com/watch?v=${value}`;
-          check["vod"] = "youtube";
-        } else if (key == "fflogs") {
-          this.fflogs_url = `https://www.fflogs.com/reports/${value}`;
-          check["fflogs"] = value;
-        } else if (key == "offset") {
-          this.timeBeforePull = Number(value);
-          check["offset"] = Number(value);
-        }
-      }
-      if ("vod" in check && "fflogs" in check) {
-        this.submitURLs();
-      }
-    }
-    var tooltipTriggerList = [].slice.call(
-      document.querySelectorAll('[data-bs-toggle="tooltip"]')
-    );
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-      return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-  },
-};
-</script>
-
 <style scoped>
 .navHeader {
   height: 3.3em;
@@ -1700,7 +925,6 @@ export default {
   height: 30px;
   width: 48px;
   position: absolute;
-  visibility: hidden;
   backface-visibility: hidden;
   z-index: 9999999;
   cursor: pointer;
@@ -1714,7 +938,6 @@ export default {
   width: 1px;
   background: black;
   position: absolute;
-  visibility: hidden;
   backface-visibility: hidden;
   z-index: 9999999;
   cursor: pointer;
@@ -1786,14 +1009,12 @@ export default {
   top: 0px;
   left: 0px;
   padding: 4px 6px 4px 7px;
-  visibility: visible;
 }
 #pause-button {
   position: absolute;
   top: 0px;
   left: 0px;
   padding: 4px 6px 4px 7px;
-  visibility: hidden;
 }
 #jump-forward {
   padding: 3px 6px 4px 7px;
